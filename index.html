@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>wuho.com · 우호</title>
+<title>우호 · 차트</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%23f0b90b%22/%3E%3Cpath d=%22M5 16l4-5 3 3 5-7%22 stroke=%22%23111%22 stroke-width=%222.2%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%2217%22 cy=%227%22 r=%221.6%22 fill=%22%23111%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
@@ -105,7 +106,6 @@ header select{width:auto;max-width:84px}header .seg button{padding:5px 6px}.wh-s
 .frow.wh{grid-template-columns:minmax(0,1.4fr) 1fr 62px;cursor:pointer}.frow.wh .wh-2{grid-column:1/-1;margin-top:-2px}.frow.wh a{text-decoration:none}.frow.wh:hover{background:var(--panel2)}
 .wh-feed{flex:1;overflow:auto}.pn[data-p=whale]{display:flex;flex-direction:column;height:100%}.pn[data-p=whale][hidden]{display:none}
 header>*{flex:none}
-.brand{font-weight:600;color:var(--accent);letter-spacing:.02em;font-size:16px}.brand small{font-size:11px;color:var(--dim);font-weight:400;margin-left:2px}
 #errBar{position:fixed;left:0;right:0;bottom:0;z-index:99;background:#ea3943;color:#fff;padding:10px 14px;font-size:13px;display:none;white-space:pre-wrap}
 .sym{font-weight:600;font-size:15px}.last{font-size:17px;font-weight:500}.chg{font-size:13px}
 .sep{width:1px;height:22px;background:var(--line)}
@@ -285,6 +285,45 @@ input[type=range]{accent-color:var(--accent);width:100%}
   aside{grid-row:5;grid-column:1/3;border-left:0;border-top:1px solid var(--line)}#asideGrip{display:none}
   .stat{display:none}#toasts{right:16px}
 }
+
+/* 오른쪽 창: 지표·아비트라지·뉴스·X */
+.fd-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px 2px;flex:none}.fd-head b{font-size:13px}
+.fd-head a.btn{text-decoration:none}
+.fd-sub{padding:4px 10px 6px;font-size:11px;flex:none;line-height:1.4}
+.fd-list{flex:1;overflow-y:auto;min-height:0;scrollbar-width:thin}
+.ind-row{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);cursor:pointer}
+.ind-row:hover{background:var(--panel2)}.ind-row.off{opacity:.5}.ind-row>i{width:10px;height:10px;border-radius:3px}
+.ind-row b{display:block;font-size:13px;font-weight:500}.ind-row small{font-size:11px}
+.ind-row .ix-act button{padding:2px 5px;color:var(--dim)}.ind-row .ix-act button:hover{color:var(--ink)}
+.arb-head{flex:none}
+.arow{display:grid;grid-template-columns:1fr 1.5fr 76px;gap:6px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line);font-size:12px;cursor:pointer}
+.arow:hover{background:var(--panel2)}.arow>:last-child{text-align:right}.arow small{color:var(--dim);font-size:10px;margin-left:3px}
+.arow.h{color:var(--dim);font-size:11px;cursor:default;padding:4px 10px}.arow.h:hover{background:none}
+.nrow,.xrow{display:block;padding:8px 10px;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
+.nrow:hover,.xrow:hover{background:var(--panel2)}
+.nmeta{display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:3px;white-space:nowrap;overflow:hidden}
+.nmeta b{font-weight:500;color:var(--blue)}.nmeta b.en{color:var(--accent)}
+.ntitle{font-size:13px;line-height:1.45}
+.xtext{font-size:12.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.tag{font-size:10px;padding:0 5px;border-radius:3px;background:var(--panel2);color:var(--dim)}
+.x-add{display:flex;gap:6px;padding:8px 10px}
+.nst{font-size:10px;padding:0 5px;border-radius:3px;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 50%,transparent)}
+.stars{color:var(--accent);letter-spacing:-1px;font-size:10px}.stars.s1{color:var(--dim)}
+.nk{font-size:10px;padding:0 5px;border-radius:3px;background:var(--panel2);color:var(--dim)}
+.nk.list{color:var(--up)}.nk.delist{color:var(--down)}.nk.warn{color:#f0a33b}.nk.maint{color:var(--blue)}.nk.event{color:#c38bff}
+/* 위젯 */
+.wmenu{min-width:300px}.wmenu button{justify-content:flex-start;gap:10px;align-items:flex-start}
+.wmenu svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--accent);stroke-width:1.8;margin-top:2px}
+.wmenu b{display:block;font-weight:500}.wmenu small{display:block;font-size:11px;white-space:normal}
+.wg-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px}
+.wg-box{position:relative;height:52vh;min-height:280px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.wg-box canvas{position:absolute;inset:0;display:block}
+.wg-box .tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;z-index:2;white-space:nowrap}
+.wg-foot{margin-top:8px;font-size:12px}
+.wg-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--dim)}.wg-legend>span{display:inline-flex;align-items:center;gap:5px}.wg-legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.wg-tbl{display:grid;gap:2px;margin-top:8px;font-size:12px}.wg-tbl>div{display:grid;grid-template-columns:90px 70px 80px 1fr;gap:10px;padding:3px 6px;border-bottom:1px solid var(--line)}
+/* 로고 */
+.brand{display:flex;align-items:center;flex:none;text-decoration:none}.brand svg{width:24px;height:24px;display:block}
 </style>
 </head>
 <body>
@@ -295,8 +334,8 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
 </script>
 <div class="app">
   <div class="topbar">
-    <span class="brand">우호 <small>wuho.com</small></span>
-    <nav class="pnav"><a href="./" class="on">차트</a><a href="scalp.html">스캘핑</a></nav>
+    <a class="brand" href="./" title="우호"><svg viewBox="0 0 24 24" aria-label="우호"><rect width="24" height="24" rx="6" fill="#f0b90b"/><path d="M5 16l4-5 3 3 5-7" stroke="#111" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="7" r="1.6" fill="#111"/></svg></a>
+    <nav class="pnav"><a href="./" class="on">차트</a><a href="scalp.html">스캘핑</a><a href="news.html">뉴스</a></nav>
     <div id="ctabs"></div><button id="ctabAdd" title="차트 탭 추가">+</button>
     <div class="right"><span class="hchip" id="hTemp" title="BTC 최근 3분 ÷ 앞 1시간 평소">시장 온도 -</span><span id="clock" class="num">-</span></div>
   </div>
@@ -310,6 +349,7 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
     <span class="sep"></span>
     <select id="typeSel" aria-label="차트 종류"></select>
     <button class="hb" id="btnInd">지표</button>
+    <button class="hb" id="btnWg" title="청산 차트·포지션 맵 등">위젯 ▾</button>
     <button class="hb" id="btnReplay" title="과거 봉부터 한 봉씩 다시 보기">리플레이</button>
     <button class="hb mk" id="btnMarket" title="김치 프리미엄, 히트맵, 펀딩·OI, 시장 온도">시장 자료</button>
     <div class="right">
@@ -2302,6 +2342,348 @@ LC.panels.push(W);
 
 </script>
 <script>
+/* 뉴스 모으기·분류: 공개 RSS(rss2json 경유) + 거래소 공지 API. 섹션, 중요도(★), 상태(속보·전개중·확인·정정)를 제목으로 판단해요 */
+(() => {
+const { getJSON } = LC;
+const RSS = u => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
+const strip = h => { const d = document.createElement('div'); d.innerHTML = String(h || ''); return (d.textContent || '').replace(/\s+/g, ' ').trim() };
+const pTime = s => { const t = Date.parse(String(s).replace(' ', 'T') + (/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? '' : 'Z')); return isNaN(t) ? Date.now() : t };
+const CRYPTO = /비트코인|이더리움|코인|가상자산|암호화폐|가상화폐|블록체인|스테이블|BTC|ETH|XRP|ETF|거래소|업비트|빗썸|바이낸스|연준|FOMC|금리|나스닥|증시|CPI|관세|달러/i;
+/* [이름, 언어, 주소, 일반 매체라 코인·매크로 관련만 거를지] */
+const SOURCES = [
+  ['토큰포스트','ko','https://www.tokenpost.kr/rss'], ['블록미디어','ko','https://www.blockmedia.co.kr/feed'],
+  ['디지털투데이','ko','https://www.digitaltoday.co.kr/rss/allArticle.xml', true], ['파이낸셜뉴스','ko','https://www.fnnews.com/rss/r20/fn_realnews_all.xml', true],
+  ['연합뉴스','ko','https://www.yna.co.kr/rss/economy.xml', true],
+  ['구글 뉴스','ko','https://news.google.com/rss/search?q=%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8%20OR%20%EC%95%94%ED%98%B8%ED%99%94%ED%8F%90%20OR%20%EA%B0%80%EC%83%81%EC%9E%90%EC%82%B0&hl=ko&gl=KR&ceid=KR:ko'],
+  ['CoinDesk','en','https://www.coindesk.com/arc/outboundfeeds/rss/'], ['Cointelegraph','en','https://cointelegraph.com/rss'],
+  ['The Block','en','https://www.theblock.co/rss.xml'], ['Decrypt','en','https://decrypt.co/feed'], ['Bitcoin Magazine','en','https://bitcoinmagazine.com/.rss/full/']
+];
+const SECTIONS = [
+  ['flash','속보','FLASH', /속보|BREAKING|긴급|\[단독\]|JUST IN|^\s*\[?1보/i],
+  ['etf','ETF','ETF', /ETF|상장지수|현물\s?펀드/i],
+  ['exch','거래소','EXCH', /거래소|업비트|빗썸|코인원|코빗|바이낸스|코인베이스|바이비트|OKX|Binance|Coinbase|Bybit|Kraken|상장|상폐|listing|delist/i],
+  ['chain','온체인','CHAIN', /온체인|고래|지갑|이체|스테이킹|해시레이트|채굴|on-?chain|whale|wallet|staking|hashrate|miner|transfer/i],
+  ['deriv','파생','DERIV', /선물|옵션|청산|펀딩|미결제|레버리지|futures|options|liquidat|funding|open interest|leverage/i],
+  ['macro','매크로','MACRO', /연준|Fed\b|FOMC|금리|CPI|PCE|물가|고용|실업|달러|증시|나스닥|S&P|다우|국채|관세|트럼프|유가|환율|파월|inflation|rates?\b|treasury|tariff|Trump|Powell|Nasdaq|stocks?\b|yields?\b|GDP/i],
+  ['reg','규제','REG', /SEC\b|CFTC|규제|법안|금융위|금감원|당국|국회|소송|법원|세금|과세|regulat|lawsuit|court|bill\b|tax|Congress|Senate|ban\b/i],
+  ['sec','보안','SEC', /해킹|해커|탈취|유출|사기|피싱|도난|exploit|hack|breach|scam|drain|stolen|phishing|attack/i]
+];
+const BIG = /SEC\b|FOMC|금리\s?(인상|인하|동결)|rate (cut|hike)|ETF\s?(승인|거부|approv|reject)|해킹|hack|exploit|폭락|폭등|급락|급등|crash|plunge|surge|사상\s?최고|역대\s?최고|all-time high|record high|파산|bankrupt|트럼프|Trump|CPI|비상|emergency|전쟁|war\b|폭발|explosion/i;
+const MID = /비트코인|이더리움|Bitcoin|Ethereum|BTC|ETH|ETF|고래|whale|청산|liquidat|상장|listing|연준|Fed\b|관세|tariff|규제|regulat|SEC/i;
+const STOP = new Set('the a an of to in on for and or with by is are at as from its it this that be was were will has have after over new says said than into up out more amid how why what 등 및 위해 대한 관련 통해 이후 지난 올해 오늘 기자 뉴스 대해 가장 위한 것으로 있는 없는 한다 했다 밝혀 전망 분석 기대 경신 가능성 예상 소식 오전 오후 하루 이번 지금 최근 사상 최대 역대 까지 just new daily week report price prices market markets crypto'.split(' '));
+const JOSA = /(으로|에서|에게|까지|부터|보다|이며|이고|에도|으로써|하고|했다|한다|하며|된|될|하는|했던|이다|에|의|은|는|이|가|을|를|로|와|과|도|만)$/;
+const words = t => (t.match(/[A-Za-z][A-Za-z0-9.]{2,}|[가-힣]{2,}/g) || []).map(w => { w = w.toLowerCase(); if(/[가-힣]/.test(w) && w.length > 2) w = w.replace(JOSA, ''); return w }).filter(w => w.length >= 2 && !STOP.has(w));
+
+const NC = LC.news = {
+  SOURCES, SECTIONS, items: [], notices: [], seenAt: LC.store.get('newsSeen', {}), at: 0,
+  classify(it){
+    const t = it.title;
+    it.secs = SECTIONS.filter(s => s[3].test(t)).map(s => s[0]);
+    it.stars = BIG.test(t) ? 3 : MID.test(t) ? 2 : 1;
+    it.words = words(t);
+    return it;
+  },
+  /* 비슷한 제목끼리 묶어서 몇 곳이 같은 걸 다뤘는지 세고, 상태를 정해요 */
+  cluster(){
+    const L = this.items; L.forEach(x => { x.cl = null });
+    for(let i = 0; i < L.length; i++){ const a = L[i]; if(a.cl) continue; a.cl = a; a.clN = 1; a.clSrc = new Set([a.src]); const A = new Set(a.words); if(A.size < 2) continue;
+      for(let j = i + 1; j < L.length; j++){ const b = L[j]; if(b.cl || Math.abs(a.t - b.t) > 12*36e5) continue; const B = b.words; let hit = 0; B.forEach(w => A.has(w) && hit++);
+        if(hit >= 3 && hit / Math.min(A.size, B.length) >= 0.5){ b.cl = a; a.clN++; a.clSrc.add(b.src) } } }
+    const now = Date.now();
+    L.forEach(x => { const head = x.cl || x, n = head.clSrc ? head.clSrc.size : 1; x.srcN = n;
+      if(n >= 3 && x.stars < 3) x.stars = Math.min(3, x.stars + 1);
+      x.status = /정정|correction|corrected|clarif/i.test(x.title) ? 'fix' : (x.secs.includes('flash') && now - x.t < 36e5) ? 'flash' : (n >= 3 || now - x.t > 6*36e5) ? 'ok' : 'dev' });
+  },
+  async load(){
+    const r = await Promise.allSettled(SOURCES.map(async ([n, lang, u, filter]) => { const d = await getJSON(RSS(u)); if(d.status !== 'ok') throw 0;
+      return d.items.map(i => { const g = n === '구글 뉴스', title = g ? strip(i.title).replace(/ - [^-]+$/, '') : strip(i.title);
+        return { src: g ? ((strip(i.title).match(/ - ([^-]+)$/) || [, '구글 뉴스'])[1]).trim() : n, lang, title, link:i.link, t:pTime(i.pubDate) } }).filter(x => x.title && (!filter || CRYPTO.test(x.title))) }));
+    const all = []; let ok = 0; r.forEach(x => { if(x.status === 'fulfilled'){ ok++; all.push(...x.value) } });
+    const seen = new Set(), now = Date.now();
+    this.items = all.filter(x => { const k = x.title.slice(0, 36); if(seen.has(k)) return false; seen.add(k); return now - x.t < 4*864e5 }).sort((a, b) => b.t - a.t).map(x => this.classify(x));
+    this.items.forEach(x => { if(!this.seenAt[x.link]) this.seenAt[x.link] = now; x.first = this.seenAt[x.link] });
+    const keep = {}; this.items.forEach(x => keep[x.link] = this.seenAt[x.link]); this.seenAt = keep; LC.store.set('newsSeen', keep);
+    this.cluster(); this.ok = ok; this.at = Date.now(); return this.items;
+  },
+  isNew(x){ return Date.now() - x.first < 10*6e4 && this.at - x.first < 10*6e4 && this.loadedOnce },
+  trending(){
+    const now = Date.now(), cnt = {}, prev = {};
+    /* 같은 이야기 묶음은 한 번만 세서, 여러 이야기에 걸쳐 나오는 낱말만 뜨게 해요 */
+    const per = new Map(); this.items.forEach(x => { const age = now - x.t, k = age < 3*36e5 ? 'c' : age < 6*36e5 ? 'p' : null; if(!k) return; const h = x.cl || x; if(!per.has(h)) per.set(h, { k, w:new Set() }); x.words.forEach(w => per.get(h).w.add(w)) });
+    per.forEach(({ k, w }) => w.forEach(x => { const tgt = k === 'c' ? cnt : prev; tgt[x] = (tgt[x] || 0) + 1 }));
+    return Object.entries(cnt).filter(([w, n]) => n >= 2).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([w, n]) => ({ w, n, isNew: !prev[w], up: (prev[w] || 0) < n }));
+  },
+  /* 거래소 공지: 바이낸스·바이비트·비트겟 공개 API */
+  async loadNotices(){
+    const kind = t => /delist|removal|상장\s?폐지|폐지|cease|terminate/i.test(t) ? 'delist' : /new listing|will list|lists?\b|listing|상장|launchpool|launch/i.test(t) ? 'list' : /maintenance|점검|suspend|upgrade|일시\s?중지/i.test(t) ? 'maint'
+      : /caution|monitoring|warning|유의|주의/i.test(t) ? 'warn' : /campaign|event|promo|tournament|airdrop|reward|bonanza|giveaway|arena|이벤트|competition/i.test(t) ? 'event' : 'notice';
+    const jobs = [
+      (async () => { const d = await getJSON('https://www.binance.com/bapi/composite/v1/public/cms/article/list/query?type=1&pageNo=1&pageSize=15');
+        const out = []; d.data.catalogs.forEach(c => (c.articles || []).forEach(a => out.push({ ex:'Binance', title:a.title, t:a.releaseDate, link:`https://www.binance.com/en/support/announcement/detail/${a.code}` }))); return out })(),
+      (async () => { const d = await getJSON('https://api.bybit.com/v5/announcements/index?locale=en-US&limit=30'); return d.result.list.map(a => ({ ex:'Bybit', title:a.title, t:+a.publishTime || +a.dateTimestamp, link:a.url })) })(),
+      (async () => { const d = await getJSON('https://api.bitget.com/api/v2/public/annoucements?language=en_US'); return d.data.map(a => ({ ex:'Bitget', title:a.annTitle, t:+a.cTime, link:a.annUrl })) })()
+    ];
+    const r = await Promise.allSettled(jobs), all = []; r.forEach(x => x.status === 'fulfilled' && all.push(...x.value));
+    this.notices = all.filter(x => x.title).map(x => ({ ...x, kind:kind(x.title) })).sort((a, b) => b.t - a.t).slice(0, 120); return this.notices;
+  }
+};
+NC.STATUS = { flash:['속보','BREAKING','#ea3943'], dev:['전개중','DEVELOPING','#f0a33b'], ok:['확인','CONFIRMED','#16c784'], fix:['정정','CORRECTION','#4aa3ff'] };
+NC.NKIND = { list:'상장', warn:'유의', delist:'폐지', maint:'점검', notice:'공지', event:'이벤트' };
+})();
+
+</script>
+<script>
+/* 오른쪽 창: 지표 목록, 아비트라지, 뉴스, X 피드 */
+(() => {
+const { esc, store, getJSON } = LC;
+const ago = t => { const s = Math.max(0, (Date.now() - t) / 1000); return s < 60 ? '방금' : s < 3600 ? Math.floor(s/60) + '분 전' : s < 86400 ? Math.floor(s/3600) + '시간 전' : Math.floor(s/86400) + '일 전' };
+const strip = h => { const d = document.createElement('div'); d.innerHTML = String(h || '').replace(/<br\s*\/?>/gi, '\n'); return (d.textContent || '').replace(/\s+\n/g, '\n').trim() };
+const RSS = u => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
+const pTime = s => { const t = Date.parse(String(s).replace(' ', 'T') + (/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? '' : 'Z')); return isNaN(t) ? Date.now() : t };
+
+/* ── 지금 차트에 들어간 지표 ── */
+const IND = {
+  id:'ind', label:'지표',
+  mount(el, app){ this.el = el; this.app = app;
+    el.innerHTML = `<div class="fd-head"><b>이 차트의 지표</b><button class="btn sm" id="indAdd">+ 지표 추가</button></div><div class="fd-list ind-list"></div>`;
+    el.querySelector('#indAdd').onclick = () => app.indModal();
+    el.querySelector('.ind-list').onclick = e => { const a = e.target.closest('[data-a]'), r = e.target.closest('[data-id]'); if(!r) return; const v = app.v, ind = v && v.inds.find(i => i.id === r.dataset.id); if(!ind) return;
+      if(!a || a.dataset.a === 'set') return v.editInd(ind);
+      v.onLegendClick({ target: v.q(`.lgr[data-id="${ind.id}"] [data-a="${a.dataset.a}"]`) }); this.render() };
+    setInterval(() => { if(!el.hidden) this.render() }, 2000) },
+  onSymbol(){ if(!this.el.hidden) this.render() }, onShow(on){ if(on) this.render() },
+  render(){ const v = this.app.v, L = this.el.querySelector('.ind-list'); if(!v) return;
+    const sig = v.inds.map(i => i.id + i.hidden + i.color + JSON.stringify(i.params)).join('|'); if(sig === this.sig) return; this.sig = sig;
+    L.innerHTML = v.inds.length ? v.inds.map(i => `<div class="ind-row ${i.hidden ? 'off' : ''}" data-id="${i.id}"><i style="background:${LC.color.parseColor(i.color || '#888888').hex}"></i>
+      <div><b>${esc(i.def.title ? i.def.title(i.params) : i.def.label)}</b><small class="dim">${esc(i.def.cat || '')} · ${i.def.overlay ? '차트 위' : '아래 칸'}</small></div>
+      <span class="ix-act"><button data-a="eye" title="보이기/숨기기">${i.hidden ? '◌' : '◉'}</button><button data-a="set" title="설정">⚙</button><button data-a="del" title="지우기">✕</button></span></div>`).join('')
+      : '<div class="empty">아직 지표가 없어요. 위의 "지표 추가"를 눌러 보세요.</div>' }
+};
+
+/* ── 아비트라지: 거래소 간 선물 가격·펀딩 차이 ── */
+const EX = {
+  Binance: async () => { const [p, f] = await Promise.all([getJSON(`${LC.EP.futures.rest}/ticker/price`), getJSON(`${LC.EP.futures.rest}/premiumIndex`)]);
+    const o = {}; p.forEach(x => { if(x.symbol.endsWith('USDT')) o[x.symbol.slice(0, -4)] = { p:+x.price } }); f.forEach(x => { const b = x.symbol.slice(0, -4); if(o[b]) o[b].f = +x.lastFundingRate*100 }); return o },
+  Bybit: async () => { const d = await getJSON('https://api.bybit.com/v5/market/tickers?category=linear'); const o = {};
+    d.result.list.forEach(x => { if(x.symbol.endsWith('USDT') && +x.lastPrice) o[x.symbol.slice(0, -4)] = { p:+x.lastPrice, f: x.fundingRate === '' ? null : +x.fundingRate*100 } }); return o },
+  OKX: async () => { const d = await getJSON('https://www.okx.com/api/v5/market/tickers?instType=SWAP'); const o = {};
+    d.data.forEach(x => { if(x.instId.endsWith('-USDT-SWAP') && +x.last) o[x.instId.split('-')[0]] = { p:+x.last } }); return o },
+  Bitget: async () => { const d = await getJSON('https://api.bitget.com/api/v2/mix/market/tickers?productType=USDT-FUTURES'); const o = {};
+    d.data.forEach(x => { if(x.symbol.endsWith('USDT') && +x.lastPr) o[x.symbol.slice(0, -4)] = { p:+x.lastPr, f: x.fundingRate != null ? +x.fundingRate*100 : null } }); return o },
+  Gate: async () => { const d = await getJSON('https://api.gateio.ws/api/v4/futures/usdt/tickers'); const o = {};
+    d.forEach(x => { if(x.contract.endsWith('_USDT') && +x.last) o[x.contract.slice(0, -5)] = { p:+x.last, f: x.funding_rate != null ? +x.funding_rate*100 : null } }); return o }
+};
+const ARB = {
+  id:'arb', label:'아비트라지', tab: store.get('arbTab', 'px'), data:{},
+  mount(el, app){ this.el = el; this.app = app;
+    el.innerHTML = `<div class="sub-tabs"><button data-t="px">가격 차이</button><button data-t="fd">펀딩 차이</button><button data-t="kp">김치 프리미엄</button></div>
+      <div class="fd-sub dim"></div><div class="arb-head"></div><div class="fd-list arb-list"></div>`;
+    el.querySelector('.sub-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.tab = b.dataset.t; store.set('arbTab', this.tab); this.render(); if(this.tab === 'kp') this.loadKp() };
+    el.querySelector('.arb-list').onclick = e => { const r = e.target.closest('[data-s]'); if(r) app.openSymbol(r.dataset.s, 'futures') };
+    setInterval(() => { if(!el.hidden){ this.load(); if(this.tab === 'kp') this.loadKp() } }, 15000) },
+  onShow(on){ if(on){ this.load(); if(this.tab === 'kp') this.loadKp() } },
+  async load(){ if(this.busy) return; this.busy = true;
+    const r = await Promise.allSettled(Object.entries(EX).map(async ([n, f]) => [n, await f()]));
+    r.forEach(x => { if(x.status === 'fulfilled') this.data[x.value[0]] = x.value[1] }); this.at = Date.now(); this.busy = false; this.render() },
+  async loadKp(){ try{ if(!this.kpAt || Date.now() - this.kpAt > 14000){ this.kpAt = Date.now();
+      const [up, bn] = await Promise.all([getJSON('https://api.upbit.com/v1/ticker/all?quote_currencies=KRW'), getJSON(`${LC.EP.spot.rest}/ticker/price`)]);
+      const P = Object.fromEntries(bn.filter(x => x.symbol.endsWith('USDT')).map(x => [x.symbol.slice(0, -4), +x.price])), usdt = (up.find(x => x.market === 'KRW-USDT') || {}).trade_price;
+      this.kp = { usdt, rows: up.filter(x => P[x.market.slice(4)] && usdt).map(x => { const c = x.market.slice(4); return { c, krw:x.trade_price, kp:(x.trade_price/(P[c]*usdt) - 1)*100, vol:x.acc_trade_price_24h } }).sort((a, b) => b.vol - a.vol).slice(0, 60) } } }catch(e){} this.render() },
+  render(){
+    if(this.el.hidden) return; this.el.querySelectorAll('.sub-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === this.tab));
+    const L = this.el.querySelector('.arb-list'), H = this.el.querySelector('.arb-head'), sub = this.el.querySelector('.fd-sub'), names = Object.keys(this.data);
+    if(this.tab === 'kp'){ sub.textContent = '업비트 원화 가격을 업비트 USDT 시세로 바꿔 바이낸스와 비교 (거래대금 순)';
+      H.innerHTML = '<div class="arow h"><span>코인</span><span>업비트</span><span>김프</span></div>';
+      L.innerHTML = this.kp ? this.kp.rows.map(r => `<div class="arow" data-s="${esc(r.c)}USDT"><b>${esc(r.c)}</b><span class="num">₩${LC.fmtPx(r.krw)}</span><span class="num ${r.kp >= 0 ? 'up' : 'down'}">${Math.abs(r.kp) >= 15 ? '⚠ ' : ''}${LC.fmtPct(r.kp)}</span></div>`).join('') : '<div class="empty">불러오는 중…</div>'; return }
+    if(!names.length){ L.innerHTML = '<div class="empty">거래소 5곳 시세를 모으는 중…</div>'; return }
+    const top = new Set(Object.entries((this.app.tickers.futures || {})).sort((a, b) => b[1].q - a[1].q).slice(0, 200).map(x => x[0].slice(0, -4)));
+    const bases = Object.keys(this.data.Binance || {}).filter(b => !top.size || top.has(b));
+    sub.textContent = `${names.join(' · ')} 무기한 선물 · ${this.at ? ago(this.at) : ''} 갱신 · 차이가 20% 넘으면 같은 이름 다른 코인일 수 있어 뺐어요`;
+    if(this.tab === 'px'){
+      const rows = bases.map(b => { const q = names.map(n => [n, (this.data[n][b] || {}).p]).filter(x => x[1]); if(q.length < 3) return null;
+        q.sort((x, y) => x[1] - y[1]); const lo = q[0], hi = q[q.length-1], sp = (hi[1]/lo[1] - 1)*100; return sp > 20 ? null : { b, lo, hi, sp, n:q.length } }).filter(Boolean).sort((x, y) => y.sp - x.sp).slice(0, 60);
+      H.innerHTML = '<div class="arow h"><span>코인</span><span>싸게 → 비싸게</span><span>차이</span></div>';
+      L.innerHTML = rows.map(r => `<div class="arow" data-s="${esc(r.b)}USDT"><b>${esc(r.b)}<small class="dim">${r.n}곳</small></b><span class="num"><small>${r.lo[0]}</small> ${LC.fmtPx(r.lo[1])}<br><small>${r.hi[0]}</small> ${LC.fmtPx(r.hi[1])}</span><span class="num ${r.sp >= 0.3 ? 'up' : ''}">${r.sp.toFixed(3)}%</span></div>`).join('');
+    } else {
+      const rows = bases.map(b => { const q = names.map(n => [n, (this.data[n][b] || {}).f]).filter(x => x[1] != null && isFinite(x[1])); if(q.length < 2) return null;
+        q.sort((x, y) => x[1] - y[1]); const lo = q[0], hi = q[q.length-1]; return { b, lo, hi, d:hi[1] - lo[1] } }).filter(Boolean).sort((x, y) => y.d - x.d).slice(0, 60);
+      H.innerHTML = '<div class="arow h"><span>코인</span><span>낮은 곳 → 높은 곳</span><span>차이</span></div>';
+      L.innerHTML = rows.map(r => `<div class="arow" data-s="${esc(r.b)}USDT"><b>${esc(r.b)}</b><span class="num"><small>${r.lo[0]}</small> <span class="${r.lo[1] >= 0 ? 'up' : 'down'}">${r.lo[1].toFixed(4)}%</span><br><small>${r.hi[0]}</small> <span class="${r.hi[1] >= 0 ? 'up' : 'down'}">${r.hi[1].toFixed(4)}%</span></span><span class="num">${r.d.toFixed(4)}%</span></div>`).join('');
+    }
+  }
+};
+
+/* ── 뉴스: newscore.js(LC.news)가 모으고 분류한 걸 중요도·시간 순으로 보여줘요 ── */
+const NEWS = {
+  id:'news', label:'뉴스', tab: store.get('newsTab2', 'all'),
+  mount(el, app){ this.el = el; this.app = app;
+    el.innerHTML = `<div class="fd-head"><b>암호화폐 뉴스</b><a class="btn sm" href="news.html" target="_blank" rel="noopener">크게 보기 ↗</a></div>
+      <div class="sub-tabs"><button data-t="all">최신</button><button data-t="imp">중요도 순</button><button data-t="coin">이 종목</button><button data-t="ntc">거래소 공지</button></div><div class="fd-sub dim"></div><div class="fd-list news-list"></div>`;
+    el.querySelector('.sub-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.tab = b.dataset.t; store.set('newsTab2', this.tab); this.render(); if(this.tab === 'ntc' && !LC.news.notices.length) this.loadN() };
+    setInterval(() => { if(!el.hidden) this.load() }, 300000); setInterval(() => { if(!el.hidden) this.render() }, 30000) },
+  onShow(on){ if(on){ if(!LC.news.at || Date.now() - LC.news.at > 120000) this.load(); if(this.tab === 'ntc') this.loadN(); this.render() } }, onSymbol(){ if(!this.el.hidden && this.tab === 'coin') this.render() },
+  async load(){ if(this.busy) return; this.busy = true; this.render(); try{ await LC.news.load() }catch(e){} LC.news.loadedOnce = true; this.busy = false; this.render() },
+  async loadN(){ try{ await LC.news.loadNotices() }catch(e){} this.render() },
+  render(){ if(this.el.hidden) return; const N = LC.news; this.el.querySelectorAll('.sub-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === this.tab));
+    const sub = this.el.querySelector('.fd-sub'), L = this.el.querySelector('.news-list');
+    if(this.tab === 'ntc'){ sub.textContent = '바이낸스 · 바이비트 · 비트겟 공지 (업비트·OKX는 브라우저에서 막혀 있어요)';
+      L.innerHTML = N.notices.length ? N.notices.slice(0, 80).map(x => `<a class="nrow" href="${esc(x.link)}" target="_blank" rel="noopener"><div class="nmeta"><b>${esc(x.ex)}</b><span class="nk ${x.kind}">${N.NKIND[x.kind]}</span><span class="dim">${ago(x.t)}</span></div><div class="ntitle">${esc(x.title)}</div></a>`).join('') : '<div class="empty">공지를 불러오는 중…</div>'; return }
+    const v = this.app.v, coin = v ? v.sym.replace(/USDT$/, '').replace(/^1000/, '') : 'BTC', NM = { BTC:'비트코인|bitcoin', ETH:'이더리움|ethereum|ether', SOL:'솔라나|solana', XRP:'리플|xrp|ripple', DOGE:'도지|dogecoin' };
+    const re = new RegExp(`(\\b${coin}\\b|${NM[coin] || coin})`, 'i');
+    let items = N.items.filter(x => !x.cl || x.cl === x);
+    if(this.tab === 'coin') items = items.filter(x => re.test(x.title));
+    if(this.tab === 'imp') items = items.filter(x => Date.now() - x.t < 864e5).sort((a, b) => b.stars - a.stars || b.srcN - a.srcN || b.t - a.t);
+    sub.textContent = this.busy && !N.items.length ? '뉴스를 모으는 중…' : N.at ? `${N.ok}/${N.SOURCES.length}곳 · ${ago(N.at)} 갱신 · ★ 많을수록 시장 전체에 큰 뉴스` : '';
+    L.innerHTML = items.length ? items.slice(0, 120).map(x => { const S = N.STATUS[x.status]; return `<a class="nrow" href="${esc(x.link)}" target="_blank" rel="noopener"><div class="nmeta"><span class="nst" style="--c:${S[2]}">${S[0]}</span><b class="${x.lang}">${esc(x.src)}</b>${x.srcN > 1 ? `<span class="dim">+${x.srcN - 1}곳</span>` : ''}<span class="stars s${x.stars}">${'★'.repeat(x.stars)}</span><span class="dim" style="margin-left:auto">${ago(x.t)}</span></div><div class="ntitle">${esc(x.title)}</div></a>` }).join('')
+      : `<div class="empty">${this.busy ? '불러오는 중…' : this.tab === 'coin' ? `${esc(coin)} 관련 최근 뉴스가 없어요` : '뉴스를 못 받았어요. 잠시 뒤 다시 열어 주세요.'}</div>` }
+};
+
+/* ── X 피드: 공개 미러(니터) RSS로 계정들의 최근 글을 모아요 ── */
+const X_DEF = ['WuBlockchain','tier10k','whale_alert','lookonchain','KobeissiLetter','zerohedge','BitcoinMagazine','DeItaone'];
+const MIRRORS = ['https://nitter.net', 'https://xcancel.com', 'https://nitter.poast.org'];
+const XF = {
+  id:'x', label:'X 피드', items:[], accts: store.get('xAccts', X_DEF),
+  mount(el, app){ this.el = el;
+    el.innerHTML = `<div class="sub-tabs"><button data-t="feed" class="on">피드</button><button data-t="set">계정 설정</button></div><div class="fd-sub dim"></div><div class="fd-list x-list"></div>`;
+    el.querySelector('.sub-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.tab = b.dataset.t; el.querySelectorAll('.sub-tabs button').forEach(x => x.classList.toggle('on', x === b)); this.render() };
+    el.querySelector('.x-list').addEventListener('click', e => { const d = e.target.closest('[data-del]'); if(d){ this.accts = this.accts.filter(a => a !== d.dataset.del); store.set('xAccts', this.accts); this.render() }
+      if(e.target.id === 'xAdd'){ const v = (el.querySelector('#xIn').value || '').trim().replace(/^@/, '').replace(/^https?:\/\/(x|twitter)\.com\//, '').split(/[/?]/)[0];
+        if(/^\w{1,15}$/.test(v) && !this.accts.includes(v)){ this.accts.push(v); store.set('xAccts', this.accts); this.render(); this.load() } }
+      if(e.target.id === 'xReset'){ this.accts = [...X_DEF]; store.set('xAccts', this.accts); this.render(); this.load() } });
+    this.tab = 'feed'; setInterval(() => { if(!el.hidden) this.load() }, 180000); setInterval(() => { if(!el.hidden && this.tab === 'feed') this.render() }, 30000) },
+  onShow(on){ if(on){ if(!this.at || Date.now() - this.at > 90000) this.load(); this.render() } },
+  async one(a){ for(const m of MIRRORS){ try{ const d = await getJSON(RSS(`${m}/${a}/rss`)); if(d.status === 'ok' && d.items.length) return d.items.map(i => {
+      const rt = /^RT by/i.test(i.title); return { a, rt, text: strip(i.description) || strip(i.title), link: String(i.link).replace(/^https?:\/\/[^/]+/, 'https://x.com').replace(/#m$/, ''), t:pTime(i.pubDate) } }) }catch(e){} } throw 0 },
+  async load(){ if(this.busy) return; this.busy = true; this.render();
+    const r = await Promise.allSettled(this.accts.map(a => this.one(a))); const all = []; let ok = 0;
+    r.forEach(x => { if(x.status === 'fulfilled'){ ok++; all.push(...x.value) } });
+    this.items = all.sort((a, b) => b.t - a.t).slice(0, 150); this.ok = ok; this.at = Date.now(); this.busy = false; this.render() },
+  render(){ if(this.el.hidden) return; const L = this.el.querySelector('.x-list'), sub = this.el.querySelector('.fd-sub');
+    if(this.tab === 'set'){ sub.textContent = '글을 모을 X 계정 (아이디만, @ 없이)';
+      L.innerHTML = `<div class="x-add"><input class="inp" id="xIn" placeholder="예: lookonchain"><button class="btn sm" id="xAdd">추가</button></div>`
+        + this.accts.map(a => `<div class="arow"><b>@${esc(a)}</b><span></span><button class="hb" data-del="${esc(a)}" title="빼기">✕</button></div>`).join('') + '<div style="padding:10px"><button class="btn sm" id="xReset">기본 계정으로</button></div>'; return }
+    sub.textContent = this.busy && !this.items.length ? `계정 ${this.accts.length}곳 글을 모으는 중…` : `${this.ok || 0}/${this.accts.length}개 계정 · ${this.at ? ago(this.at) : ''} 갱신 · 공개 미러라 가끔 늦거나 빠질 수 있어요`;
+    L.innerHTML = this.items.length ? this.items.map(x => `<a class="xrow" href="${esc(x.link)}" target="_blank" rel="noopener"><div class="nmeta"><b>@${esc(x.a)}</b>${x.rt ? '<span class="tag">리포스트</span>' : ''}<span class="dim">${ago(x.t)}</span></div><div class="xtext">${esc(x.text.slice(0, 420))}</div></a>`).join('')
+      : `<div class="empty">${this.busy ? '불러오는 중…' : '글을 못 받았어요. 공개 미러가 잠시 막혔을 수 있어요.'}</div>` }
+};
+
+LC.panels.push(IND, ARB, NEWS, XF);
+})();
+
+</script>
+<script>
+/* 위젯 메뉴: 하이퍼리퀴드 고래 청산 차트·포지션 맵, 시장 자료 바로가기 */
+(() => {
+const { esc } = LC;
+const toCoin = sym => { const b = sym.replace(/USDT$/, ''); return /^1000/.test(b) ? 'k' + b.slice(4) : b };
+const I = p => `<svg viewBox="0 0 24 24">${p}</svg>`;
+const ITEMS = [
+  ['liq', '청산 차트', '하이퍼리퀴드 고래들의 청산 가격이 어디에 몰려 있는지', I('<path d="M4 20V10M9 20V4M14 20v-8M19 20v-5"/>')],
+  ['pos', '포지션 맵', '하이퍼리퀴드 고래들이 어디서 얼마나 크게 들어갔는지', I('<circle cx="7" cy="14" r="3"/><circle cx="15" cy="8" r="4"/><circle cx="17" cy="17" r="2"/>')],
+  ['coins', '고래 쏠림', '코인별 고래 롱·숏 금액과 쏠림', I('<path d="M4 7h10M4 12h16M4 17h7"/>')],
+  '-',
+  ['m:heat', '히트맵', '거래대금 크기로 본 코인별 등락·펀딩', I('<rect x="3" y="3" width="10" height="10"/><rect x="15" y="3" width="6" height="6"/><rect x="15" y="11" width="6" height="10"/><rect x="3" y="15" width="10" height="6"/>')],
+  ['m:flow', '펀딩·OI 흐름', '미결제약정 변화와 롱/숏 비율', I('<path d="M3 17l5-5 4 3 8-8"/>')],
+  ['m:kimp', '김치 프리미엄', '업비트·빗썸과 바이낸스 가격 차이', I('<path d="M12 3v18M5 8h14M7 16h10"/>')],
+  ['m:temp', '시장 온도·공포 탐욕', '지금 BTC가 평소보다 얼마나 뜨거운지', I('<path d="M12 3v11"/><circle cx="12" cy="17" r="3"/>')],
+  ['scalp', '스캘핑 현황', '상위 종목 상대 강도 한눈에 (새 페이지)', I('<path d="M3 12h4l3-7 4 14 3-7h4"/>')]
+];
+const W = LC.widgets = {
+  menu(btn){
+    document.querySelectorAll('.ctxm').forEach(m => m.remove());
+    const m = document.createElement('div'); m.className = 'ctxm wmenu';
+    m.innerHTML = ITEMS.map(it => it === '-' ? '<hr>' : `<button data-w="${it[0]}">${it[3]}<span><b>${esc(it[1])}</b><small>${esc(it[2])}</small></span></button>`).join('');
+    document.body.appendChild(m); const r = btn.getBoundingClientRect(); m.style.left = r.left + 'px'; m.style.top = (r.bottom + 4) + 'px';
+    const off = e => { if(!m.contains(e.target) && e.target !== btn){ m.remove(); document.removeEventListener('mousedown', off, true) } };
+    setTimeout(() => document.addEventListener('mousedown', off, true));
+    m.onclick = e => { const b = e.target.closest('[data-w]'); if(!b) return; m.remove(); document.removeEventListener('mousedown', off, true); this.open(b.dataset.w) };
+  },
+  open(w){
+    if(w.startsWith('m:')) return LC.market.open(w.slice(2));
+    if(w === 'scalp') return location.href = 'scalp.html';
+    LC.hl.start();
+    const name = ITEMS.find(x => x[0] === w)[1];
+    LC.modal(name + ' · 하이퍼리퀴드 고래', `<div class="wg-top"><span class="dim wg-st"></span><span style="flex:1"></span>${w === 'coins' ? '' : '<input class="inp sm wg-coin" style="width:110px" placeholder="코인 (예: ETH)">'}</div>
+      <div class="wg-box"><canvas></canvas><div class="tip" hidden></div></div><div class="wg-foot"></div>`, (mb) => {
+      const cv = mb.querySelector('canvas'), inp = mb.querySelector('.wg-coin'); let coin = toCoin(LC.app.v ? LC.app.v.sym : 'BTCUSDT');
+      if(inp){ inp.value = coin; inp.onchange = () => { coin = inp.value.trim().toUpperCase() || 'BTC'; draw() } }
+      const draw = () => { if(!document.body.contains(cv)) return clearInterval(t);
+        const st = mb.querySelector('.wg-st'); st.textContent = LC.hl.ready ? `계좌 상위 ${LC.hl.whales.length}명 · ${Math.round((Date.now() - LC.hl.lastPoll)/1000)}초 전 갱신 · 45초마다 새로` : '고래 포지션을 모으는 중이에요 (처음엔 1분쯤)';
+        try{ this[w](cv, coin, mb) }catch(e){ console.error(e) } };
+      const t = setInterval(draw, 3000); setTimeout(draw, 50);
+      LC.bus.on('hl', () => draw());
+    }, true);
+  },
+  ctx(cv){ const r = cv.parentElement.getBoundingClientRect(), dpr = devicePixelRatio || 1; cv.width = r.width*dpr; cv.height = r.height*dpr; cv.style.width = r.width + 'px'; cv.style.height = r.height + 'px';
+    const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, r.width, r.height); return [c, r.width, r.height] },
+  css(k){ return getComputedStyle(document.documentElement).getPropertyValue(k).trim() },
+  empty(c, W, H, t){ c.fillStyle = this.css('--dim'); c.font = '13px ' + LC.FONT; c.textAlign = 'center'; c.fillText(t, W/2, H/2); c.textAlign = 'left' },
+  /* 청산 차트: 가격대별 고래 청산 금액 (롱은 아래, 숏은 위) + 누적선 */
+  liq(cv, coin, mb){
+    const [c, W, H] = this.ctx(cv), mark = LC.hl.marks[coin], L = LC.hl.positions(coin).filter(p => p.liq && p.liq > 0);
+    if(!LC.hl.ready) return this.empty(c, W, H, '고래 포지션을 모으는 중이에요…');
+    if(!L.length || !mark) return this.empty(c, W, H, `${coin}에 청산가가 있는 고래 포지션이 없어요`);
+    const S = LC.chartStyle.get(), upC = S.borderUp, dnC = S.borderDown, dim = this.css('--dim'), line = this.css('--line'), ink = this.css('--ink');
+    const near = L.filter(p => Math.abs(p.liq/mark - 1) < 0.35), lo = mark*0.7, hi = mark*1.3, bins = 70, step = (hi - lo)/bins, B = Array.from({length:bins}, () => ({l:0, s:0}));
+    near.forEach(p => { const i = Math.floor((p.liq - lo)/step); if(i >= 0 && i < bins) B[i][p.szi > 0 ? 'l' : 's'] += p.val });
+    const pad = {l:60, r:20, t:20, b:34}, X = v => pad.l + (v - lo)/(hi - lo)*(W - pad.l - pad.r), max = Math.max(...B.map(b => b.l + b.s), 1);
+    let cumL = 0, cumS = 0; const cl = [], cs = []; for(let i = bins-1; i >= 0; i--){ cumL += B[i].l; cl[i] = cumL } for(let i = 0; i < bins; i++){ cumS += B[i].s; cs[i] = cumS }
+    const cmax = Math.max(cumL, cumS, 1), Y = v => H - pad.b - v/max*(H - pad.t - pad.b)*0.92, YC = v => H - pad.b - v/cmax*(H - pad.t - pad.b)*0.92;
+    c.font = '10px ' + LC.FONT; c.strokeStyle = line; c.fillStyle = dim;
+    for(let k = 0; k <= 4; k++){ const y = H - pad.b - k/4*(H - pad.t - pad.b)*0.92; c.globalAlpha = .5; c.beginPath(); c.moveTo(pad.l, y); c.lineTo(W - pad.r, y); c.stroke(); c.globalAlpha = 1; c.fillText('$' + LC.fmtBig(max*k/4), 4, y + 3) }
+    const bw = (W - pad.l - pad.r)/bins;
+    B.forEach((b, i) => { const x = pad.l + i*bw; if(b.l){ c.fillStyle = LC.color.mkColor(LC.color.parseColor(dnC).hex, .75); c.fillRect(x + 1, Y(b.l), bw - 2, H - pad.b - Y(b.l)) }
+      if(b.s){ c.fillStyle = LC.color.mkColor(LC.color.parseColor(upC).hex, .75); c.fillRect(x + 1, Y(b.l + b.s), bw - 2, Y(b.l) - Y(b.l + b.s)) } });
+    c.lineWidth = 1.6; c.strokeStyle = dnC; c.beginPath(); cl.forEach((v, i) => { const x = pad.l + (i+.5)*bw; i ? c.lineTo(x, YC(v)) : c.moveTo(x, YC(v)) }); c.stroke();
+    c.strokeStyle = upC; c.beginPath(); cs.forEach((v, i) => { const x = pad.l + (i+.5)*bw; i ? c.lineTo(x, YC(v)) : c.moveTo(x, YC(v)) }); c.stroke(); c.lineWidth = 1;
+    const mx = X(mark); c.strokeStyle = '#f0b90b'; c.setLineDash([4,3]); c.beginPath(); c.moveTo(mx, pad.t); c.lineTo(mx, H - pad.b); c.stroke(); c.setLineDash([]);
+    c.fillStyle = '#f0b90b'; c.textAlign = 'center'; c.fillText('지금 ' + LC.fmtPx(mark), mx, pad.t - 6);
+    c.fillStyle = dim; [-30,-20,-10,0,10,20,30].forEach(d => c.fillText((d > 0 ? '+' : '') + d + '%', X(mark*(1 + d/100)), H - 18)); c.textAlign = 'left';
+    const totL = near.filter(p => p.szi > 0).reduce((s, p) => s + p.val, 0), totS = near.filter(p => p.szi < 0).reduce((s, p) => s + p.val, 0);
+    const big = B.map((b, i) => ({ px: lo + (i+.5)*step, v:b.l + b.s, l:b.l, s:b.s })).sort((a, b) => b.v - a.v).slice(0, 5);
+    mb.querySelector('.wg-foot').innerHTML = `<div class="wg-legend"><span><i style="background:${dnC}"></i>롱 청산 (가격이 내려가면) $${LC.fmtBig(totL)}</span><span><i style="background:${upC}"></i>숏 청산 (가격이 올라가면) $${LC.fmtBig(totS)}</span><span class="dim">선은 지금 가격에서 그 가격까지 가면 쌓이는 누적 청산 금액</span></div>
+      <div class="wg-tbl">${big.map(b => `<div><span class="num">${LC.fmtPx(b.px)}</span><span class="num dim">${LC.fmtPct((b.px/mark - 1)*100)}</span><b class="num">$${LC.fmtBig(b.v)}</b><span class="dim">${b.l > b.s ? '롱 청산 몰림' : '숏 청산 몰림'}</span></div>`).join('')}</div>`;
+  },
+  /* 포지션 맵: 가로 = 진입가, 세로 = 포지션 크기, 원 크기 = 레버리지 */
+  pos(cv, coin, mb){
+    const [c, W, H] = this.ctx(cv), mark = LC.hl.marks[coin], L = LC.hl.positions(coin);
+    if(!LC.hl.ready) return this.empty(c, W, H, '고래 포지션을 모으는 중이에요…'); if(!L.length || !mark) return this.empty(c, W, H, `${coin}에 고래 포지션이 없어요`);
+    const S = LC.chartStyle.get(), dim = this.css('--dim'), line = this.css('--line');
+    const ent = L.map(p => p.entry).concat(mark), lo = Math.min(...ent)*0.98, hi = Math.max(...ent)*1.02, vmax = Math.max(...L.map(p => p.val));
+    const pad = {l:60, r:24, t:20, b:34}, X = v => pad.l + (v - lo)/(hi - lo)*(W - pad.l - pad.r), Y = v => H - pad.b - Math.sqrt(v/vmax)*(H - pad.t - pad.b);
+    c.font = '10px ' + LC.FONT; c.fillStyle = dim; c.strokeStyle = line;
+    [0.05,0.25,0.5,1].forEach(k => { const y = Y(vmax*k); c.globalAlpha = .5; c.beginPath(); c.moveTo(pad.l, y); c.lineTo(W - pad.r, y); c.stroke(); c.globalAlpha = 1; c.fillText('$' + LC.fmtBig(vmax*k), 4, y + 3) });
+    c.textAlign = 'center'; for(let k = 0; k <= 5; k++){ const v = lo + (hi - lo)*k/5; c.fillText(LC.fmtPx(v), X(v), H - 14) } c.textAlign = 'left';
+    const pts = L.map(p => ({ p, x:X(p.entry), y:Y(p.val), r: 3 + Math.min(14, (p.lev || 5)/3) }));
+    pts.forEach(q => { const col = LC.color.parseColor(q.p.szi > 0 ? S.borderUp : S.borderDown).hex; c.fillStyle = LC.color.mkColor(col, q.p.upnl >= 0 ? .55 : .3); c.strokeStyle = col;
+      c.beginPath(); c.arc(q.x, q.y, q.r, 0, 7); c.fill(); c.stroke() });
+    const mx = X(mark); c.strokeStyle = '#f0b90b'; c.setLineDash([4,3]); c.beginPath(); c.moveTo(mx, pad.t); c.lineTo(mx, H - pad.b); c.stroke(); c.setLineDash([]); c.fillStyle = '#f0b90b'; c.textAlign = 'center'; c.fillText('지금 ' + LC.fmtPx(mark), mx, pad.t - 6); c.textAlign = 'left';
+    const tip = mb.querySelector('.tip'); cv.onmousemove = e => { const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; const q = pts.find(q => Math.hypot(q.x - x, q.y - y) <= q.r + 2);
+      if(!q){ tip.hidden = true; return } const p = q.p; tip.hidden = false; tip.style.left = Math.min(x + 12, W - 220) + 'px'; tip.style.top = Math.max(0, y - 60) + 'px';
+      tip.innerHTML = `<b class="${p.szi > 0 ? 'up' : 'down'}">${p.szi > 0 ? '롱' : '숏'}</b> $${LC.fmtBig(p.val)} · ${p.lev || '-'}x<br>진입 ${LC.fmtPx(p.entry)} · 청산 ${p.liq ? LC.fmtPx(p.liq) : '없음'}<br>손익 <span class="${p.upnl >= 0 ? 'up' : 'down'}">${p.upnl >= 0 ? '+' : ''}${LC.fmtBig(p.upnl)}</span> · ${esc(p.a.slice(0,6))}…${esc(p.a.slice(-4))}` };
+    cv.onclick = e => { const r = cv.getBoundingClientRect(), q = pts.find(q => Math.hypot(q.x - (e.clientX - r.left), q.y - (e.clientY - r.top)) <= q.r + 2); if(q) window.open(`https://hypurrscan.io/address/${q.p.a}`, '_blank', 'noopener') };
+    const inP = L.filter(p => p.upnl >= 0).length;
+    mb.querySelector('.wg-foot').innerHTML = `<div class="wg-legend"><span><i style="background:${S.borderUp}"></i>롱</span><span><i style="background:${S.borderDown}"></i>숏</span><span class="dim">원이 클수록 레버리지가 높고, 진하면 수익 중이에요 · 고래 ${L.length}명 중 ${inP}명 수익 중 · 원을 누르면 지갑이 열려요</span></div>`;
+  },
+  /* 고래 쏠림: 코인별 롱·숏 금액 막대 */
+  coins(cv, coin, mb){
+    const [c, W, H] = this.ctx(cv); if(!LC.hl.ready) return this.empty(c, W, H, '고래 포지션을 모으는 중이에요…');
+    const S = LC.chartStyle.get(), dim = this.css('--dim'), ink = this.css('--ink'), agg = {};
+    LC.hl.positions(null).forEach(p => { const a = agg[p.coin] || (agg[p.coin] = {l:0, s:0, n:0}); a[p.szi > 0 ? 'l' : 's'] += p.val; a.n++ });
+    const rows = Object.entries(agg).sort((a, b) => (b[1].l + b[1].s) - (a[1].l + a[1].s)).slice(0, Math.floor((H - 20)/22));
+    const max = Math.max(...rows.map(r => Math.max(r[1].l, r[1].s)), 1), mid = W/2 + 30, half = W/2 - 110;
+    c.font = '11px ' + LC.FONT; this.rows = rows;
+    rows.forEach(([k, a], i) => { const y = 14 + i*22; c.fillStyle = ink; c.textAlign = 'right'; c.fillText(k, mid - half - 8, y + 10); c.textAlign = 'left';
+      const wl = a.l/max*half, ws = a.s/max*half; c.fillStyle = LC.color.mkColor(LC.color.parseColor(S.borderUp).hex, .7); c.fillRect(mid - wl, y, wl, 14); c.fillStyle = LC.color.mkColor(LC.color.parseColor(S.borderDown).hex, .7); c.fillRect(mid + 2, y, ws, 14);
+      c.fillStyle = dim; c.textAlign = 'right'; c.fillText('$' + LC.fmtBig(a.l), mid - wl - 4, y + 11); c.textAlign = 'left'; c.fillText('$' + LC.fmtBig(a.s) + `  · ${a.n}명 · 롱 ${(a.l/(a.l + a.s)*100).toFixed(0)}%`, mid + ws + 6, y + 11) });
+    cv.onclick = e => { const r = cv.getBoundingClientRect(), i = Math.floor((e.clientY - r.top - 14)/22); const row = rows[i]; if(row){ LC.app.openSymbol((/^k[A-Z]/.test(row[0]) ? '1000' + row[0].slice(1) : row[0]) + 'USDT', 'futures'); document.querySelector('.modal-bg .x').click() } };
+    mb.querySelector('.wg-foot').innerHTML = `<div class="wg-legend"><span><i style="background:${S.borderUp}"></i>롱 금액 (왼쪽)</span><span><i style="background:${S.borderDown}"></i>숏 금액 (오른쪽)</span><span class="dim">줄을 누르면 그 코인 차트로 가요</span></div>`;
+  }
+};
+})();
+
+</script>
+<script>
 /* 화면 전체: 헤더, 작도 도구 막대, 차트 칸 배치, 오른쪽 창 */
 (() => {
 const { $, esc, store } = LC;
@@ -2339,8 +2721,13 @@ const RAIL = {
   move:['급변','<path d="M12 3l4 6h-3v6h-2V9H8zM5 21h14"/>'],
   paper:['매매','<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 15l3-3 2 2 4-4"/>'],
   pf:['자산','<circle cx="12" cy="12" r="8"/><path d="M12 4v8l6 4"/>'],
-  whale:['고래', null]
+  whale:['고래', null],
+  ind:['지표','<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>'],
+  arb:['차익','<path d="M7 7h11l-3-3M17 17H6l3 3"/>'],
+  news:['뉴스','<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/>'],
+  x:['X','<path d="M5 4l14 16M19 4L5 20"/>']
 };
+const ORDER = ['list','ind','flow','book','move','arb','news','x','whale','paper','pf'];
 
 const app = LC.app = {
   views: [], active: null, tool: 'cross',
@@ -2415,6 +2802,7 @@ const app = LC.app = {
     $('mkt').onclick = e => { const b = e.target.closest('button'); if(!b || !this.v || b.dataset.m === this.v.market) return;
       const m = b.dataset.m, sym = this.v.sym; this.v.market = m; this.v.set(sym, m); this.syncHeader(); this.panels.forEach(p => p.onMarket && p.onMarket(m)) };
     $('btnInd').onclick = () => this.indModal();
+    $('btnWg').onclick = e => LC.widgets.menu(e.currentTarget);
     $('btnReplay').onclick = () => this.v && (this.v.replay ? this.v.replayExit() : this.v.replayBegin());
     $('btnLog').onclick = () => { if(!this.v) return; this.v.setLog(!this.v.log); $('btnLog').classList.toggle('on', this.v.log); $('btnPct').classList.remove('on') };
     $('btnPct').onclick = () => { if(!this.v) return; const on = !$('btnPct').classList.contains('on'); this.v.setPercent(on); this.v.log = false; $('btnPct').classList.toggle('on', on); $('btnLog').classList.remove('on') };
@@ -2583,6 +2971,7 @@ const app = LC.app = {
 
   /* 오른쪽 창 */
   buildAside(){
+    this.panels.sort((a, b) => { const i = ORDER.indexOf(a.id), j = ORDER.indexOf(b.id); return (i < 0 ? 99 : i) - (j < 0 ? 99 : j) });
     const body = $('asideBody'), rail = $('rail'), svg = p => `<svg viewBox="0 0 24 24">${p}</svg>`;
     rail.innerHTML = this.panels.map(p => { const r = RAIL[p.id] || [p.label, null]; return `<button data-p="${p.id}" title="${esc(p.label)}">${svg(p.icon || r[1] || '<circle cx="12" cy="12" r="6"/>')}<span>${esc(r[0])}</span></button>` }).join('')
       + '<span class="tsep"></span><button data-x="market" title="시장 자료">' + svg('<rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="5"/><rect x="13" y="10" width="8" height="11"/><rect x="3" y="13" width="8" height="8"/>') + '<span>시장</span></button>';

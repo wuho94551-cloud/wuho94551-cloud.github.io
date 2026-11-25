@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>우호 · 뉴스</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%23f0b90b%22/%3E%3Cpath d=%22M5 16l4-5 3 3 5-7%22 stroke=%22%23111%22 stroke-width=%222.2%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%2217%22 cy=%227%22 r=%221.6%22 fill=%22%23111%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#0d1117;--panel:#131922;--panel2:#18202b;--line:#232d3b;--ink:#d7dee8;--dim:#7d8a9c;--up:#16c784;--down:#ea3943;--accent:#f0b90b;--blue:#4aa3ff}
+:root[data-theme=light]{--bg:#ffffff;--panel:#f4f6f9;--panel2:#e8ecf1;--line:#d6dce4;--ink:#18202c;--dim:#5d6878}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.45 -apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,"Noto Sans KR","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+.num{font-family:"DM Mono",-apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,"Noto Sans KR","Malgun Gothic",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dim{color:var(--dim)}.up{color:var(--up)}.down{color:var(--down)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+a{color:inherit;text-decoration:none}
+.hb{padding:4px 8px;border-radius:4px;color:var(--dim);font-size:12px}.hb:hover{background:var(--panel2);color:var(--ink)}
+.empty{padding:24px;color:var(--dim);text-align:center;font-size:12px}
+.app{display:grid;grid-template-rows:34px minmax(0,1fr);height:100vh}
+.topbar{display:flex;align-items:center;gap:14px;padding:0 10px;background:var(--bg);border-bottom:1px solid var(--line);white-space:nowrap}
+.brand{display:flex;align-items:center;flex:none}.brand svg{width:24px;height:24px;display:block}
+.pnav{display:flex;gap:2px}.pnav a{padding:5px 10px;border-radius:5px;color:var(--dim);font-size:13px}.pnav a:hover{background:var(--panel2);color:var(--ink)}.pnav a.on{color:var(--accent);background:var(--panel2)}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:8px}#clock{font-size:12px;color:var(--dim)}
+.cols{display:grid;grid-template-columns:230px minmax(0,1fr) 360px;min-height:0}
+.col{overflow-y:auto;min-height:0;scrollbar-width:thin;border-right:1px solid var(--line)}.col:last-child{border-right:0}
+.lcol{background:var(--panel);padding:10px 0}
+.lh{font-size:11px;color:var(--dim);letter-spacing:.06em;padding:12px 14px 6px;display:flex;justify-content:space-between}
+.sec{display:flex;align-items:center;gap:8px;width:100%;padding:6px 14px;font-size:13px;color:var(--dim);text-align:left}
+.sec:hover{background:var(--panel2);color:var(--ink)}.sec.on{color:var(--ink);background:var(--panel2);box-shadow:inset 2px 0 0 var(--accent)}
+.sec small{font-size:10px;letter-spacing:.05em;opacity:.7}.sec .n{margin-left:auto;font-size:12px}
+.leg{display:flex;align-items:center;gap:8px;padding:4px 14px;font-size:12px}.leg .n{margin-left:auto;color:var(--dim)}
+.nst{font-size:10px;padding:1px 6px;border-radius:3px;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 55%,transparent);white-space:nowrap;flex:none}
+.stars{color:var(--accent);font-size:11px;letter-spacing:-1px;white-space:nowrap}.stars.s1{color:var(--dim)}.stars.s2{color:#e3c25a}
+.kw{display:flex;align-items:center;gap:8px;padding:5px 14px;font-size:12.5px;cursor:pointer}.kw:hover{background:var(--panel2)}
+.kw i{font-style:normal;color:var(--dim);width:14px}.kw .n{margin-left:auto;color:var(--dim)}.kw em{font-style:normal;font-size:9px;padding:0 4px;border-radius:3px;background:var(--down);color:#fff}
+.hot{display:block;padding:6px 14px;font-size:12px;line-height:1.4}.hot:hover{background:var(--panel2)}.hot b{color:var(--accent);font-weight:500;margin-right:4px}
+.wire-h{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px 8px}
+.wire-h h1{margin:0;font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px}
+.live{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--up);font-weight:400}.live i{width:7px;height:7px;border-radius:50%;background:var(--up);animation:bl 1.6s infinite}@keyframes bl{50%{opacity:.3}}
+.wire-bar{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.chips{display:flex;gap:4px;flex-wrap:wrap}.chips button{padding:4px 10px;border-radius:14px;border:1px solid var(--line);font-size:12px;color:var(--dim)}
+.chips button:hover{color:var(--ink)}.chips button.on{border-color:var(--accent);color:var(--accent)}
+.q{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 9px;font:inherit;font-size:12px;width:180px;margin-left:auto}
+.tsep{display:flex;align-items:center;gap:10px;padding:10px 16px 4px;font-size:11px;color:var(--dim)}.tsep::after{content:"";flex:1;border-top:1px solid var(--line)}
+.wr{display:grid;grid-template-columns:44px 64px 110px minmax(0,1fr) 40px;gap:10px;align-items:center;padding:7px 16px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.wr:hover{background:var(--panel)}.wr .t{color:var(--dim);font-size:12px}.wr .src{font-size:12px;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wr .src.en{color:var(--accent)}
+.wr .ti{font-size:13.5px;line-height:1.45}.wr.s3 .ti{font-weight:600}.wr .new{font-size:9px;padding:0 4px;border-radius:3px;background:var(--down);color:#fff;margin-right:6px;vertical-align:2px}
+.wr .cnt{font-size:11px;color:var(--dim);margin-left:6px}.wr .stars{text-align:right}
+.rcol{background:var(--panel)}
+.rh{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px}.rh b{font-size:13px}
+.rg{padding:2px 14px 8px}.rg h5{margin:8px 0 6px;font-size:11px;color:var(--dim);font-weight:400}
+.rl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.rc{display:flex;flex-direction:column;gap:2px;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.rc:hover{border-color:var(--accent)}.rc b{font-size:12px;font-weight:500}.rc small{font-size:10.5px;color:var(--dim);line-height:1.3}
+.nchips{padding:2px 14px 6px}.nchips button{padding:3px 8px;font-size:11px}
+.ni{display:grid;grid-template-columns:26px minmax(0,1fr);gap:8px;padding:8px 14px;border-top:1px solid var(--line)}.ni:hover{background:var(--panel2)}
+.exl{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;font-size:10px;font-weight:700;color:#111}
+.exl.Binance{background:#f0b90b}.exl.Bybit{background:#f7a600}.exl.Bitget{background:#00f0ff}
+.ni .m{display:flex;gap:6px;align-items:center;font-size:11px;margin-bottom:2px}.ni .ti{font-size:12.5px;line-height:1.4}
+.nk{font-size:10px;padding:0 5px;border-radius:3px;background:var(--panel2);color:var(--dim)}
+.nk.list{color:var(--up)}.nk.delist{color:var(--down)}.nk.warn{color:#f0a33b}.nk.maint{color:var(--blue)}.nk.event{color:#c38bff}
+.foot{padding:10px 14px;font-size:11px;color:var(--dim);line-height:1.5}
+@media (max-width:1100px){.cols{grid-template-columns:200px minmax(0,1fr)}.rcol{display:none}}
+@media (max-width:760px){.cols{grid-template-columns:1fr}.lcol{display:none}.wr{grid-template-columns:40px minmax(0,1fr) 34px}.wr .src,.wr .nst{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <a class="brand" href="./" title="우호"><svg viewBox="0 0 24 24" aria-label="우호"><rect width="24" height="24" rx="6" fill="#f0b90b"/><path d="M5 16l4-5 3 3 5-7" stroke="#111" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="7" r="1.6" fill="#111"/></svg></a>
+    <nav class="pnav"><a href="./">차트</a><a href="scalp.html">스캘핑</a><a href="news.html" class="on">뉴스</a></nav>
+    <div class="right"><span id="clock" class="num">-</span><button class="hb" id="btnTheme" title="밝은/어두운 화면">◐</button></div>
+  </div>
+  <div class="cols">
+    <aside class="col lcol">
+      <div class="lh"><span>섹션</span></div><div id="secs"></div>
+      <div class="lh"><span>상태</span></div><div id="stat"></div>
+      <div class="lh"><span>중요도</span></div>
+      <div class="leg"><span class="stars">★★★</span>시장 전체<span class="n num" id="c3"></span></div>
+      <div class="leg"><span class="stars s2">★★</span>한 섹터<span class="n num" id="c2"></span></div>
+      <div class="leg"><span class="stars s1">★</span>참고<span class="n num" id="c1"></span></div>
+      <div class="lh"><span>지금 뜨는 키워드</span><span>3시간</span></div><div id="trend"></div>
+      <div class="lh"><span>여러 곳이 다룬 뉴스</span></div><div id="hot"></div>
+    </aside>
+    <main class="col" id="wireCol">
+      <div class="wire-h">
+        <h1>실시간 와이어 <span class="live"><i></i><span id="liveTxt">연결 중</span></span></h1>
+        <div class="wire-bar">
+          <div class="chips" id="imp"><button data-v="0">전체</button><button data-v="2">★★ 이상</button><button data-v="3">★★★ 만</button></div>
+          <div class="chips" id="sort"><button data-v="t">최신 순</button><button data-v="s">중요도 순</button></div>
+          <div class="chips" id="lang"><button data-v="all">전체</button><button data-v="ko">한국어</button><button data-v="en">영어</button></div>
+          <input class="q" id="q" placeholder="검색 (예: ETF, 솔라나)">
+        </div>
+      </div>
+      <div id="wire"><div class="empty">뉴스를 모으는 중이에요…</div></div>
+    </main>
+    <aside class="col rcol">
+      <div class="rh"><b>레포트</b><span class="dim" style="font-size:11px">새 창으로 열려요</span></div>
+      <div id="reports"></div>
+      <div class="rh"><b>뉴스룸 · 거래소 공지</b><span class="dim num" id="nAt" style="font-size:11px"></span></div>
+      <div class="chips nchips" id="nk"></div>
+      <div id="notices"><div class="empty">공지를 불러오는 중…</div></div>
+      <div class="foot">바이낸스·바이비트·비트겟 공지예요. 업비트·OKX 공지는 브라우저에서 바로 받을 수 없게 막혀 있어서 빠져 있어요.</div>
+    </aside>
+  </div>
+</div>
+<script>
+/* 공용 도구: 저장소, 포맷, 거래소 주소, 웹소켓, 소리, 알림창 */
+window.LC = window.LC || {};
+LC.FONT = "'DM Mono', -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, 'Noto Sans KR', 'Malgun Gothic', sans-serif";
+LC.panels = LC.panels || [];
+(() => {
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem('lc_'+k); return v ? JSON.parse(v) : d }catch(e){ return d } },
+  set(k, v){ try{ localStorage.setItem('lc_'+k, JSON.stringify(v)) }catch(e){} }
+};
+const TF = [['1m','1분'],['3m','3분'],['5m','5분'],['15m','15분'],['30m','30분'],['1h','1시간'],['2h','2시간'],['4h','4시간'],['12h','12시간'],['1d','1일'],['1w','1주']];
+const TFMS = {'1m':6e4,'3m':18e4,'5m':3e5,'15m':9e5,'30m':18e5,'1h':36e5,'2h':72e5,'4h':144e5,'12h':432e5,'1d':864e5,'1w':6048e5};
+const EP = {
+  futures:{ rest:'https://fapi.binance.com/fapi/v1', data:'https://fapi.binance.com/futures/data',
+            ws:'wss://fstream.binance.com/market/ws', wsPub:'wss://fstream.binance.com/public/ws' },
+  spot:{ rest:'https://api.binance.com/api/v3', ws:'wss://stream.binance.com:9443/ws', wsPub:'wss://stream.binance.com:9443/ws' }
+};
+const autoPrec = v => { v = Math.abs(v); return v>=1000?1 : v>=100?2 : v>=1?3 : v>=0.01?5 : 7 };
+const fmtN = (v, d) => (v==null || isNaN(v)) ? '-' : Number(v).toLocaleString('en-US',{minimumFractionDigits:d, maximumFractionDigits:d});
+const fmtPx = v => fmtN(v, autoPrec(v));
+const fmtBig = v => { v = Number(v); const a = Math.abs(v);
+  return a>=1e9 ? (v/1e9).toFixed(2)+'B' : a>=1e6 ? (v/1e6).toFixed(2)+'M' : a>=1e3 ? (v/1e3).toFixed(1)+'K' : v.toFixed(a<10?2:0) };
+const fmtPct = v => (v>=0?'+':'') + Number(v).toFixed(2) + '%';
+const pad = n => String(n).padStart(2,'0');
+const fmtClock = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` };
+const fmtDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms/36e5), m = Math.floor(ms%36e5/6e4), s = Math.floor(ms%6e4/1e3);
+  return h>0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}` };
+async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error(r.status); return r.json() }
+
+/* 자동 재연결 웹소켓. onOpen(ws)에서 구독 메시지를 보낼 수 있어요 */
+function openWS(url, onMsg, onState, onOpen){
+  let ws, closed = false, retry = 0, ping;
+  const go = () => {
+    ws = new WebSocket(url);
+    ws.onopen = () => { retry = 0; onState && onState(true); onOpen && onOpen(ws) };
+    ws.onmessage = e => { try{ onMsg(JSON.parse(e.data)) }catch(x){ console.error(x) } };
+    ws.onclose = () => { onState && onState(false); if(!closed) setTimeout(go, Math.min(1e4, 1000 * 2 ** retry++)) };
+    ws.onerror = () => ws.close();
+  };
+  go();
+  return { close(){ closed = true; clearInterval(ping); try{ ws.close() }catch(e){} },
+           send(m){ try{ ws.readyState === 1 && ws.send(typeof m === 'string' ? m : JSON.stringify(m)) }catch(e){} },
+           keepAlive(msg, ms){ ping = setInterval(() => this.send(msg), ms) } };
+}
+
+let actx;
+function beep(freq = 880, dur = 0.12, vol = 0.15){
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.value = freq; g.gain.value = vol; o.connect(g); g.connect(actx.destination);
+    o.start(); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur); o.stop(actx.currentTime + dur);
+  }catch(e){}
+}
+function toast(msg, cls = '', ms = 5000){
+  let box = $('toasts');
+  if(!box){ box = document.createElement('div'); box.id = 'toasts'; document.body.appendChild(box) }
+  const t = document.createElement('div'); t.className = 'toast ' + cls; t.textContent = msg;
+  t.onclick = () => t.remove();
+  box.prepend(t); setTimeout(() => t.remove(), ms);
+  while(box.children.length > 6) box.lastChild.remove();
+}
+function notify(title, body){
+  toast(title + ' · ' + body, 'alert', 10000); beep(990, 0.18); setTimeout(() => beep(1320, 0.18), 200);
+  try{ if('Notification' in window && Notification.permission === 'granted') new Notification(title, {body}) }catch(e){}
+}
+/* 공용 모달 */
+function modal(title, html, onMount, wide, onClose){
+  const bg = document.createElement('div'); bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal ${wide === true ? 'wide' : wide || ''}" role="dialog" aria-label="${esc(title)}"><div class="mh"><b>${esc(title)}</b><button class="x" aria-label="닫기">✕</button></div><div class="mb">${html}</div></div>`;
+  let shut = false; const close = () => { if(shut) return; shut = true; bg.remove(); document.removeEventListener('keydown', onKey); onClose && onClose() };
+  const onKey = e => { if(e.key === 'Escape') close() };
+  bg.addEventListener('mousedown', e => { if(e.target === bg) close() });
+  bg.querySelector('.x').onclick = close;
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(bg);
+  onMount && onMount(bg.querySelector('.mb'), close);
+  return close;
+}
+function download(name, href){ const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove() }
+
+Object.assign(LC, { $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
+})();
+
+</script>
+<script>
+/* 뉴스 모으기·분류: 공개 RSS(rss2json 경유) + 거래소 공지 API. 섹션, 중요도(★), 상태(속보·전개중·확인·정정)를 제목으로 판단해요 */
+(() => {
+const { getJSON } = LC;
+const RSS = u => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
+const strip = h => { const d = document.createElement('div'); d.innerHTML = String(h || ''); return (d.textContent || '').replace(/\s+/g, ' ').trim() };
+const pTime = s => { const t = Date.parse(String(s).replace(' ', 'T') + (/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? '' : 'Z')); return isNaN(t) ? Date.now() : t };
+const CRYPTO = /비트코인|이더리움|코인|가상자산|암호화폐|가상화폐|블록체인|스테이블|BTC|ETH|XRP|ETF|거래소|업비트|빗썸|바이낸스|연준|FOMC|금리|나스닥|증시|CPI|관세|달러/i;
+/* [이름, 언어, 주소, 일반 매체라 코인·매크로 관련만 거를지] */
+const SOURCES = [
+  ['토큰포스트','ko','https://www.tokenpost.kr/rss'], ['블록미디어','ko','https://www.blockmedia.co.kr/feed'],
+  ['디지털투데이','ko','https://www.digitaltoday.co.kr/rss/allArticle.xml', true], ['파이낸셜뉴스','ko','https://www.fnnews.com/rss/r20/fn_realnews_all.xml', true],
+  ['연합뉴스','ko','https://www.yna.co.kr/rss/economy.xml', true],
+  ['구글 뉴스','ko','https://news.google.com/rss/search?q=%EB%B9%84%ED%8A%B8%EC%BD%94%EC%9D%B8%20OR%20%EC%95%94%ED%98%B8%ED%99%94%ED%8F%90%20OR%20%EA%B0%80%EC%83%81%EC%9E%90%EC%82%B0&hl=ko&gl=KR&ceid=KR:ko'],
+  ['CoinDesk','en','https://www.coindesk.com/arc/outboundfeeds/rss/'], ['Cointelegraph','en','https://cointelegraph.com/rss'],
+  ['The Block','en','https://www.theblock.co/rss.xml'], ['Decrypt','en','https://decrypt.co/feed'], ['Bitcoin Magazine','en','https://bitcoinmagazine.com/.rss/full/']
+];
+const SECTIONS = [
+  ['flash','속보','FLASH', /속보|BREAKING|긴급|\[단독\]|JUST IN|^\s*\[?1보/i],
+  ['etf','ETF','ETF', /ETF|상장지수|현물\s?펀드/i],
+  ['exch','거래소','EXCH', /거래소|업비트|빗썸|코인원|코빗|바이낸스|코인베이스|바이비트|OKX|Binance|Coinbase|Bybit|Kraken|상장|상폐|listing|delist/i],
+  ['chain','온체인','CHAIN', /온체인|고래|지갑|이체|스테이킹|해시레이트|채굴|on-?chain|whale|wallet|staking|hashrate|miner|transfer/i],
+  ['deriv','파생','DERIV', /선물|옵션|청산|펀딩|미결제|레버리지|futures|options|liquidat|funding|open interest|leverage/i],
+  ['macro','매크로','MACRO', /연준|Fed\b|FOMC|금리|CPI|PCE|물가|고용|실업|달러|증시|나스닥|S&P|다우|국채|관세|트럼프|유가|환율|파월|inflation|rates?\b|treasury|tariff|Trump|Powell|Nasdaq|stocks?\b|yields?\b|GDP/i],
+  ['reg','규제','REG', /SEC\b|CFTC|규제|법안|금융위|금감원|당국|국회|소송|법원|세금|과세|regulat|lawsuit|court|bill\b|tax|Congress|Senate|ban\b/i],
+  ['sec','보안','SEC', /해킹|해커|탈취|유출|사기|피싱|도난|exploit|hack|breach|scam|drain|stolen|phishing|attack/i]
+];
+const BIG = /SEC\b|FOMC|금리\s?(인상|인하|동결)|rate (cut|hike)|ETF\s?(승인|거부|approv|reject)|해킹|hack|exploit|폭락|폭등|급락|급등|crash|plunge|surge|사상\s?최고|역대\s?최고|all-time high|record high|파산|bankrupt|트럼프|Trump|CPI|비상|emergency|전쟁|war\b|폭발|explosion/i;
+const MID = /비트코인|이더리움|Bitcoin|Ethereum|BTC|ETH|ETF|고래|whale|청산|liquidat|상장|listing|연준|Fed\b|관세|tariff|규제|regulat|SEC/i;
+const STOP = new Set('the a an of to in on for and or with by is are at as from its it this that be was were will has have after over new says said than into up out more amid how why what 등 및 위해 대한 관련 통해 이후 지난 올해 오늘 기자 뉴스 대해 가장 위한 것으로 있는 없는 한다 했다 밝혀 전망 분석 기대 경신 가능성 예상 소식 오전 오후 하루 이번 지금 최근 사상 최대 역대 까지 just new daily week report price prices market markets crypto'.split(' '));
+const JOSA = /(으로|에서|에게|까지|부터|보다|이며|이고|에도|으로써|하고|했다|한다|하며|된|될|하는|했던|이다|에|의|은|는|이|가|을|를|로|와|과|도|만)$/;
+const words = t => (t.match(/[A-Za-z][A-Za-z0-9.]{2,}|[가-힣]{2,}/g) || []).map(w => { w = w.toLowerCase(); if(/[가-힣]/.test(w) && w.length > 2) w = w.replace(JOSA, ''); return w }).filter(w => w.length >= 2 && !STOP.has(w));
+
+const NC = LC.news = {
+  SOURCES, SECTIONS, items: [], notices: [], seenAt: LC.store.get('newsSeen', {}), at: 0,
+  classify(it){
+    const t = it.title;
+    it.secs = SECTIONS.filter(s => s[3].test(t)).map(s => s[0]);
+    it.stars = BIG.test(t) ? 3 : MID.test(t) ? 2 : 1;
+    it.words = words(t);
+    return it;
+  },
+  /* 비슷한 제목끼리 묶어서 몇 곳이 같은 걸 다뤘는지 세고, 상태를 정해요 */
+  cluster(){
+    const L = this.items; L.forEach(x => { x.cl = null });
+    for(let i = 0; i < L.length; i++){ const a = L[i]; if(a.cl) continue; a.cl = a; a.clN = 1; a.clSrc = new Set([a.src]); const A = new Set(a.words); if(A.size < 2) continue;
+      for(let j = i + 1; j < L.length; j++){ const b = L[j]; if(b.cl || Math.abs(a.t - b.t) > 12*36e5) continue; const B = b.words; let hit = 0; B.forEach(w => A.has(w) && hit++);
+        if(hit >= 3 && hit / Math.min(A.size, B.length) >= 0.5){ b.cl = a; a.clN++; a.clSrc.add(b.src) } } }
+    const now = Date.now();
+    L.forEach(x => { const head = x.cl || x, n = head.clSrc ? head.clSrc.size : 1; x.srcN = n;
+      if(n >= 3 && x.stars < 3) x.stars = Math.min(3, x.stars + 1);
+      x.status = /정정|correction|corrected|clarif/i.test(x.title) ? 'fix' : (x.secs.includes('flash') && now - x.t < 36e5) ? 'flash' : (n >= 3 || now - x.t > 6*36e5) ? 'ok' : 'dev' });
+  },
+  async load(){
+    const r = await Promise.allSettled(SOURCES.map(async ([n, lang, u, filter]) => { const d = await getJSON(RSS(u)); if(d.status !== 'ok') throw 0;
+      return d.items.map(i => { const g = n === '구글 뉴스', title = g ? strip(i.title).replace(/ - [^-]+$/, '') : strip(i.title);
+        return { src: g ? ((strip(i.title).match(/ - ([^-]+)$/) || [, '구글 뉴스'])[1]).trim() : n, lang, title, link:i.link, t:pTime(i.pubDate) } }).filter(x => x.title && (!filter || CRYPTO.test(x.title))) }));
+    const all = []; let ok = 0; r.forEach(x => { if(x.status === 'fulfilled'){ ok++; all.push(...x.value) } });
+    const seen = new Set(), now = Date.now();
+    this.items = all.filter(x => { const k = x.title.slice(0, 36); if(seen.has(k)) return false; seen.add(k); return now - x.t < 4*864e5 }).sort((a, b) => b.t - a.t).map(x => this.classify(x));
+    this.items.forEach(x => { if(!this.seenAt[x.link]) this.seenAt[x.link] = now; x.first = this.seenAt[x.link] });
+    const keep = {}; this.items.forEach(x => keep[x.link] = this.seenAt[x.link]); this.seenAt = keep; LC.store.set('newsSeen', keep);
+    this.cluster(); this.ok = ok; this.at = Date.now(); return this.items;
+  },
+  isNew(x){ return Date.now() - x.first < 10*6e4 && this.at - x.first < 10*6e4 && this.loadedOnce },
+  trending(){
+    const now = Date.now(), cnt = {}, prev = {};
+    /* 같은 이야기 묶음은 한 번만 세서, 여러 이야기에 걸쳐 나오는 낱말만 뜨게 해요 */
+    const per = new Map(); this.items.forEach(x => { const age = now - x.t, k = age < 3*36e5 ? 'c' : age < 6*36e5 ? 'p' : null; if(!k) return; const h = x.cl || x; if(!per.has(h)) per.set(h, { k, w:new Set() }); x.words.forEach(w => per.get(h).w.add(w)) });
+    per.forEach(({ k, w }) => w.forEach(x => { const tgt = k === 'c' ? cnt : prev; tgt[x] = (tgt[x] || 0) + 1 }));
+    return Object.entries(cnt).filter(([w, n]) => n >= 2).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([w, n]) => ({ w, n, isNew: !prev[w], up: (prev[w] || 0) < n }));
+  },
+  /* 거래소 공지: 바이낸스·바이비트·비트겟 공개 API */
+  async loadNotices(){
+    const kind = t => /delist|removal|상장\s?폐지|폐지|cease|terminate/i.test(t) ? 'delist' : /new listing|will list|lists?\b|listing|상장|launchpool|launch/i.test(t) ? 'list' : /maintenance|점검|suspend|upgrade|일시\s?중지/i.test(t) ? 'maint'
+      : /caution|monitoring|warning|유의|주의/i.test(t) ? 'warn' : /campaign|event|promo|tournament|airdrop|reward|bonanza|giveaway|arena|이벤트|competition/i.test(t) ? 'event' : 'notice';
+    const jobs = [
+      (async () => { const d = await getJSON('https://www.binance.com/bapi/composite/v1/public/cms/article/list/query?type=1&pageNo=1&pageSize=15');
+        const out = []; d.data.catalogs.forEach(c => (c.articles || []).forEach(a => out.push({ ex:'Binance', title:a.title, t:a.releaseDate, link:`https://www.binance.com/en/support/announcement/detail/${a.code}` }))); return out })(),
+      (async () => { const d = await getJSON('https://api.bybit.com/v5/announcements/index?locale=en-US&limit=30'); return d.result.list.map(a => ({ ex:'Bybit', title:a.title, t:+a.publishTime || +a.dateTimestamp, link:a.url })) })(),
+      (async () => { const d = await getJSON('https://api.bitget.com/api/v2/public/annoucements?language=en_US'); return d.data.map(a => ({ ex:'Bitget', title:a.annTitle, t:+a.cTime, link:a.annUrl })) })()
+    ];
+    const r = await Promise.allSettled(jobs), all = []; r.forEach(x => x.status === 'fulfilled' && all.push(...x.value));
+    this.notices = all.filter(x => x.title).map(x => ({ ...x, kind:kind(x.title) })).sort((a, b) => b.t - a.t).slice(0, 120); return this.notices;
+  }
+};
+NC.STATUS = { flash:['속보','BREAKING','#ea3943'], dev:['전개중','DEVELOPING','#f0a33b'], ok:['확인','CONFIRMED','#16c784'], fix:['정정','CORRECTION','#4aa3ff'] };
+NC.NKIND = { list:'상장', warn:'유의', delist:'폐지', maint:'점검', notice:'공지', event:'이벤트' };
+})();
+
+</script>
+<script>
+/* 뉴스 페이지: 왼쪽 섹션·상태·키워드, 가운데 실시간 와이어, 오른쪽 레포트·거래소 공지 */
+(() => {
+const { $, esc, store } = LC, N = LC.news;
+const REPORTS = [
+  ['한국 주식 레포트', [['한경컨센서스','증권사 리포트 모음','https://consensus.hankyung.com/'], ['네이버페이 리서치','종목·산업 분석','https://finance.naver.com/research/'], ['FnGuide','컨센서스·재무','https://www.fnguide.com/']]],
+  ['크립토 레포트', [['쟁글 Xangle','국내 코인 공시·리서치','https://xangle.io/research'], ['Messari','프로젝트 리서치','https://messari.io/research'], ['The Block','데이터·리서치','https://www.theblock.co/data']]],
+  ['미국 주식 레포트', [['TipRanks','애널리스트 목표가','https://www.tipranks.com/'], ['Seeking Alpha','종목 분석 글','https://seekingalpha.com/'], ['Koyfin','차트·재무 데이터','https://www.koyfin.com/']]]
+];
+const S = { sec: store.get('nwSec', 'all'), imp: store.get('nwImp', 0), sort: store.get('nwSort', 't'), lang: store.get('nwLang', 'all'), q:'', nk:'all' };
+const hm = t => new Date(t).toLocaleTimeString('ko-KR', { timeZone:'Asia/Seoul', hour:'2-digit', minute:'2-digit', hour12:false });
+const hour = t => new Date(t).toLocaleString('ko-KR', { timeZone:'Asia/Seoul', month:'numeric', day:'numeric', hour:'2-digit', hour12:false });
+const ago = t => { const s = Math.max(0, (Date.now() - t)/1000); return s < 60 ? '방금' : s < 3600 ? Math.floor(s/60) + '분 전' : s < 86400 ? Math.floor(s/3600) + '시간 전' : Math.floor(s/86400) + '일 전' };
+const heads = () => N.items.filter(x => !x.cl || x.cl === x);
+
+function left(){
+  const H = heads(), cnt = { all:H.length }; H.forEach(x => x.secs.forEach(s => cnt[s] = (cnt[s] || 0) + 1));
+  $('secs').innerHTML = [['all','전체','ALL'], ...N.SECTIONS].map(s => `<button class="sec ${S.sec === s[0] ? 'on' : ''}" data-s="${s[0]}">${s[1]} <small>${s[2]}</small><span class="n num">${cnt[s[0]] || 0}</span></button>`).join('');
+  const st = {}; H.forEach(x => st[x.status] = (st[x.status] || 0) + 1);
+  const DESC = { flash:'1시간 안의 속보', dev:'아직 한두 곳만 보도', ok:'3곳 이상 보도', fix:'정정·수정 보도' };
+  $('stat').innerHTML = Object.entries(N.STATUS).map(([k, v]) => `<div class="leg" title="${DESC[k]}"><span class="nst" style="--c:${v[2]}">${v[0]}</span><span class="dim" style="font-size:11px">${DESC[k]}</span><span class="n num">${st[k] || 0}</span></div>`).join('');
+  [1, 2, 3].forEach(k => $('c' + k).textContent = H.filter(x => x.stars === k).length);
+  const T = N.trending();
+  $('trend').innerHTML = T.length ? T.map((k, i) => `<div class="kw" data-q="${esc(k.w)}"><i class="num">${i + 1}</i>${esc(k.w)}${k.isNew ? '<em>NEW</em>' : ''}<span class="n num">${k.n}${k.up ? ' ▲' : ''}</span></div>`).join('') : '<div class="empty">아직 모인 게 적어요</div>';
+  const hot = H.filter(x => x.srcN > 1 && Date.now() - x.t < 864e5).sort((a, b) => b.srcN - a.srcN || b.t - a.t).slice(0, 6);
+  $('hot').innerHTML = hot.length ? hot.map(x => `<a class="hot" href="${esc(x.link)}" target="_blank" rel="noopener"><b class="num">${x.srcN}곳</b>${esc(x.title)}</a>`).join('') : '<div class="empty">겹친 보도가 아직 없어요</div>';
+}
+function wire(){
+  ['imp','sort','lang'].forEach(k => $(k).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v == S[k])));
+  const q = S.q.toLowerCase();
+  let L = heads().filter(x => (S.sec === 'all' || x.secs.includes(S.sec)) && x.stars >= S.imp && (S.lang === 'all' || x.lang === S.lang) && (!q || x.title.toLowerCase().includes(q) || x.src.toLowerCase().includes(q)));
+  if(!L.length){ $('wire').innerHTML = `<div class="empty">${N.at ? '조건에 맞는 뉴스가 없어요' : '뉴스를 모으는 중이에요…'}</div>`; return }
+  const row = x => { const s = N.STATUS[x.status]; return `<a class="wr s${x.stars}" href="${esc(x.link)}" target="_blank" rel="noopener"><span class="t num">${hm(x.t)}</span><span class="nst" style="--c:${s[2]}">${s[0]}</span><span class="src ${x.lang}" title="${esc(x.src)}">${esc(x.src)}</span><span class="ti">${N.isNew(x) ? '<span class="new">NEW</span>' : ''}${esc(x.title)}${x.srcN > 1 ? `<span class="cnt">+${x.srcN - 1}곳</span>` : ''}</span><span class="stars s${x.stars}">${'★'.repeat(x.stars)}</span></a>` };
+  if(S.sort === 's'){ L = L.filter(x => Date.now() - x.t < 864e5).sort((a, b) => b.stars - a.stars || b.srcN - a.srcN || b.t - a.t);
+    const g = { 3:'★★★ 시장 전체', 2:'★★ 한 섹터', 1:'★ 참고' }; let last = 0, h = '';
+    L.slice(0, 250).forEach(x => { if(x.stars !== last){ last = x.stars; h += `<div class="tsep">${g[x.stars]} · 최근 24시간</div>` } h += row(x) }); $('wire').innerHTML = h; return }
+  let lastH = '', h = ''; L.slice(0, 300).forEach(x => { const hh = hour(x.t); if(hh !== lastH){ lastH = hh; h += `<div class="tsep">${esc(hh)}</div>` } h += row(x) }); $('wire').innerHTML = h;
+}
+function right(){
+  $('reports').innerHTML = REPORTS.map(([t, L]) => `<div class="rg"><h5>${t}</h5><div class="rl">${L.map(r => `<a class="rc" href="${r[2]}" target="_blank" rel="noopener"><b>${esc(r[0])}</b><small>${esc(r[1])}</small></a>`).join('')}</div></div>`).join('');
+}
+function notices(){
+  const K = [['all','전체'], ...Object.entries(N.NKIND)], cnt = { all:N.notices.length }; N.notices.forEach(x => cnt[x.kind] = (cnt[x.kind] || 0) + 1);
+  $('nk').innerHTML = K.map(([k, v]) => `<button data-k="${k}" class="${S.nk === k ? 'on' : ''}">${v} ${cnt[k] || 0}</button>`).join('');
+  const L = N.notices.filter(x => S.nk === 'all' || x.kind === S.nk).slice(0, 60);
+  $('notices').innerHTML = L.length ? L.map(x => `<a class="ni" href="${esc(x.link)}" target="_blank" rel="noopener"><span class="exl ${x.ex}">${x.ex.slice(0, 2).toUpperCase()}</span><div><div class="m"><b>${x.ex}</b><span class="nk ${x.kind}">${N.NKIND[x.kind]}</span><span class="dim">${ago(x.t)}</span></div><div class="ti">${esc(x.title)}</div></div></a>`).join('')
+    : `<div class="empty">${N.notices.length ? '이 분류 공지가 없어요' : '공지를 못 받았어요'}</div>`;
+  $('nAt').textContent = N.notices.length ? ago(Date.now()) + ' 갱신' : '';
+}
+const all = () => { left(); wire() };
+async function load(){ $('liveTxt').textContent = '모으는 중'; try{ await N.load() }catch(e){} N.loadedOnce = true;
+  $('liveTxt').textContent = N.at ? `${N.ok}/${N.SOURCES.length}곳 · ${hm(N.at)} 갱신` : '못 받음'; all() }
+async function loadN(){ try{ await N.loadNotices() }catch(e){} notices() }
+
+document.documentElement.dataset.theme = store.get('theme', 'dark');
+$('btnTheme').onclick = () => { const t = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; document.documentElement.dataset.theme = t; store.set('theme', t) };
+setInterval(() => { $('clock').textContent = new Date().toLocaleTimeString('ko-KR', { timeZone:'Asia/Seoul', hour12:false }) + ' KST' }, 1000);
+$('secs').onclick = e => { const b = e.target.closest('[data-s]'); if(!b) return; S.sec = b.dataset.s; store.set('nwSec', S.sec); all(); $('wireCol').scrollTop = 0 };
+const chip = (k, num) => $(k).onclick = e => { const b = e.target.closest('[data-v]'); if(!b) return; S[k] = num ? +b.dataset.v : b.dataset.v; store.set('nw' + k[0].toUpperCase() + k.slice(1), S[k]); wire() };
+chip('imp', true); chip('sort'); chip('lang');
+$('q').oninput = e => { S.q = e.target.value.trim(); wire() };
+$('trend').onclick = e => { const k = e.target.closest('[data-q]'); if(!k) return; $('q').value = S.q = k.dataset.q; wire() };
+$('nk').onclick = e => { const b = e.target.closest('[data-k]'); if(!b) return; S.nk = b.dataset.k; notices() };
+right(); load(); loadN();
+setInterval(load, 180000); setInterval(loadN, 300000); setInterval(all, 60000);
+})();
+
+</script>
+</body>
+</html>

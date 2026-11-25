@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>스캘핑 현황 · wuho.com</title>
+<title>우호 · 스캘핑</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%23f0b90b%22/%3E%3Cpath d=%22M5 16l4-5 3 3 5-7%22 stroke=%22%23111%22 stroke-width=%222.2%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%2217%22 cy=%227%22 r=%221.6%22 fill=%22%23111%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
@@ -23,7 +24,6 @@ a{color:inherit;text-decoration:none}
 
 .app{display:grid;grid-template-rows:34px 28px 28px 28px 38px minmax(0,1fr) 24px;height:100vh}
 .topbar{display:flex;align-items:center;gap:14px;padding:0 10px;background:var(--bg);border-bottom:1px solid var(--line);white-space:nowrap}
-.brand{font-weight:600;color:var(--accent);font-size:16px}.brand small{font-size:11px;color:var(--dim);font-weight:400;margin-left:2px}
 .pnav{display:flex;gap:2px}.pnav a{padding:5px 10px;border-radius:5px;color:var(--dim);font-size:13px}.pnav a:hover{background:var(--panel2);color:var(--ink)}.pnav a.on{color:var(--accent);background:var(--panel2)}
 .topbar .right{margin-left:auto;display:flex;align-items:center;gap:8px}#clock{font-size:12px;color:var(--dim)}
 
@@ -66,13 +66,14 @@ a{color:inherit;text-decoration:none}
 #toasts{position:fixed;right:16px;bottom:34px;z-index:60;display:flex;flex-direction:column;gap:6px;max-width:360px}
 .toast{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--blue);padding:9px 12px;border-radius:6px;font-size:13px;cursor:pointer}
 @media(max-width:900px){.main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) 34vh}#ranks{border-left:0;border-top:1px solid var(--line)}.stats .st:nth-child(n+7){display:none}}
+.brand{display:flex;align-items:center;flex:none;text-decoration:none}.brand svg{width:24px;height:24px;display:block}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <a class="brand" href="./">우호 <small>wuho.com</small></a>
-    <nav class="pnav"><a href="./">차트</a><a href="scalp.html" class="on">스캘핑</a></nav>
+    <a class="brand" href="./" title="우호"><svg viewBox="0 0 24 24" aria-label="우호"><rect width="24" height="24" rx="6" fill="#f0b90b"/><path d="M5 16l4-5 3 3 5-7" stroke="#111" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="7" r="1.6" fill="#111"/></svg></a>
+    <nav class="pnav"><a href="./">차트</a><a href="scalp.html" class="on">스캘핑</a><a href="news.html">뉴스</a></nav>
     <div class="right"><span id="clock" class="num">-</span><button class="hb" id="btnTheme" title="밝은/어두운 화면">◐</button><button class="hb" id="btnFull" title="전체 화면">⛶</button></div>
   </div>
   <div class="band tape"><div class="marq"><div id="tapeIn"></div></div></div>
@@ -96,7 +97,7 @@ a{color:inherit;text-decoration:none}
     <div class="panes" id="panes"></div>
     <div id="ranks"><h4>상승 순위</h4><h4>하락 순위 <span class="dim" id="rkTf"></span></h4><div class="rkl" id="rkUp"></div><div class="rkl" id="rkDn"></div></div>
   </div>
-  <div class="sbar"><span class="up">● 실시간 · 바이낸스 선물</span><span class="c num" id="sbTime"></span><span>wuho.com</span></div>
+  <div class="sbar"><span class="up">● 실시간 · 바이낸스 선물</span><span class="c num" id="sbTime"></span><span></span></div>
 </div>
 <script>
 /* 공용 도구: 저장소, 포맷, 거래소 주소, 웹소켓, 소리, 알림창 */
@@ -304,7 +305,7 @@ class Pane {
   constructor(host, cfg, idx){
     this.tf = cfg.tf; this.n = cfg.n; this.idx = idx;
     const el = this.el = document.createElement('div'); el.className = 'pane';
-    el.innerHTML = `<div class="ph"><b>WUHO SCALPING CHART</b><span class="dim ph-st"></span><span style="flex:1"></span>
+    el.innerHTML = `<div class="ph"><b>스캘핑 차트</b><span class="dim ph-st"></span><span style="flex:1"></span>
       <div class="seg tfs">${TFS.map(([k, n]) => `<button data-tf="${k}">${n}</button>`).join('')}</div>
       <select class="lb" title="볼 봉 개수">${[30,48,60,90,120,240].map(v => `<option value="${v}">${v}봉</option>`).join('')}</select>
       <button class="hb cap" title="그림으로 저장">캡처</button></div><div class="pc"><canvas></canvas><div class="tip" hidden></div></div>`;
