@@ -53,6 +53,40 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:6px}
 .ix-row .fav{color:var(--line);font-size:14px}.ix-row .fav.on,.ix-row .fav:hover{color:#f0b90b}
 .ix-row .dotc{width:10px;height:10px;border-radius:50%;flex:none}.ix-row.cur .dim{flex:1}.ix-act{display:flex;gap:2px}.ix-act button{width:26px;height:24px;border-radius:4px;color:var(--dim)}.ix-act button:hover{background:var(--line);color:var(--ink)}
 @media(max-width:700px){.ix{grid-template-columns:1fr;height:auto}.ix-cats{flex-direction:row;flex-wrap:wrap;border:0}}
+.modal.mid{width:min(760px,100%)}
+.sx{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;min-height:430px}
+.sx-nav{display:flex;flex-direction:column;gap:2px}.sx-nav button{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--ink);text-align:left;font-size:14px}
+.sx-nav button:hover{background:var(--panel2)}.sx-nav button.on{background:var(--panel2);font-weight:600}
+.sx-nav svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sx-body .st-pane{max-height:62vh}.sx-body .srow{border-bottom:0;padding:7px 2px}.sx-body h6{font-size:11px;color:var(--dim);margin:14px 0 4px;font-weight:500}
+.sx-body .srow span{display:flex;align-items:center;gap:8px}.sx-body input[type=checkbox]{width:16px;height:16px;accent-color:var(--ink)}
+.sx-foot{display:flex;align-items:center;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.btn.pri{border-radius:8px}
+.swatch{width:32px;height:32px;border-radius:7px;border:1px solid var(--line);padding:3px;background:repeating-conic-gradient(#666 0 25%,#999 0 50%) 0 0/8px 8px}
+.swatch i{display:block;width:100%;height:100%;border-radius:4px}.swatch:hover{border-color:var(--ink)}
+.cpop{position:fixed;z-index:70;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:0 14px 40px rgba(0,0,0,.5);width:252px}
+.cp-row{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-bottom:3px}.cp-row.gap{margin-top:8px}
+.cp-row button{aspect-ratio:1;border-radius:3px;border:1px solid rgba(255,255,255,.08)}.cp-row button:hover{transform:scale(1.15)}.cp-row button.on{outline:2px solid var(--ink);outline-offset:1px}
+.cpop hr{border:0;border-top:1px solid var(--line);margin:8px 0}
+.cp-add{position:relative;display:grid;place-items:center;aspect-ratio:1;color:var(--dim);font-size:16px;cursor:pointer;border-radius:3px}.cp-add:hover{background:var(--panel2);color:var(--ink)}
+.cp-add input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.cp-op{margin-top:8px;font-size:12px;color:var(--dim)}.cp-opr{display:flex;align-items:center;gap:6px;margin-top:4px}
+.cp-opr input[type=range]{flex:1;accent-color:var(--c,#2962ff)}.cp-pct{width:50px;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:3px 5px;font:inherit}
+.cv.no-title .lg-t{display:none}.cv.no-chg .lg-chg{display:none}
+@media(max-width:700px){.sx{grid-template-columns:1fr}.sx-nav{flex-direction:row;flex-wrap:wrap}}
+.tg{position:relative;flex:none}.tg .fly{position:absolute;right:-5px;top:50%;transform:translateY(-50%);width:10px!important;height:18px!important;opacity:0;border-radius:3px!important}
+.tg:hover .fly{opacity:1}.tg .fly svg{width:7px!important;height:7px!important}
+.tfly{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px;box-shadow:0 10px 30px rgba(0,0,0,.45);min-width:200px}
+.tfly button{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border-radius:5px;font-size:13px;text-align:left}.tfly button:hover{background:var(--panel2)}.tfly button.on{color:var(--accent)}
+.tfly svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.wrow .px{color:var(--ink);text-align:right}.wrow .ch,.wrow .pc{text-align:right}
+.lgrip{height:5px;flex:none;cursor:row-resize;border-top:1px solid var(--line)}.lgrip:hover{background:var(--accent);opacity:.5}
+.detail{flex:none;overflow:auto;padding:12px 14px}
+.d-h{display:flex;align-items:center;gap:8px;font-size:15px}.d-h .dim{font-size:12px}
+.d-ic{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#111;display:grid;place-items:center;font-weight:700;font-size:12px}
+.d-p{display:flex;align-items:baseline;gap:6px;margin-top:10px;flex-wrap:wrap}.d-p .big{font-size:28px;font-weight:600}.d-p .dim{font-size:11px}
+.d-live{font-size:12px;color:var(--up);margin-top:2px;display:flex;align-items:center;gap:5px}.dotl{width:6px;height:6px;border-radius:50%;background:var(--up)}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:12px}.dk{display:flex;flex-direction:column;font-size:11px;color:var(--dim)}.dk b{font-size:13px;color:var(--ink);font-weight:500}
 .cpick{display:inline-flex;align-items:center;gap:6px}.cpick input[type=color]{width:30px;height:24px;padding:0;border:1px solid var(--line);border-radius:5px;background:none;cursor:pointer}
 .cpick input[type=color]::-webkit-color-swatch-wrapper{padding:2px}.cpick input[type=color]::-webkit-color-swatch{border:0;border-radius:3px}
 .cpick input[type=range]{width:64px;accent-color:var(--accent)}
@@ -137,7 +171,7 @@ aside{grid-row:3/5;grid-column:3;position:relative;background:var(--panel);borde
 .sub-tabs button.on{background:var(--panel2);color:var(--ink)}
 .search{padding:8px;flex:none}
 .inp,.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:8px 10px;font:inherit;font-size:13px}
-.lhead,.wrow{display:grid;grid-template-columns:22px minmax(0,1fr) 96px 66px;align-items:center;gap:4px;padding:0 10px}
+.lhead,.wrow{display:grid;grid-template-columns:18px minmax(0,1fr) 84px 70px 58px;align-items:center;gap:4px;padding:0 10px}
 .lhead{font-size:11px;color:var(--dim);padding-bottom:4px;border-bottom:1px solid var(--line);flex:none}
 .lhead [data-s]{cursor:pointer}.lhead div:nth-child(n+3){text-align:right}
 .list{overflow-y:auto;flex:1;min-height:0}
@@ -377,7 +411,7 @@ function notify(title, body){
 /* 공용 모달 */
 function modal(title, html, onMount, wide, onClose){
   const bg = document.createElement('div'); bg.className = 'modal-bg';
-  bg.innerHTML = `<div class="modal ${wide?'wide':''}" role="dialog" aria-label="${esc(title)}"><div class="mh"><b>${esc(title)}</b><button class="x" aria-label="닫기">✕</button></div><div class="mb">${html}</div></div>`;
+  bg.innerHTML = `<div class="modal ${wide === true ? 'wide' : wide || ''}" role="dialog" aria-label="${esc(title)}"><div class="mh"><b>${esc(title)}</b><button class="x" aria-label="닫기">✕</button></div><div class="mb">${html}</div></div>`;
   let shut = false; const close = () => { if(shut) return; shut = true; bg.remove(); document.removeEventListener('keydown', onKey); onClose && onClose() };
   const onKey = e => { if(e.key === 'Escape') close() };
   bg.addEventListener('mousedown', e => { if(e.target === bg) close() });
@@ -621,10 +655,38 @@ const parseColor = c => {
   return { hex:'#888888', a:1 };
 };
 const mkColor = (hex, a) => { if(a >= 0.999) return hex; const n = parseInt(hex.slice(1), 16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${(+a).toFixed(2)})` };
-/* 색 + 투명도 입력 한 묶음 */
-const colorField = (key, val) => { const c = parseColor(val);
-  return `<span class="cpick" data-ck="${esc(key)}"><input type="color" value="${c.hex}"><input type="range" min="0" max="100" value="${Math.round(c.a*100)}" title="불투명도"></span>` };
-const readColor = el => mkColor(el.querySelector('[type=color]').value, el.querySelector('[type=range]').value/100);
+/* 색 고르기: 네모 버튼을 누르면 팔레트 + 불투명도 창이 떠요 */
+const colorField = (key, val) => `<button type="button" class="swatch" data-ck="${esc(key)}" data-v="${esc(val || '#888888')}"><i style="background:${esc(val || '#888888')}"></i></button>`;
+const readColor = el => el.dataset.v;
+const GRAYS = ['#ffffff','#d1d4dc','#b2b5be','#9598a1','#787b86','#5d606b','#434651','#2a2e39','#131722','#000000'];
+const HUES = ['#f23645','#ff9800','#ffeb3b','#4caf50','#089981','#00bcd4','#2962ff','#673ab7','#9c27b0','#e91e63'];
+const mix = (hex, to, k) => { const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16);
+  return '#' + [16, 8, 0].map(sh => Math.round(((a >> sh) & 255) * (1 - k) + ((b >> sh) & 255) * k).toString(16).padStart(2, '0')).join('') };
+const PALETTE = [GRAYS, HUES, ...[.8, .6, .4, .2].map(k => HUES.map(h => mix(h, '#ffffff', k))), ...[.25, .5].map(k => HUES.map(h => mix(h, '#000000', k)))];
+const openPicker = sw => {
+  document.querySelectorAll('.cpop').forEach(x => x.remove());
+  const cur = parseColor(sw.dataset.v), custom = LC.store.get('customColors', []);
+  const pop = document.createElement('div'); pop.className = 'cpop';
+  pop.innerHTML = PALETTE.map((row, i) => `<div class="cp-row ${i === 2 ? 'gap' : ''}">${row.map(c => `<button data-c="${c}" class="${c === cur.hex ? 'on' : ''}" style="background:${c}"></button>`).join('')}</div>`).join('')
+    + `<hr><div class="cp-row cp-cust">${custom.map(c => `<button data-c="${c}" style="background:${c}"></button>`).join('')}<label class="cp-add" title="직접 고르기">+<input type="color" value="${cur.hex}"></label></div>
+      <div class="cp-op"><span>불투명도</span><div class="cp-opr"><input type="range" min="0" max="100" value="${Math.round(cur.a*100)}" style="--c:${cur.hex}"><input class="cp-pct" type="number" min="0" max="100" value="${Math.round(cur.a*100)}"><b>%</b></div></div>`;
+  document.body.appendChild(pop);
+  const r = sw.getBoundingClientRect(), pr = pop.getBoundingClientRect();
+  pop.style.left = Math.max(6, Math.min(r.left, innerWidth - pr.width - 6)) + 'px';
+  pop.style.top = (r.bottom + pr.height + 6 < innerHeight ? r.bottom + 4 : Math.max(6, r.top - pr.height - 4)) + 'px';
+  let hex = cur.hex, al = cur.a;
+  const rng = pop.querySelector('[type=range]'), pct = pop.querySelector('.cp-pct');
+  const set = () => { const v = mkColor(hex, al); sw.dataset.v = v; sw.querySelector('i').style.background = v; rng.style.setProperty('--c', hex);
+    pop.querySelectorAll('[data-c]').forEach(b => b.classList.toggle('on', b.dataset.c === hex)); sw.dispatchEvent(new Event('input', { bubbles:true })) };
+  pop.addEventListener('click', e => { const b = e.target.closest('[data-c]'); if(b){ hex = b.dataset.c; set() } });
+  pop.querySelector('.cp-add input').oninput = e => { hex = e.target.value; set() };
+  pop.querySelector('.cp-add input').onchange = e => { const c = e.target.value, l = LC.store.get('customColors', []).filter(x => x !== c); l.unshift(c); LC.store.set('customColors', l.slice(0, 10)) };
+  rng.oninput = () => { al = rng.value / 100; pct.value = rng.value; set() };
+  pct.oninput = () => { const v = Math.max(0, Math.min(100, +pct.value || 0)); al = v / 100; rng.value = v; set() };
+  const off = e => { if(!pop.contains(e.target) && e.target.closest('.swatch') !== sw){ pop.remove(); document.removeEventListener('mousedown', off, true) } };
+  setTimeout(() => document.addEventListener('mousedown', off, true));
+};
+document.addEventListener('click', e => { const sw = e.target.closest('.swatch'); if(sw){ e.preventDefault(); document.querySelector('.cpop') && document.querySelector('.cpop').dataset.for === sw.dataset.ck ? document.querySelector('.cpop').remove() : (openPicker(sw), document.querySelector('.cpop').dataset.for = sw.dataset.ck) } });
 LC.color = { parseColor, mkColor, colorField, readColor };
 const DASH = [['0','실선'],['1','점선'],['2','파선'],['3','긴 파선']];
 LC.DASH = DASH;
@@ -683,7 +745,7 @@ const DEF = theme => { const light = theme === 'light';
     vGrid:true, vGridColor: light ? 'rgba(0,0,0,0.06)' : 'rgba(35,45,59,0.6)', hGrid:true, hGridColor: light ? 'rgba(0,0,0,0.06)' : 'rgba(35,45,59,0.6)',
     crossMode:'0', crossColor: light ? '#7a8699' : '#5d6b80', crossStyle:'3',
     textColor: light ? '#4a5566' : '#8b97a8', fontSize:11, lastLine:true, lastLabel:true,
-    watermark:false, legendOHLC:true, legendVals:true, countdown:true } };
+    watermark:false, legendOHLC:true, legendVals:true, countdown:true, bodyVisible:true, prevClose:false, precision:'auto', legendTitle:true, legendChange:true, scaleLabels:true, indLabels:true } };
 const CS = LC.chartStyle = {
   user: store.get('chartStyle', {}),
   get(){ return { ...DEF(LC.app && LC.app.theme), ...this.user } },
@@ -691,7 +753,7 @@ const CS = LC.chartStyle = {
   reset(){ this.user = {}; store.set('chartStyle', {}); this.applyAll() },
   applyAll(){ (LC.app ? LC.app.views : []).forEach(v => this.apply(v)) },
   mainOpts(type){ const S = this.get(), o = { priceLineVisible:S.lastLine, lastValueVisible:S.lastLabel };
-    if(type === 'candle' || type === 'ha') Object.assign(o, { upColor:S.upColor, downColor:S.downColor, borderVisible:S.borderVisible, borderUpColor:S.borderUp, borderDownColor:S.borderDown,
+    if(type === 'candle' || type === 'ha') Object.assign(o, { upColor: S.bodyVisible ? S.upColor : 'rgba(0,0,0,0)', downColor: S.bodyVisible ? S.downColor : 'rgba(0,0,0,0)', borderVisible:S.borderVisible, borderUpColor:S.borderUp, borderDownColor:S.borderDown,
       wickVisible:S.wickVisible, wickUpColor:S.wickUp, wickDownColor:S.wickDown });
     if(type === 'hollow') Object.assign(o, { upColor:'rgba(0,0,0,0)', downColor:S.downColor, borderVisible:true, borderUpColor:S.upColor, borderDownColor:S.downColor, wickVisible:S.wickVisible, wickUpColor:S.wickUp, wickDownColor:S.wickDown });
     if(type === 'bar') Object.assign(o, { upColor:S.upColor, downColor:S.downColor, thinBars:false });
@@ -708,6 +770,10 @@ const CS = LC.chartStyle = {
       crosshair:{ mode:+S.crossMode, vertLine:line(S.crossColor), horzLine:line(S.crossColor) },
       rightPriceScale:{ borderColor:border }, timeScale:{ borderColor:border } });
     v.series.applyOptions(this.mainOpts(v.type));
+    const pr = S.precision === 'auto' ? (v.autoPrec ?? v.prec) : +S.precision; if(v.prec !== pr){ v.autoPrec = v.autoPrec ?? v.prec; v.prec = pr; v.series.applyOptions({ priceFormat:{ type:'price', precision:pr, minMove:1/10**pr } }) }
+    if(v.prevCloseOn !== S.prevClose){ v.prevCloseOn = S.prevClose; if(v.shown && v.shown.length) v.renderAll() }
+    v.inds.forEach(i => i.series.forEach(se => { try{ se.applyOptions({ lastValueVisible: !i.def.overlay && S.indLabels }) }catch(e){} }));
+    v.box.classList.toggle('no-title', !S.legendTitle); v.box.classList.toggle('no-chg', !S.legendChange);
     v.box.classList.toggle('no-ohlc', !S.legendOHLC); v.box.classList.toggle('no-vals', !S.legendVals); v.box.classList.toggle('no-cd', !S.countdown);
     try{
       if(S.watermark && L.createTextWatermark){ const lines = [{ text:v.sym.replace(/USDT$/, '') + (v.market === 'futures' ? ' · 무기한' : ''), color: light ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)', fontSize:64, fontFamily:LC.FONT, fontStyle:'700' }];
@@ -715,37 +781,55 @@ const CS = LC.chartStyle = {
       else if(v.wm){ v.wm.detach(); v.wm = null }
     }catch(e){}
   },
+  /* 설정 창: 왼쪽 메뉴 + 오른쪽 항목, 바꾸면 바로 보이고 취소하면 되돌려요 */
   modal(){
-    const S = this.get();
-    const chk = (k, t) => `<label class="srow"><span>${t}</span><input type="checkbox" data-sk="${k}" ${S[k] ? 'checked' : ''}></label>`;
-    const col = (k, t, ck) => `<label class="srow"><span>${ck ? `<input type="checkbox" data-sk="${ck}" ${S[ck] ? 'checked' : ''}> ` : ''}${t}</span>${colorField(k, S[k])}</label>`;
+    const S = this.get(), snap = JSON.stringify(this.user);
+    const F = LC.panels.find(p => p.id === 'flow');
+    const chk = (k, t) => `<label class="srow"><span><input type="checkbox" data-sk="${k}" ${S[k] ? 'checked' : ''}> ${t}</span></label>`;
+    const pair = (t, ck, a, b) => `<div class="srow"><span>${ck ? `<input type="checkbox" data-sk="${ck}" ${S[ck] ? 'checked' : ''}> ` : ''}${t}</span><span class="sctl">${colorField(a, S[a])}${b ? colorField(b, S[b]) : ''}</span></div>`;
+    const col = (k, t, ck) => pair(t, ck, k);
     const sel = (k, t, opts) => `<label class="srow"><span>${t}</span><select data-sk="${k}">${opts.map(([v, n]) => `<option value="${v}" ${String(S[k]) === v ? 'selected' : ''}>${n}</option>`).join('')}</select></label>`;
-    const tabs = {
-      '캔들':[ '<h6>몸통</h6>', col('upColor','상승'), col('downColor','하락'), '<h6>테두리</h6>', chk('borderVisible','테두리 보이기'), col('borderUp','상승'), col('borderDown','하락'),
-        '<h6>꼬리</h6>', chk('wickVisible','꼬리 보이기'), col('wickUp','상승'), col('wickDown','하락'), '<h6>라인·영역 차트</h6>', col('lineColor','선 색'), sel('lineWidth','선 굵기', [['1','1'],['2','2'],['3','3'],['4','4']]) ],
-      '배경·격자':[ sel('bgType','배경', [['solid','단색'],['gradient','위→아래 그라데이션']]), col('bg1','배경 색 (위)'), col('bg2','그라데이션 아래 색'),
-        '<h6>격자</h6>', col('vGridColor','세로 격자', 'vGrid'), col('hGridColor','가로 격자', 'hGrid'), chk('watermark','차트 가운데 종목 이름 (워터마크)') ],
-      '눈금·십자선':[ col('textColor','눈금 글자 색'), sel('fontSize','눈금 글자 크기', [['10','10'],['11','11'],['12','12'],['13','13'],['14','14']]),
-        chk('lastLine','현재가 가로선'), chk('lastLabel','현재가 눈금 표시'), chk('countdown','봉 마감까지 남은 시간'),
-        '<h6>십자선</h6>', sel('crossMode','움직임', [['0','자유롭게'],['1','봉 종가에 붙기']]), col('crossColor','색'), sel('crossStyle','선 모양', DASH) ],
-      '범례·표시':[ chk('legendOHLC','시가·고가·저가·종가 보이기'), chk('legendVals','지표 값 보이기'), '<h6>차트 위 표시</h6>', '<label class="srow"><span>큰 체결·청산 동그라미</span><input type="checkbox" id="stBub"></label>' ]
-    };
-    const names = Object.keys(tabs);
-    const html = `<div class="sub-tabs st-tabs">${names.map((n, i) => `<button data-t="${i}" class="${i ? '' : 'on'}">${n}</button>`).join('')}</div>
-      ${names.map((n, i) => `<div class="st-pane" data-t="${i}" ${i ? 'hidden' : ''}>${tabs[n].join('')}</div>`).join('')}
-      <div class="row-end"><button class="btn" id="stReset">기본값으로</button><button class="btn pri" id="stOk">닫기</button></div>`;
-    LC.modal('차트 설정', html, (mb, close) => {
+    const I = p => `<svg viewBox="0 0 24 24">${p}</svg>`;
+    const NAV = [
+      ['심볼', I('<path d="M8 4v16M16 6v12"/><rect x="5.5" y="8" width="5" height="8" rx="1"/><rect x="13.5" y="9" width="5" height="6" rx="1"/>'), [
+        '<h6>캔들</h6>', chk('prevClose', '이전 종가에 따라 봉 색 결정'), pair('바디', 'bodyVisible', 'upColor', 'downColor'), pair('경계선', 'borderVisible', 'borderUp', 'borderDown'), pair('윅', 'wickVisible', 'wickUp', 'wickDown'),
+        '<h6>라인·영역 차트</h6>', col('lineColor', '선 색'), sel('lineWidth', '선 굵기', [['1','1'],['2','2'],['3','3'],['4','4']]),
+        '<h6>데이터 수정</h6>', sel('precision', '정밀도', [['auto','기본 (거래소 호가 단위)'],['0','1'],['1','0.1'],['2','0.01'],['3','0.001'],['4','0.0001'],['5','0.00001'],['6','0.000001'],['8','0.00000001']]),
+        '<label class="srow"><span>타임존</span><select disabled><option>(UTC+9) 서울</option></select></label>' ]],
+      ['스테이터스 라인', I('<path d="M4 6h16M4 12h10M4 18h13"/>'), [ chk('legendTitle', '심볼 이름'), chk('legendOHLC', '시가·고가·저가·종가'), chk('legendChange', '봉 변화량'), chk('legendVals', '지표 값'), chk('countdown', '봉 마감까지 남은 시간') ]],
+      ['스케일 및 라인', I('<path d="M5 4v16h15"/><path d="M9 14l3-3 3 2 4-5"/>'), [ col('textColor', '눈금 글자'), sel('fontSize', '글자 크기', [['10','10'],['11','11'],['12','12'],['13','13'],['14','14']]),
+        chk('lastLabel', '현재가 눈금 라벨'), chk('lastLine', '현재가 가로선'), chk('indLabels', '지표 값 눈금 라벨'),
+        '<h6>십자선</h6>', col('crossColor', '선 색'), sel('crossStyle', '선 모양', DASH), sel('crossMode', '움직임', [['0','자유롭게'],['1','봉 종가에 붙기']]) ]],
+      ['캔버스', I('<path d="M4 20l4-1 11-11-3-3L5 16z"/>'), [ sel('bgType', '배경', [['solid','단색'],['gradient','그라데이션']]), pair('배경 색 (위 / 아래)', null, 'bg1', 'bg2'),
+        '<h6>그리드 라인</h6>', col('vGridColor', '세로', 'vGrid'), col('hGridColor', '가로', 'hGrid'),
+        '<h6>워터마크</h6>', chk('watermark', '차트 가운데 종목 이름') ]],
+      ['차트 위 표시', I('<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/>'), [ `<label class="srow"><span><input type="checkbox" id="stBub" ${F && F.cfg.bubbles ? 'checked' : ''}> 큰 체결·청산 동그라미</span></label>`,
+        `<label class="srow"><span><input type="checkbox" id="stMap" ${(LC.panels.find(p => p.id === 'whale') || {cfg:{}}).cfg.map ? 'checked' : ''}> 하이퍼리퀴드 고래 청산 지도</span></label>` ]]
+    ];
+    const tpls = LC.store.get('styleTpl', {});
+    const html = `<div class="sx"><nav class="sx-nav">${NAV.map(([n, ic], i) => `<button data-t="${i}" class="${i ? '' : 'on'}">${ic}<span>${n}</span></button>`).join('')}</nav>
+      <div class="sx-body">${NAV.map(([n, , rows], i) => `<div class="st-pane" data-t="${i}" ${i ? 'hidden' : ''}>${rows.join('')}</div>`).join('')}</div></div>
+      <div class="sx-foot"><select id="stTpl"><option value="">템플릿</option><option value="__save">현재 설정 저장…</option><option value="__def">기본값으로</option>${Object.keys(tpls).map(n => `<option value="t:${esc(n)}">${esc(n)}</option>`).join('')}</select>
+        <span style="flex:1"></span><button class="btn" id="stCancel">취소</button><button class="btn pri" id="stOk">확인</button></div>`;
+    let ok = false;
+    LC.modal('설정', html, (mb, close) => {
       const sync = () => { const s = this.get(); mb.querySelectorAll('[data-sk]').forEach(el => { if(el.type === 'checkbox') el.checked = !!s[el.dataset.sk]; else el.value = String(s[el.dataset.sk]) });
-        mb.querySelectorAll('[data-ck]').forEach(el => { const c = parseColor(s[el.dataset.ck]); el.querySelector('[type=color]').value = c.hex; el.querySelector('[type=range]').value = Math.round(c.a*100) }) };
-      mb.querySelector('.st-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return;
-        mb.querySelectorAll('.st-tabs button').forEach(x => x.classList.toggle('on', x === b)); mb.querySelectorAll('.st-pane').forEach(p => p.hidden = p.dataset.t !== b.dataset.t) };
+        mb.querySelectorAll('[data-ck]').forEach(el => { el.dataset.v = s[el.dataset.ck]; el.querySelector('i').style.background = s[el.dataset.ck] }) };
+      mb.querySelector('.sx-nav').onclick = e => { const b = e.target.closest('button'); if(!b) return;
+        mb.querySelectorAll('.sx-nav button').forEach(x => x.classList.toggle('on', x === b)); mb.querySelectorAll('.st-pane').forEach(p => p.hidden = p.dataset.t !== b.dataset.t) };
       mb.addEventListener('input', e => { const ck = e.target.closest('[data-ck]'); if(ck) return this.set(ck.dataset.ck, readColor(ck));
         const k = e.target.dataset.sk; if(k) this.set(k, e.target.type === 'checkbox' ? e.target.checked : e.target.value) });
-      const F = LC.panels.find(p => p.id === 'flow'), bub = mb.querySelector('#stBub'); bub.checked = !!(F && F.cfg.bubbles);
-      bub.onchange = e => { e.stopPropagation(); if(!F) return; F.cfg.bubbles = bub.checked; store.set('flowCfg', F.cfg); const c = F.el && F.el.querySelector('[data-c=bubbles]'); if(c) c.checked = bub.checked };
-      mb.querySelector('#stReset').onclick = () => { this.reset(); sync() };
-      mb.querySelector('#stOk').onclick = close;
-    });
+      mb.addEventListener('change', e => { const k = e.target.dataset && e.target.dataset.sk; if(k && e.target.tagName === 'SELECT') this.set(k, e.target.value) });
+      mb.querySelector('#stBub').onchange = e => { if(!F) return; F.cfg.bubbles = e.target.checked; store.set('flowCfg', F.cfg); const c = F.el && F.el.querySelector('[data-c=bubbles]'); if(c) c.checked = e.target.checked };
+      mb.querySelector('#stMap').onchange = e => { const W = LC.panels.find(p => p.id === 'whale'); if(!W) return; W.cfg.map = e.target.checked; store.set('whaleCfg', W.cfg); const c = W.el && W.el.querySelector('[data-c=map]'); if(c) c.checked = e.target.checked };
+      mb.querySelector('#stTpl').onchange = e => { const v = e.target.value; e.target.value = '';
+        if(v === '__def'){ this.reset(); sync() }
+        else if(v === '__save'){ const n = (prompt('템플릿 이름') || '').trim(); if(!n) return; const t = LC.store.get('styleTpl', {}); t[n] = {...this.user}; LC.store.set('styleTpl', t);
+          const o = document.createElement('option'); o.value = 't:' + n; o.textContent = n; e.target.appendChild(o); LC.toast(`템플릿 "${n}" 저장했어요`) }
+        else if(v.startsWith('t:')){ const t = LC.store.get('styleTpl', {})[v.slice(2)]; if(t){ this.user = {...t}; store.set('chartStyle', this.user); this.applyAll(); sync() } } };
+      mb.querySelector('#stCancel').onclick = close;
+      mb.querySelector('#stOk').onclick = () => { ok = true; close() };
+    }, 'mid', () => { document.querySelectorAll('.cpop').forEach(x => x.remove()); if(!ok){ this.user = JSON.parse(snap); store.set('chartStyle', this.user); this.applyAll() } });
   }
 };
 
@@ -1092,13 +1176,18 @@ class ChartView {
   setType(t){ this.type = t; this.makeMain(); this.renderAll(); this.app.save(); LC.paper && LC.paper.lines() }
   toMain(bars){
     if(this.type === 'line' || this.type === 'area') return bars.map(b => ({time:b.time, value:b.close}));
-    if(this.type !== 'ha') return bars.map(b => ({time:b.time, open:b.open, high:b.high, low:b.low, close:b.close}));
+    if(this.type !== 'ha'){ const S = LC.chartStyle.get();
+      if(S.prevClose && this.type !== 'hollow') return bars.map((b, i) => { const up = b.close >= (i ? bars[i-1].close : b.open), c = up ? S.upColor : S.downColor;
+        return {time:b.time, open:b.open, high:b.high, low:b.low, close:b.close, color: S.bodyVisible ? c : 'rgba(0,0,0,0)', borderColor: up ? S.borderUp : S.borderDown, wickColor: up ? S.wickUp : S.wickDown} });
+      return bars.map(b => ({time:b.time, open:b.open, high:b.high, low:b.low, close:b.close})) }
     const out = []; bars.forEach((b, i) => { const c = (b.open+b.high+b.low+b.close)/4; const o = i ? (out[i-1].open + out[i-1].close)/2 : (b.open+b.close)/2;
       out.push({time:b.time, open:o, high:Math.max(b.high,o,c), low:Math.min(b.low,o,c), close:c}) }); this.ha = out; return out;
   }
   mainLast(b){
     if(this.type === 'line' || this.type === 'area') return {time:b.time, value:b.close};
-    if(this.type !== 'ha') return {time:b.time, open:b.open, high:b.high, low:b.low, close:b.close};
+    if(this.type !== 'ha'){ const S = LC.chartStyle.get(), c = this.candles, pc = c.length > 1 ? c[c.length-2].close : b.open;
+      if(S.prevClose && this.type !== 'hollow'){ const up = b.close >= pc; return {time:b.time, open:b.open, high:b.high, low:b.low, close:b.close, color: S.bodyVisible ? (up ? S.upColor : S.downColor) : 'rgba(0,0,0,0)', borderColor: up ? S.borderUp : S.borderDown, wickColor: up ? S.wickUp : S.wickDown} }
+      return {time:b.time, open:b.open, high:b.high, low:b.low, close:b.close} }
     const prev = this.ha && this.ha.length > 1 ? this.ha[this.ha.length - (this.ha[this.ha.length-1].time === b.time ? 2 : 1)] : null;
     const c = (b.open+b.high+b.low+b.close)/4, o = prev ? (prev.open+prev.close)/2 : (b.open+b.close)/2;
     const h = {time:b.time, open:o, high:Math.max(b.high,o,c), low:Math.min(b.low,o,c), close:c};
@@ -1118,8 +1207,8 @@ class ChartView {
       const rows = await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000`);
       if(tok !== this.tok) return;
       this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5], tbv:+k[9]}));
-      this.prec = this.app.precOf(this.sym, this.market) ?? LC.autoPrec(this.candles.length ? this.candles[this.candles.length-1].close : 1);
-      this.series.applyOptions({ priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec} });
+      this.autoPrec = null; this.prec = this.app.precOf(this.sym, this.market) ?? LC.autoPrec(this.candles.length ? this.candles[this.candles.length-1].close : 1);
+      this.series.applyOptions({ priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec} }); LC.chartStyle.apply(this);
       this.shown = this.candles; this.renderAll(); this.chart.timeScale().scrollToRealTime();
       ld.hidden = true;
     }catch(e){ ld.textContent = '데이터를 못 불러왔어요. 종목이나 인터넷 연결을 확인해 주세요.'; return }
@@ -1282,7 +1371,7 @@ class ChartView {
   setLegend(b){
     if(!b) return; const pr = this.prec, cls = b.close >= b.open ? 'up' : 'down', d = b.close - b.open;
     this.q('.lg-o').innerHTML = ['시','고','저','종'].map((k, i) => `<i>${k}</i><span class="num ${cls}">${LC.fmtN([b.open,b.high,b.low,b.close][i], pr)}</span>`).join('')
-      + `<span class="num ${cls}">${d>=0?'+':''}${LC.fmtN(d, pr)} (${LC.fmtPct(b.open ? d/b.open*100 : 0)})</span>`;
+      + `<span class="num lg-chg ${cls}">${d>=0?'+':''}${LC.fmtN(d, pr)} (${LC.fmtPct(b.open ? d/b.open*100 : 0)})</span>`;
     this.q('.lg-i').querySelectorAll('.lgr').forEach(row => { const ind = this.inds.find(i => i.id === row.dataset.id); if(!ind) return;
       const vals = ind.def.series.map(s => { const arr = ind.data[s.key] || []; let v = null;
         for(let i = arr.length-1; i >= 0 && i >= arr.length-1500; i--) if(arr[i].time <= b.time){ if(arr[i].time === b.time || ind.def.async) v = arr[i].value; break }
@@ -1354,8 +1443,15 @@ const P = {
     this.el = el; this.app = app;
     el.innerHTML = `<div class="sub-tabs"><button data-t="fav" class="on">즐겨찾기</button><button data-t="all">전체 종목</button><button data-t="gain">상승</button><button data-t="loss">하락</button></div>
       <div class="search"><input id="q" placeholder="종목 검색 (예: SOL)" autocomplete="off" aria-label="종목 검색"></div>
-      <div class="lhead"><div></div><div data-s="s">종목</div><div data-s="c">현재가</div><div data-s="P">등락률</div></div>
-      <div class="list"></div>`;
+      <div class="lhead"><div></div><div data-s="s">심볼</div><div data-s="c">현재가</div><div data-s="P">변동</div><div data-s="P">변동%</div></div>
+      <div class="list"></div><div class="lgrip" title="끌어서 높이 조절"></div><div class="detail"></div>`;
+    const det = el.querySelector('.detail'), grip = el.querySelector('.lgrip'); det.style.height = store.get('detailH', 300) + 'px';
+    grip.onmousedown = e => { e.preventDefault(); const y0 = e.clientY, h0 = det.offsetHeight; let h = h0;
+      const mv = ev => { h = Math.max(120, Math.min(el.offsetHeight - 160, h0 + y0 - ev.clientY)); det.style.height = h + 'px' };
+      const up = () => { store.set('detailH', h); document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up) };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up) };
+    setInterval(() => { if(!this.el.hidden) this.detail() }, 1000);
+    setInterval(() => this.loadOI(), 30000);
     this.list = el.querySelector('.list');
     el.querySelector('.sub-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.tab = b.dataset.t;
       el.querySelectorAll('.sub-tabs button').forEach(x => x.classList.toggle('on', x === b)); this.render() };
@@ -1370,7 +1466,24 @@ const P = {
     this.list.onscroll = () => { this.scrolled = Date.now() };
   },
   favs(){ return store.get('favs_' + this.market, ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT','DOGEUSDT','BNBUSDT']) },
-  onSymbol(v){ if(v.market !== this.market) this.onMarket(v.market); else this.markSel() },
+  onSymbol(v){ if(v.market !== this.market) this.onMarket(v.market); else this.markSel(); this.oi = null; this.loadOI(); this.detail() },
+  async loadOI(){ const v = this.app.v; if(!v || v.market !== 'futures' || this.el.hidden) return;
+    try{ const d = await LC.getJSON(`${LC.EP.futures.rest}/openInterest?symbol=${v.sym}`); if(v.sym === d.symbol) this.oi = { sym:v.sym, q:+d.openInterest } }catch(e){} },
+  /* 아래쪽 종목 상세 */
+  detail(){
+    const v = this.app.v, el = this.el.querySelector('.detail'); if(!v || !el) return;
+    const t = (this.app.tickers[v.market] || {})[v.sym] || {}, last = v.last ? v.last.close : t.c, pr = v.prec, P = t.P || 0, cls = P >= 0 ? 'up' : 'down';
+    const chg = last && t.P != null ? last - last/(1 + P/100) : null, f = this.app.fund && this.app.fund.sym === v.sym ? this.app.fund : null;
+    const hl = LC.hl && LC.hl.ready ? LC.hl.positions(v.sym.replace(/USDT$/, '').replace(/^1000/, 'k')) : [], lv = hl.filter(p => p.szi > 0).reduce((s, p) => s + p.val, 0), sv = hl.filter(p => p.szi < 0).reduce((s, p) => s + p.val, 0);
+    const kv = (k, val) => `<div class="dk"><span>${k}</span><b class="num">${val}</b></div>`;
+    el.innerHTML = `<div class="d-h"><span class="d-ic">${esc(v.sym.replace(/USDT$/, '').slice(0, 1))}</span><b>${esc(v.sym.replace(/USDT$/, ''))}</b><span class="dim">${v.market === 'futures' ? 'USDT 무기한 · 바이낸스' : 'USDT 현물 · 바이낸스'}</span></div>
+      <div class="d-p"><span class="num big ${cls}">${last ? LC.fmtN(last, pr) : '-'}</span><span class="dim">USDT</span><span class="num ${cls}">${chg != null ? (chg >= 0 ? '+' : '') + LC.fmtN(chg, pr) : ''}</span><span class="num ${cls}">${t.P != null ? LC.fmtPct(P) : ''}</span></div>
+      <div class="d-live"><i class="dotl"></i>${v.kws ? '실시간' : '연결 중'}</div>
+      <div class="d-grid">${kv('24h 고가', t.h ? LC.fmtN(t.h, pr) : '-')}${kv('24h 저가', t.l ? LC.fmtN(t.l, pr) : '-')}${kv('24h 거래대금', t.q ? LC.fmtBig(t.q) : '-')}
+        ${v.market === 'futures' ? kv('펀딩비', f ? `<span class="${f.rate >= 0 ? 'up' : 'down'}">${(f.rate*100).toFixed(4)}%</span>` : '-') + kv('다음 펀딩', f ? LC.fmtDur(Math.max(0, f.next - Date.now())) : '-')
+          + kv('미결제약정', this.oi && this.oi.sym === v.sym && last ? '$' + LC.fmtBig(this.oi.q * last) : '-') + kv('마크 가격', f ? LC.fmtN(f.mark, pr) : '-') : ''}
+        ${hl.length ? kv('HL 고래 롱', '<span class="up">$' + LC.fmtBig(lv) + '</span>') + kv('HL 고래 숏', '<span class="down">$' + LC.fmtBig(sv) + '</span>') : ''}</div>`;
+  },
   async onMarket(m){
     if(this.market === m) return; this.market = m; this.ws && this.ws.close();
     const T = this.app.tickers[m] = {};
@@ -1399,7 +1512,7 @@ const P = {
     const t = (this.app.tickers[this.market] || {})[s] || {}, fav = this.favs().includes(s), cls = (t.P||0) >= 0 ? 'up' : 'down';
     return `<div class="wrow ${this.app.v && s === this.app.v.sym ? 'sel' : ''}" data-s="${esc(s)}"><button class="star ${fav?'on':''}" data-star="${esc(s)}" aria-label="즐겨찾기">★</button>
       <div class="nm">${esc(s.replace(/USDT$/, ''))}<small>${t.q ? '거래대금 ' + LC.fmtBig(t.q) : ''}</small></div>
-      <div class="px num ${cls}">${t.c != null ? LC.fmtPx(t.c) : '-'}</div><div class="pc num ${cls}">${t.P != null ? LC.fmtPct(t.P) : '-'}</div></div>`;
+      <div class="px num">${t.c != null ? LC.fmtPx(t.c) : '-'}</div><div class="ch num ${cls}">${t.P != null && t.c ? LC.fmtPx(t.c - t.c/(1 + t.P/100)) : '-'}</div><div class="pc num ${cls}">${t.P != null ? LC.fmtPct(t.P) : '-'}</div></div>`;
   },
   render(){ if(!this.market) return; const s = this.syms(); this.list.innerHTML = s.length ? s.map(x => this.row(x)).join('') : `<div class="empty">${this.tab === 'fav' ? '★을 눌러 즐겨찾기를 추가해 보세요' : '검색 결과가 없어요'}</div>` },
   markSel(){ this.list.querySelectorAll('.wrow').forEach(r => r.classList.toggle('sel', this.app.v && r.dataset.s === this.app.v.sym)) },
@@ -1409,8 +1522,8 @@ const P = {
     const map = {}; this.list.querySelectorAll('.wrow').forEach(r => map[r.dataset.s] = r);
     const T = this.app.tickers[this.market];
     ch.forEach(([s, dir]) => { const r = map[s]; if(!r) return; const t = T[s], cls = t.P >= 0 ? 'up' : 'down';
-      const px = r.querySelector('.px'), pc = r.querySelector('.pc');
-      px.textContent = LC.fmtPx(t.c); px.className = 'px num ' + cls; pc.textContent = LC.fmtPct(t.P); pc.className = 'pc num ' + cls;
+      const px = r.querySelector('.px'), pc = r.querySelector('.pc'), chc = r.querySelector('.ch');
+      px.textContent = LC.fmtPx(t.c); pc.textContent = LC.fmtPct(t.P); pc.className = 'pc num ' + cls; chc.textContent = LC.fmtPx(t.c - t.c/(1 + t.P/100)); chc.className = 'ch num ' + cls;
       r.querySelector('small').textContent = '거래대금 ' + LC.fmtBig(t.q);
       r.classList.remove('flash-up','flash-down'); void r.offsetWidth; r.classList.add(dir > 0 ? 'flash-up' : 'flash-down') });
   },
@@ -2368,22 +2481,38 @@ const app = LC.app = {
     $('sFund').innerHTML = `<span class="${f.rate>=0?'up':'down'}">${(f.rate*100).toFixed(4)}%</span> · ${LC.fmtDur(left)}`;
   },
 
-  /* 작도 도구 막대 */
+  /* 작도 도구 막대: 트레이딩뷰처럼 묶음별로, 오른쪽 작은 화살표를 누르면 묶음 안 도구가 펼쳐져요 */
   buildTools(){
-    const svg = p => `<svg viewBox="0 0 24 24">${p}</svg>`;
-    $('tools').innerHTML = TOOLS.map(([k,t,p]) => `<button data-tool="${k}" title="${t}" aria-label="${t}">${svg(p)}</button>`).join('')
-      + '<span class="tsep"></span>' + EXTRA.map(([k,t,p]) => `<button data-x="${k}" title="${t}" aria-label="${t}">${svg(p)}</button>`).join('');
-    $('tools').onclick = e => { const b = e.target.closest('button'); if(!b) return;
+    const svg = p => `<svg viewBox="0 0 24 24">${p}</svg>`, T = Object.fromEntries(TOOLS.map(t => [t[0], t]));
+    const GROUPS = [['cross',['cross']], ['line',['trend','ray','ext','hline','hray','vline']], ['fib',['fib']], ['shape',['rect']], ['pos',['pos','measure']], ['text',['text']], ['alert',['alert']]];
+    this.groupPick = store.get('toolPick', {});
+    const btn = ([g, list]) => { const k = this.groupPick[g] && list.includes(this.groupPick[g]) ? this.groupPick[g] : list[0], t = T[k];
+      return `<div class="tg" data-g="${g}"><button data-tool="${k}" title="${t[1]}" aria-label="${t[1]}">${svg(t[2])}</button>${list.length > 1 ? `<button class="fly" data-fly="${g}" title="더 보기" aria-label="${t[1]} 묶음 펼치기"><svg viewBox="0 0 8 8"><path d="M2 1l3 3-3 3"/></svg></button>` : ''}</div>` };
+    const draw = () => { $('tools').innerHTML = GROUPS.map(btn).join('')
+      + '<span class="tsep"></span>' + EXTRA.map(([k,t,p]) => `<button data-x="${k}" title="${t}" aria-label="${t}">${svg(p)}</button>`).join(''); this.syncTools() };
+    draw();
+    $('tools').onclick = e => { const f = e.target.closest('[data-fly]');
+      if(f){ const g = f.dataset.fly, list = GROUPS.find(x => x[0] === g)[1], r = f.closest('.tg').getBoundingClientRect();
+        document.querySelectorAll('.tfly').forEach(m => m.remove());
+        const m = document.createElement('div'); m.className = 'tfly'; m.style.left = (r.right + 4) + 'px'; m.style.top = r.top + 'px';
+        m.innerHTML = list.map(k => `<button data-k="${k}" class="${k === this.tool ? 'on' : ''}">${svg(T[k][2])}<span>${T[k][1]}</span></button>`).join('');
+        document.body.appendChild(m);
+        const off = ev => { if(!m.contains(ev.target)){ m.remove(); document.removeEventListener('mousedown', off, true) } }; setTimeout(() => document.addEventListener('mousedown', off, true));
+        m.onclick = ev => { const b = ev.target.closest('[data-k]'); if(!b) return; this.groupPick[g] = b.dataset.k; store.set('toolPick', this.groupPick); m.remove(); draw(); this.setTool(b.dataset.k) };
+        return }
+      const b = e.target.closest('button'); if(!b) return;
       if(b.dataset.tool) return this.setTool(this.tool === b.dataset.tool && b.dataset.tool !== 'cross' ? 'cross' : b.dataset.tool);
       const x = b.dataset.x;
       if(x === 'undo') return this.v && this.v.drawings.undo();
       if(x === 'clear') return this.v && this.v.drawings.clear();
       this[x] = !this[x]; if(x === 'magnet') store.set('magnet', this.magnet); this.syncTools() };
-    this.syncTools();
   },
   syncTools(){ document.querySelectorAll('#tools [data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === this.tool));
     document.querySelectorAll('#tools [data-x]').forEach(b => b.classList.toggle('on', !!this[b.dataset.x])) },
-  setTool(t){ this.tool = t; this.views.forEach(v => { v.drawings.draft = null; v.box.classList.toggle('tool-on', t !== 'cross') }); this.syncTools() },
+  setTool(t){
+    const G = {trend:'line',ray:'line',ext:'line',hline:'line',hray:'line',vline:'line',pos:'pos',measure:'pos'};
+    if(G[t] && this.groupPick && this.groupPick[G[t]] !== t && document.querySelector(`#tools .tg[data-g="${G[t]}"]`)){ this.groupPick[G[t]] = t; store.set('toolPick', this.groupPick); this.buildTools() }
+    this.tool = t; this.views.forEach(v => { v.drawings.draft = null; v.box.classList.toggle('tool-on', t !== 'cross') }); this.syncTools() },
 
   onKey(e){
     const tag = (e.target.tagName || '').toLowerCase(); if(tag === 'input' || tag === 'textarea' || tag === 'select') return;
