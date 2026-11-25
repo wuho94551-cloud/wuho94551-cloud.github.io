@@ -741,13 +741,13 @@ LC.IndFill = IndFill;
 
 /* 차트 전체 설정 (모든 칸에 같이 적용, 바꾼 값만 저장) */
 const DEF = theme => { const light = theme === 'light';
-  return { upColor:'#16c784', downColor:'#ea3943', borderVisible:false, borderUp:'#16c784', borderDown:'#ea3943', wickVisible:true, wickUp:'#16c784', wickDown:'#ea3943',
+  return { upColor:'#3d5f99', downColor:'#8a8e96', bodyVisible:false, borderVisible:true, borderUp:'#5b9cf6', borderDown: light ? '#787b86' : '#d1d4dc', wickVisible:true, wickUp:'#5b9cf6', wickDown: light ? '#787b86' : '#d1d4dc',
     lineColor:'#4aa3ff', lineWidth:2,
     bgType:'solid', bg1: light ? '#ffffff' : '#0b0f15', bg2: light ? '#eef2f7' : '#121a26',
     vGrid:true, vGridColor: light ? 'rgba(0,0,0,0.06)' : 'rgba(35,45,59,0.6)', hGrid:true, hGridColor: light ? 'rgba(0,0,0,0.06)' : 'rgba(35,45,59,0.6)',
     crossMode:'0', crossColor: light ? '#7a8699' : '#5d6b80', crossStyle:'3',
     textColor: light ? '#4a5566' : '#8b97a8', fontSize:11, lastLine:true, lastLabel:true,
-    watermark:false, legendOHLC:true, legendVals:true, countdown:true, bodyVisible:true, prevClose:false, precision:'auto', legendTitle:true, legendChange:true, scaleLabels:true, indLabels:true } };
+    watermark:false, legendOHLC:true, legendVals:true, countdown:true, prevClose:false, precision:'auto', legendTitle:true, legendChange:true, scaleLabels:true, indLabels:true } };
 const CS = LC.chartStyle = {
   user: store.get('chartStyle', {}),
   get(){ return { ...DEF(LC.app && LC.app.theme), ...this.user } },
@@ -755,6 +755,7 @@ const CS = LC.chartStyle = {
   reset(){ this.user = {}; store.set('chartStyle', {}); this.applyAll() },
   applyAll(){ (LC.app ? LC.app.views : []).forEach(v => this.apply(v)) },
   mainOpts(type){ const S = this.get(), o = { priceLineVisible:S.lastLine, lastValueVisible:S.lastLabel };
+    if((type === 'candle' || type === 'ha') && !S.bodyVisible) Object.assign(o, { priceLineVisible:false, lastValueVisible:false });
     if(type === 'candle' || type === 'ha') Object.assign(o, { upColor: S.bodyVisible ? S.upColor : 'rgba(0,0,0,0)', downColor: S.bodyVisible ? S.downColor : 'rgba(0,0,0,0)', borderVisible:S.borderVisible, borderUpColor:S.borderUp, borderDownColor:S.borderDown,
       wickVisible:S.wickVisible, wickUpColor:S.wickUp, wickDownColor:S.wickDown });
     if(type === 'hollow') Object.assign(o, { upColor:'rgba(0,0,0,0)', downColor:S.downColor, borderVisible:true, borderUpColor:S.upColor, borderDownColor:S.downColor, wickVisible:S.wickVisible, wickUpColor:S.wickUp, wickDownColor:S.wickDown });
@@ -771,7 +772,7 @@ const CS = LC.chartStyle = {
       grid:{ vertLines:{ visible:S.vGrid, color:S.vGridColor }, horzLines:{ visible:S.hGrid, color:S.hGridColor } },
       crosshair:{ mode:+S.crossMode, vertLine:line(S.crossColor), horzLine:line(S.crossColor) },
       rightPriceScale:{ borderColor:border }, timeScale:{ borderColor:border } });
-    v.series.applyOptions(this.mainOpts(v.type));
+    v.series.applyOptions(this.mainOpts(v.type)); v.lastLabel && v.lastLabel();
     const pr = S.precision === 'auto' ? (v.autoPrec ?? v.prec) : +S.precision; if(v.prec !== pr){ v.autoPrec = v.autoPrec ?? v.prec; v.prec = pr; v.series.applyOptions({ priceFormat:{ type:'price', precision:pr, minMove:1/10**pr } }) }
     if(v.prevCloseOn !== S.prevClose){ v.prevCloseOn = S.prevClose; if(v.shown && v.shown.length) v.renderAll() }
     v.inds.forEach(i => i.series.forEach(se => { try{ se.applyOptions({ lastValueVisible: !i.def.overlay && S.indLabels }) }catch(e){} }));
@@ -1141,8 +1142,8 @@ class ChartView {
       layout:{ background:{color:'transparent'}, textColor:'#8b97a8', fontFamily:LC.FONT, fontSize:11, panes:{separatorColor:'#232d3b', separatorHoverColor:'#3b4a5e'} },
       grid:{ vertLines:{color:'rgba(35,45,59,.6)'}, horzLines:{color:'rgba(35,45,59,.6)'} },
       crosshair:{ mode:L.CrosshairMode.Normal },
-      rightPriceScale:{ borderColor:'#232d3b', scaleMargins:{top:0.1, bottom:0.2} },
-      timeScale:{ borderColor:'#232d3b', timeVisible:true, secondsVisible:false, rightOffset:8,
+      rightPriceScale:{ borderColor:'#232d3b', scaleMargins:{top:0.12, bottom:0.14} },
+      timeScale:{ borderColor:'#232d3b', timeVisible:true, secondsVisible:false, rightOffset:8, barSpacing:4, minBarSpacing:0.5,
         tickMarkFormatter:(t, type) => { const d = new Date(t*1000); return type===0 ? String(d.getFullYear()) : type===1 ? (d.getMonth()+1)+'월' : type===2 ? (d.getMonth()+1)+'/'+d.getDate() : LC.pad(d.getHours())+':'+LC.pad(d.getMinutes()) } },
       localization:{ locale:'ko-KR', timeFormatter:t => { const d = new Date(t*1000); return `${d.getFullYear()}-${LC.pad(d.getMonth()+1)}-${LC.pad(d.getDate())} ${LC.pad(d.getHours())}:${LC.pad(d.getMinutes())}` } }
     });
@@ -1172,8 +1173,15 @@ class ChartView {
   makeMain(){
     if(this.series) this.chart.removeSeries(this.series);
     const t = this.type, opts = { priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec}, ...LC.chartStyle.mainOpts(t) };
-    this.series = this.chart.addSeries(SERIES_BY_TYPE[t], opts, 0);
+    this.series = this.chart.addSeries(SERIES_BY_TYPE[t], opts, 0); this.lastPL = null;
     if(this.drawings) this.drawings.v = this;
+  }
+  /* 몸통을 비운 캔들은 현재가 라벨이 투명해져서, 경계선 색으로 직접 그려요 */
+  lastLabel(){
+    const S = LC.chartStyle.get(), b = this.shown[this.shown.length-1], need = (this.type === 'candle' || this.type === 'ha') && !S.bodyVisible;
+    if(!need || !b){ if(this.lastPL){ try{ this.series.removePriceLine(this.lastPL) }catch(e){} this.lastPL = null } return }
+    const o = { price:b.close, color: b.close >= b.open ? S.borderUp : S.borderDown, lineWidth:1, lineStyle:2, lineVisible:S.lastLine, axisLabelVisible:S.lastLabel, axisLabelTextColor:'#0d1117' };
+    if(this.lastPL) this.lastPL.applyOptions(o); else this.lastPL = this.series.createPriceLine(o);
   }
   setType(t){ this.type = t; this.makeMain(); this.renderAll(); this.app.save(); LC.paper && LC.paper.lines() }
   toMain(bars){
@@ -1244,12 +1252,12 @@ class ChartView {
     this.checkAlerts(b.close);
     if(this.replay) return;
     this.shown = c;
-    this.series.update(this.mainLast(b));
+    this.series.update(this.mainLast(b)); this.lastLabel();
     this.updateInds(false);
     if(!this.hovering) this.setLegend(b);
   }
   renderAll(){
-    this.series.setData(this.toMain(this.shown));
+    this.series.setData(this.toMain(this.shown)); this.lastPL = null; this.lastLabel();
     this.updateInds(true);
     this.setLegend(this.shown[this.shown.length-1]);
   }
@@ -1276,7 +1284,7 @@ class ChartView {
       else if(s.type === 'area') se = this.chart.addSeries(L.AreaSeries, {...base, priceFormat:{type:'volume'}}, pane);
       else se = this.chart.addSeries(L.LineSeries, {...base, crosshairMarkerVisible:!def.overlay, ...(s.type === 'dots' ? {lineVisible:false, pointMarkersVisible:true, pointMarkersRadius:1.6} : s.type === 'step' ? {lineType:1} : {}),
                  priceFormat: def.overlay ? {type:'price', precision:this.prec, minMove:1/10**this.prec} : {type:'price', precision:2, minMove:0.01}}, pane);
-      if(s.scale) se.priceScale().applyOptions({ scaleMargins:{top: s.scale === 'vol' ? 0.82 : 0.6, bottom:0} });
+      if(s.scale) se.priceScale().applyOptions({ scaleMargins:{top: s.scale === 'vol' ? 0.88 : 0.6, bottom:0} });
       ind.series.push(se);
     });
     if(def.fill){ ind.fillP = new LC.IndFill(this, ind); ind.series[0].attachPrimitive(ind.fillP) }
