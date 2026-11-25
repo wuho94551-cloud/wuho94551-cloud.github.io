@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>wuho.com · 우호</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--panel:#131922;--panel2:#18202b;--line:#232d3b;--ink:#d7dee8;--dim:#7d8a9c;--up:#16c784;--down:#ea3943;--accent:#f0b90b;--blue:#4aa3ff}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 "IBM Plex Sans KR",system-ui,sans-serif;overflow:hidden}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.up{color:var(--up)}.down{color:var(--down)}.muted{color:var(--dim);font-size:13px;margin:0 0 12px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+select{font:inherit;font-size:13px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:4px 6px}
+
+.app{display:grid;grid-template-rows:48px minmax(0,1fr);grid-template-columns:44px minmax(0,1fr) 340px;height:100vh}
+header{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:thin}
+header>*{flex:none}
+.brand{font-weight:600;color:var(--accent);letter-spacing:.02em;font-size:16px}.brand small{font-size:11px;color:var(--dim);font-weight:400;margin-left:2px}
+#errBar{position:fixed;left:0;right:0;bottom:0;z-index:99;background:#ea3943;color:#fff;padding:10px 14px;font-size:13px;display:none;white-space:pre-wrap}
+.sym{font-weight:600;font-size:15px}.last{font-size:17px;font-weight:500}.chg{font-size:13px}
+.sep{width:1px;height:22px;background:var(--line)}
+.seg{display:flex;gap:1px}
+.seg button,.hb{padding:5px 8px;border-radius:4px;color:var(--dim);font-size:13px}
+.seg button:hover,.hb:hover{background:var(--panel2);color:var(--ink)}
+.seg button.on,.hb.on{color:var(--accent);background:var(--panel2)}
+.stat{display:flex;flex-direction:column;font-size:11px;color:var(--dim);line-height:1.2}
+.stat b{font-weight:500;color:var(--ink);font-size:12px}
+.conn{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--down)}.dot.ok{background:var(--up);box-shadow:0 0 6px var(--up)}
+
+#tools{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:2px;overflow-y:auto;scrollbar-width:none}
+#tools button{width:34px;height:32px;flex:none;border-radius:6px;display:grid;place-items:center;color:var(--dim)}
+#tools button:hover{background:var(--panel2);color:var(--ink)}
+#tools button.on{background:var(--panel2);color:var(--accent)}
+#tools svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tsep{width:24px;height:1px;background:var(--line);margin:4px 0;flex:none}
+
+.main{position:relative;min-height:0}
+.views{position:absolute;inset:0;display:grid;gap:1px;background:var(--line)}
+.views.l1{grid-template:minmax(0,1fr)/minmax(0,1fr)}
+.views.l2h{grid-template:minmax(0,1fr)/repeat(2,minmax(0,1fr))}
+.views.l2v{grid-template:repeat(2,minmax(0,1fr))/minmax(0,1fr)}
+.views.l4{grid-template:repeat(2,minmax(0,1fr))/repeat(2,minmax(0,1fr))}
+.cv{position:relative;background:var(--bg);min-height:0;overflow:hidden}
+.views.multi .cv.active{box-shadow:inset 0 0 0 1px var(--accent)}
+.cv-chart{position:absolute;inset:0}
+.draw-layer{position:absolute;left:0;top:0;pointer-events:none;z-index:2}
+.cv.tool-on .cv-chart{cursor:crosshair}.cv.hover-draw .cv-chart{cursor:move}
+.lg{position:absolute;left:8px;top:6px;z-index:4;font-size:12px;line-height:1.55;pointer-events:none;max-width:calc(100% - 90px)}
+.lg1{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.lg1 b{font-weight:600}.lg1 i{font-style:normal;color:var(--dim);margin-right:2px}
+.lgr{display:flex;gap:8px;align-items:center;pointer-events:auto;width:max-content;max-width:100%;padding:0 4px;margin-left:-4px;border-radius:4px}
+.lgr:hover{background:rgba(24,32,43,.85)}
+.lgr.off{opacity:.45}.lgr .vals{color:var(--ink)}
+.views.l4 .lg-i{display:none}
+.lgr .act{display:none;gap:2px}.lgr:hover .act{display:flex}
+.lgr .act button{width:20px;height:20px;border-radius:3px;color:var(--dim);font-size:12px}
+.lgr .act button:hover{background:var(--line);color:var(--ink)}
+.cv-cd{position:absolute;right:72px;bottom:32px;z-index:3;font-size:11px;color:var(--dim);pointer-events:none}
+.cv-load{position:absolute;inset:0;display:grid;place-items:center;color:var(--dim);z-index:3;pointer-events:none}
+.cv-load[hidden]{display:none}
+.sel-bar{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:6;display:none;gap:4px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 6px}
+.sel-bar .sw{width:18px;height:18px;border-radius:50%;border:2px solid transparent}
+.sel-bar .sw.on{border-color:#fff}
+.sel-bar button:not(.sw){padding:2px 6px;border-radius:4px}.sel-bar button:not(.sw):hover{background:var(--line)}
+.cv-replay{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);z-index:6;display:flex;gap:6px;align-items:center;background:var(--panel2);border:1px solid var(--accent);border-radius:8px;padding:5px 8px;font-size:12px}
+.cv-replay[hidden]{display:none}
+.cv-replay button{padding:3px 8px;border-radius:4px;background:var(--line)}
+.cv-replay .rp-t{color:var(--accent);font-weight:600}
+#hint{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--accent);padding:6px 12px;border-radius:6px;font-size:12px;z-index:8;display:none}
+#hint.show{display:block}
+
+aside{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+#asideTabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;flex:none}
+#asideTabs button{flex:1 0 auto;padding:10px 10px;color:var(--dim);font-weight:500;border-bottom:2px solid transparent;font-size:13px}
+#asideTabs button.on{color:var(--ink);border-color:var(--accent)}
+#asideBody{flex:1;min-height:0;position:relative}
+.pn{position:absolute;inset:0;display:flex;flex-direction:column;min-height:0}
+.pn[hidden]{display:none}
+.sub-tabs{display:flex;gap:2px;padding:6px 8px 0;flex:none;flex-wrap:wrap}
+.sub-tabs button{padding:5px 9px;border-radius:4px;color:var(--dim);font-size:12px}
+.sub-tabs button.on{background:var(--panel2);color:var(--ink)}
+.search{padding:8px;flex:none}
+.inp,.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:8px 10px;font:inherit;font-size:13px}
+.lhead,.wrow{display:grid;grid-template-columns:22px minmax(0,1fr) 96px 66px;align-items:center;gap:4px;padding:0 10px}
+.lhead{font-size:11px;color:var(--dim);padding-bottom:4px;border-bottom:1px solid var(--line);flex:none}
+.lhead [data-s]{cursor:pointer}.lhead div:nth-child(n+3){text-align:right}
+.list{overflow-y:auto;flex:1;min-height:0}
+.wrow{height:40px;cursor:pointer;border-bottom:1px solid #1a222d}
+.wrow:hover{background:var(--panel2)}.wrow.sel{background:#1d2633}
+.wrow .nm{font-weight:500;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wrow .nm small{display:block;color:var(--dim);font-size:11px;font-weight:400}
+.wrow .px,.wrow .pc{text-align:right;font-size:12.5px}
+.star{color:#3a4656;font-size:14px;width:22px;height:22px}.star.on{color:var(--accent)}
+.flash-up{animation:fu .6s}.flash-down{animation:fd .6s}
+@keyframes fu{from{background:rgba(22,199,132,.22)}to{background:transparent}}
+@keyframes fd{from{background:rgba(234,57,67,.22)}to{background:transparent}}
+.empty{padding:24px;color:var(--dim);text-align:center;font-size:13px}
+
+.dim{color:var(--dim)}.pad{padding:0 10px;margin:8px 0}
+.flow-ctl{display:flex;flex-wrap:wrap;gap:6px 10px;padding:8px 10px;font-size:12px;color:var(--dim);flex:none;border-bottom:1px solid var(--line)}
+.flow-ctl label{display:flex;align-items:center;gap:4px}
+.flow-ctl select,.flow-ctl input[type=number]{padding:2px 4px;font-size:12px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:4px;width:auto}
+.flow-ctl input[type=number]{width:56px}
+.chk input{accent-color:var(--accent)}
+.liq-chart{padding:6px 10px 4px;flex:none;border-bottom:1px solid var(--line)}
+.liq-sum{font-size:11px;color:var(--dim);margin-top:2px}
+.feed-head,.book-head{display:grid;grid-template-columns:1.3fr 1fr 64px;padding:6px 10px;font-size:11px;color:var(--dim);flex:none}
+.feed-head span:nth-child(n+2),.book-head span:nth-child(n+2){text-align:right}
+.feed{overflow-y:auto;flex:1;min-height:0;font-size:12px}
+.frow{display:grid;grid-template-columns:1.3fr 1fr 64px;padding:3px 10px;gap:6px;align-items:center;border-bottom:1px solid #161d27}
+.frow span:nth-child(n+2){text-align:right}
+.frow.big{background:rgba(240,185,11,.08)}.frow.liq,.frow.mv{cursor:pointer}.frow.liq:hover,.frow.mv:hover{background:var(--panel2)}
+.frow small{font-size:10px}
+.book-ctl{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;font-size:12px;color:var(--dim);flex:none}
+.book-head{grid-template-columns:1fr 1fr 1fr}
+.book{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;font-size:12px}
+.asks,.bids{flex:1;display:flex;flex-direction:column}.asks{justify-content:flex-end}
+.brow{position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;padding:1.5px 10px}
+.brow i{position:absolute;right:0;top:0;bottom:0;opacity:.16}
+.brow.ask i{background:var(--down)}.brow.bid i{background:var(--up)}
+.brow.ask span:first-of-type{color:var(--down)}.brow.bid span:first-of-type{color:var(--up)}
+.brow span{position:relative}.brow span:nth-of-type(n+2){text-align:right}
+.mid{padding:6px 10px;border-block:1px solid var(--line);font-size:14px}.mid small{font-size:11px}
+.imb{padding:8px 10px;flex:none}.imb-bar{height:6px;background:var(--down);border-radius:3px;overflow:hidden}.imb-bar i{display:block;height:100%;background:var(--up)}
+.imb-t{display:flex;justify-content:space-between;font-size:11px;margin-top:3px}
+:root[data-theme=light]{--bg:#ffffff;--panel:#f4f6f9;--panel2:#e8ecf1;--line:#d6dce4;--ink:#18202c;--dim:#5d6878}
+:root[data-theme=light] .wrow{border-color:#e3e7ec}:root[data-theme=light] .wrow.sel{background:#e2e8f0}:root[data-theme=light] .frow{border-color:#e6eaef}
+.hchip{font-size:12px;color:var(--dim);padding:4px 8px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.hb.mk{color:var(--ink);border:1px solid var(--line)}
+.scroll{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{font-weight:500;color:var(--dim);font-size:12px;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.tbl tbody tr{cursor:pointer}.tbl tbody tr:hover{background:var(--panel2)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.kpis>div,.card{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.kpis small{display:block;color:var(--dim);font-size:12px}.kpis b{font-size:20px;font-weight:500}
+.mk-tabs{padding:0 0 12px}
+.heat-ctl{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.heat-ctl .muted{margin:0}
+.heat{position:relative;height:min(62vh,560px)}
+.tile{position:absolute;border-radius:3px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);line-height:1.2}
+.tile:hover{outline:2px solid #fff;z-index:2}.tile b{font-weight:600}.tile span{font-size:11px}
+.tag{font-size:11px;padding:1px 6px;border-radius:10px;background:var(--line);color:var(--ink);white-space:nowrap}
+.tag.up{background:rgba(22,199,132,.18);color:var(--up)}.tag.down{background:rgba(234,57,67,.18);color:var(--down)}
+.temp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.card h4{margin:0 0 8px;font-size:14px}
+.gauge{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}.gauge b{font-size:34px;font-weight:500}
+.bar-row{display:grid;grid-template-columns:96px 1fr 56px;gap:8px;align-items:center;font-size:12px;margin:6px 0}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%}
+.bar-row b{text-align:right;font-weight:500}
+.spark{width:100%;height:70px;display:block}
+.pp-scroll{overflow-y:auto;flex:1;min-height:0;padding-bottom:16px}
+.pp-acc{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px}
+.pp-acc>div{background:var(--panel2);border-radius:6px;padding:6px 8px}.pp-acc small{display:block;font-size:11px;color:var(--dim)}.pp-acc b{font-size:13px;font-weight:500}
+.pp-form{display:grid;gap:8px;padding:0 10px 10px;border-bottom:1px solid var(--line)}
+.pp-form label{display:grid;gap:3px;font-size:12px;color:var(--dim)}.pp-form [hidden]{display:none}
+.pp-form .seg button{flex:1;padding:7px}.pp-form .seg{display:flex}
+.pp-side button.on[data-s=long]{background:rgba(22,199,132,.2);color:var(--up)}.pp-side button.on[data-s=short]{background:rgba(234,57,67,.2);color:var(--down)}
+.pp-pcts{display:flex;gap:4px}.pp-pcts button{flex:1;padding:4px;border:1px solid var(--line);border-radius:4px;font-size:12px;color:var(--dim)}
+.pp-two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+input[type=range]{accent-color:var(--accent);width:100%}
+.pp-info{font-size:12px;margin:0;line-height:1.6}
+.btn.buy{background:var(--up);border-color:var(--up);color:#fff;font-weight:600}.btn.sell{background:var(--down);border-color:var(--down);color:#fff;font-weight:600}
+.btn.sm{padding:2px 8px;font-size:12px}
+.small{font-size:11px;margin:0}
+.lnk{color:var(--blue);font-size:12px;padding:0}
+#asideBody h5{margin:12px 10px 6px;font-size:12px;color:var(--dim);font-weight:500;display:flex;justify-content:space-between;align-items:center}
+.pp-row{padding:6px 10px;border-bottom:1px solid var(--line);font-size:12px}
+.pp-r1{display:flex;align-items:center;gap:6px}.pp-r1 .num{margin-left:auto}.pp-r2{margin-top:2px;font-size:11px;white-space:normal}
+.pf-form{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 10px}.pf-form .btn{grid-column:span 2}
+.empty.sm{padding:10px;font-size:12px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:grid;place-items:center;padding:16px}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:10px;width:min(440px,100%);max-height:86vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal.wide{width:min(980px,100%)}
+.mh{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.mh .x{width:32px;height:32px;border-radius:6px}.mh .x:hover{background:var(--panel2)}
+.mb{padding:16px;overflow:auto}
+.form{display:grid;gap:10px}.form label{display:grid;gap:4px;font-size:12px;color:var(--dim)}
+.row-end{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.btn{padding:8px 14px;border-radius:6px;background:var(--panel2);border:1px solid var(--line)}
+.btn.pri{background:var(--accent);color:#111;border-color:var(--accent);font-weight:600}
+.ind-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.ind-add{text-align:left;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+.ind-add:hover{border-color:var(--accent)}
+.ind-add small{display:block;color:var(--dim);font-size:11px;margin-top:2px}
+#toasts{position:fixed;right:356px;bottom:16px;z-index:60;display:flex;flex-direction:column;gap:6px;max-width:360px}
+.toast{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--blue);padding:9px 12px;border-radius:6px;font-size:13px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast.alert{border-left-color:var(--accent)}.toast.up{border-left-color:var(--up)}.toast.down{border-left-color:var(--down)}
+
+@media(max-width:1000px){
+  .app{grid-template-columns:0 minmax(0,1fr);grid-template-rows:48px minmax(0,1fr) 42vh}
+  #tools{display:none}
+  aside{grid-column:1/-1;border-left:0;border-top:1px solid var(--line)}
+  .stat{display:none}#toasts{right:16px}
+}
+</style>
+</head>
+<body>
+<div id="errBar"></div>
+<script>/* 문제가 생기면 화면 아래에 바로 보여 줘요 */
+window.addEventListener("error",function(e){var b=document.getElementById("errBar");if(!b)return;if(e.target&&e.target!==window&&e.target.tagName!=="SCRIPT")return;b.style.display="block";b.textContent+="문제가 생겼어요: "+(e.message||"스크립트를 못 불러왔어요")+(e.filename?" ("+e.filename.split("/").pop()+":"+e.lineno+")":"")+"\n"},true);
+window.addEventListener("unhandledrejection",function(e){var b=document.getElementById("errBar");if(!b)return;b.style.display="block";b.textContent+="문제가 생겼어요: "+(e.reason&&e.reason.message||e.reason)+"\n"});
+</script>
+<div class="app">
+  <header>
+    <span class="brand">우호 <small>wuho.com</small></span>
+    <span class="sym" id="hSym">-</span><span class="last num" id="hLast">-</span><span class="chg num" id="hChg">-</span>
+    <span class="sep"></span>
+    <div class="seg" id="mkt"><button data-m="futures">선물</button><button data-m="spot">현물</button></div>
+    <span class="sep"></span>
+    <div class="seg" id="tfs"></div>
+    <span class="sep"></span>
+    <select id="typeSel" aria-label="차트 종류"></select>
+    <button class="hb" id="btnInd">지표</button>
+    <button class="hb" id="btnReplay" title="과거 봉부터 한 봉씩 다시 보기">리플레이</button>
+    <select id="laySel" aria-label="차트 분할"></select>
+    <button class="hb" id="btnLog" title="로그 눈금">Log</button>
+    <button class="hb" id="btnPct" title="퍼센트 눈금">%</button>
+    <button class="hb" id="btnShot" title="차트 그림 저장">📷</button>
+    <button class="hb" id="btnFull" title="전체 화면">⛶</button>
+    <button class="hb" id="btnTheme" title="밝은/어두운 화면">◐</button>
+    <span class="sep"></span>
+    <button class="hb mk" id="btnMarket" title="김치 프리미엄, 히트맵, 펀딩·OI, 시장 온도">시장 자료</button>
+    <span class="hchip" id="hTemp" title="BTC 최근 3분 ÷ 앞 1시간 평소">시장 온도 -</span>
+    <span class="sep"></span>
+    <div class="stat"><span>24h 고가</span><b class="num" id="sHigh">-</b></div>
+    <div class="stat"><span>24h 저가</span><b class="num" id="sLow">-</b></div>
+    <div class="stat"><span>24h 거래대금</span><b class="num" id="sVol">-</b></div>
+    <div class="stat" id="fundBox"><span>펀딩비 · 남은 시간</span><b class="num" id="sFund">-</b></div>
+    <div class="conn"><span class="dot" id="dot"></span><span id="connTxt">연결 중</span></div>
+  </header>
+  <nav id="tools" aria-label="작도 도구"></nav>
+  <section class="main"><div id="views" class="views"></div><div id="hint"></div></section>
+  <aside><div id="asideTabs" role="tablist"></div><div id="asideBody"></div></aside>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"></script>
+<script>if(!window.LightweightCharts){var b=document.getElementById("errBar");b.style.display="block";b.textContent="차트 라이브러리를 못 불러왔어요. 인터넷 연결을 확인하고 새로 고침(F5) 해 주세요.";}</script>
+<script>/* js/util.js */
+/* 공용 도구: 저장소, 포맷, 거래소 주소, 웹소켓, 소리, 알림창 */
+window.LC = window.LC || {};
+LC.panels = LC.panels || [];
+(() => {
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem('lc_'+k); return v ? JSON.parse(v) : d }catch(e){ return d } },
+  set(k, v){ try{ localStorage.setItem('lc_'+k, JSON.stringify(v)) }catch(e){} }
+};
+const TF = [['1m','1분'],['3m','3분'],['5m','5분'],['15m','15분'],['30m','30분'],['1h','1시간'],['2h','2시간'],['4h','4시간'],['12h','12시간'],['1d','1일'],['1w','1주']];
+const TFMS = {'1m':6e4,'3m':18e4,'5m':3e5,'15m':9e5,'30m':18e5,'1h':36e5,'2h':72e5,'4h':144e5,'12h':432e5,'1d':864e5,'1w':6048e5};
+const EP = {
+  futures:{ rest:'https://fapi.binance.com/fapi/v1', data:'https://fapi.binance.com/futures/data',
+            ws:'wss://fstream.binance.com/market/ws', wsPub:'wss://fstream.binance.com/public/ws' },
+  spot:{ rest:'https://api.binance.com/api/v3', ws:'wss://stream.binance.com:9443/ws', wsPub:'wss://stream.binance.com:9443/ws' }
+};
+const autoPrec = v => { v = Math.abs(v); return v>=1000?1 : v>=100?2 : v>=1?3 : v>=0.01?5 : 7 };
+const fmtN = (v, d) => (v==null || isNaN(v)) ? '-' : Number(v).toLocaleString('en-US',{minimumFractionDigits:d, maximumFractionDigits:d});
+const fmtPx = v => fmtN(v, autoPrec(v));
+const fmtBig = v => { v = Number(v); const a = Math.abs(v);
+  return a>=1e9 ? (v/1e9).toFixed(2)+'B' : a>=1e6 ? (v/1e6).toFixed(2)+'M' : a>=1e3 ? (v/1e3).toFixed(1)+'K' : v.toFixed(a<10?2:0) };
+const fmtPct = v => (v>=0?'+':'') + Number(v).toFixed(2) + '%';
+const pad = n => String(n).padStart(2,'0');
+const fmtClock = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` };
+const fmtDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms/36e5), m = Math.floor(ms%36e5/6e4), s = Math.floor(ms%6e4/1e3);
+  return h>0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}` };
+async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error(r.status); return r.json() }
+
+/* 자동 재연결 웹소켓. onOpen(ws)에서 구독 메시지를 보낼 수 있어요 */
+function openWS(url, onMsg, onState, onOpen){
+  let ws, closed = false, retry = 0, ping;
+  const go = () => {
+    ws = new WebSocket(url);
+    ws.onopen = () => { retry = 0; onState && onState(true); onOpen && onOpen(ws) };
+    ws.onmessage = e => { try{ onMsg(JSON.parse(e.data)) }catch(x){ console.error(x) } };
+    ws.onclose = () => { onState && onState(false); if(!closed) setTimeout(go, Math.min(1e4, 1000 * 2 ** retry++)) };
+    ws.onerror = () => ws.close();
+  };
+  go();
+  return { close(){ closed = true; clearInterval(ping); try{ ws.close() }catch(e){} },
+           send(m){ try{ ws.readyState === 1 && ws.send(typeof m === 'string' ? m : JSON.stringify(m)) }catch(e){} },
+           keepAlive(msg, ms){ ping = setInterval(() => this.send(msg), ms) } };
+}
+
+let actx;
+function beep(freq = 880, dur = 0.12, vol = 0.15){
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.value = freq; g.gain.value = vol; o.connect(g); g.connect(actx.destination);
+    o.start(); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur); o.stop(actx.currentTime + dur);
+  }catch(e){}
+}
+function toast(msg, cls = '', ms = 5000){
+  let box = $('toasts');
+  if(!box){ box = document.createElement('div'); box.id = 'toasts'; document.body.appendChild(box) }
+  const t = document.createElement('div'); t.className = 'toast ' + cls; t.textContent = msg;
+  t.onclick = () => t.remove();
+  box.prepend(t); setTimeout(() => t.remove(), ms);
+  while(box.children.length > 6) box.lastChild.remove();
+}
+function notify(title, body){
+  toast(title + ' · ' + body, 'alert', 10000); beep(990, 0.18); setTimeout(() => beep(1320, 0.18), 200);
+  try{ if('Notification' in window && Notification.permission === 'granted') new Notification(title, {body}) }catch(e){}
+}
+/* 공용 모달 */
+function modal(title, html, onMount, wide){
+  const bg = document.createElement('div'); bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal ${wide?'wide':''}" role="dialog" aria-label="${esc(title)}"><div class="mh"><b>${esc(title)}</b><button class="x" aria-label="닫기">✕</button></div><div class="mb">${html}</div></div>`;
+  const close = () => { bg.remove(); document.removeEventListener('keydown', onKey) };
+  const onKey = e => { if(e.key === 'Escape') close() };
+  bg.addEventListener('mousedown', e => { if(e.target === bg) close() });
+  bg.querySelector('.x').onclick = close;
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(bg);
+  onMount && onMount(bg.querySelector('.mb'), close);
+  return close;
+}
+function download(name, href){ const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove() }
+
+Object.assign(LC, { $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
+})();
+</script>
+<script>/* js/indicators.js */
+/* 지표 계산과 목록. calc(candles, params, ctx)는 {키: [{time,value,color?}]}를 돌려줘요 */
+(() => {
+const sma = (vals, p) => { const out = new Array(vals.length).fill(null); let s = 0;
+  for(let i=0;i<vals.length;i++){ s += vals[i]; if(i>=p) s -= vals[i-p]; if(i>=p-1) out[i] = s/p } return out };
+const ema = (vals, p) => { const out = new Array(vals.length).fill(null); const k = 2/(p+1); let e = null, sum = 0, n = 0;
+  for(let i=0;i<vals.length;i++){ const v = vals[i]; if(v==null) continue;
+    if(e==null){ sum += v; n++; if(n===p){ e = sum/p; out[i] = e } } else { e = v*k + e*(1-k); out[i] = e } } return out };
+/* 앞쪽 빈 값(null)을 건너뛰는 단순 이동평균 */
+const smaN = (vals, p) => { const out = new Array(vals.length).fill(null); const w = []; let sum = 0;
+  for(let i=0;i<vals.length;i++){ const v = vals[i]; if(v==null) continue; w.push(v); sum += v; if(w.length>p) sum -= w.shift(); if(w.length===p) out[i] = sum/p } return out };
+const rma = (vals, p) => { const out = new Array(vals.length).fill(null); let r = null, s = 0, n = 0;
+  for(let i=0;i<vals.length;i++){ const v = vals[i]; if(v==null) continue;
+    if(r==null){ s += v; n++; if(n===p){ r = s/p; out[i] = r } } else { r = (r*(p-1)+v)/p; out[i] = r } } return out };
+const stdev = (vals, p, mean) => vals.map((_, i) => { if(mean[i]==null) return null; let s = 0;
+  for(let j=i-p+1;j<=i;j++) s += (vals[j]-mean[i])**2; return Math.sqrt(s/p) });
+const src = (c, key) => c.map(b => key==='hl2' ? (b.high+b.low)/2 : key==='hlc3' ? (b.high+b.low+b.close)/3 : b[key]);
+const toSeries = (c, vals) => { const out = []; for(let i=0;i<c.length;i++) if(vals[i]!=null && isFinite(vals[i])) out.push({time:c[i].time, value:vals[i]}); return out };
+const rsiCalc = (vals, p) => { const g = [null], l = [null];
+  for(let i=1;i<vals.length;i++){ const d = vals[i]-vals[i-1]; g.push(Math.max(d,0)); l.push(Math.max(-d,0)) }
+  const ag = rma(g.slice(1),p), al = rma(l.slice(1),p);
+  return [null, ...ag.map((a,i) => a==null ? null : al[i]===0 ? 100 : 100 - 100/(1 + a/al[i]))] };
+const trueRange = c => c.map((b,i) => i===0 ? b.high-b.low : Math.max(b.high-b.low, Math.abs(b.high-c[i-1].close), Math.abs(b.low-c[i-1].close)));
+
+const DEFS = {
+  VOL:{ label:'거래량', overlay:true, params:{}, series:[{key:'v', type:'hist', scale:'vol'}],
+    calc:c => ({ v: c.map(b => ({time:b.time, value:b.volume, color: b.close>=b.open ? 'rgba(22,199,132,.45)' : 'rgba(234,57,67,.45)'})) }) },
+  MA:{ label:'이동평균선', overlay:true, params:{period:20, type:'SMA', source:'close'}, colors:['#f0b90b'], series:[{key:'m', type:'line'}],
+    title:p => `${p.type} ${p.period}`,
+    calc:(c,p) => { const v = src(c,p.source); return { m: toSeries(c, p.type==='EMA' ? ema(v,+p.period) : sma(v,+p.period)) } } },
+  BB:{ label:'볼린저 밴드', overlay:true, params:{period:20, mult:2}, colors:['#4aa3ff','#8aa0b8','#4aa3ff'],
+    series:[{key:'u',type:'line'},{key:'m',type:'line',dash:true},{key:'l',type:'line'}], title:p=>`BB ${p.period} ${p.mult}`,
+    calc:(c,p) => { const v = src(c,'close'), m = sma(v,+p.period), sd = stdev(v,+p.period,m);
+      return { m:toSeries(c,m), u:toSeries(c,m.map((x,i)=>x==null?null:x+p.mult*sd[i])), l:toSeries(c,m.map((x,i)=>x==null?null:x-p.mult*sd[i])) } } },
+  VWAP:{ label:'VWAP (일간)', overlay:true, params:{}, colors:['#e05bd6'], series:[{key:'v',type:'line'}], title:()=>'VWAP',
+    calc:c => { let day = -1, pv = 0, vv = 0; return { v: c.map(b => { const d = Math.floor(b.time/86400);
+      if(d!==day){ day = d; pv = 0; vv = 0 } const tp = (b.high+b.low+b.close)/3; pv += tp*b.volume; vv += b.volume;
+      return {time:b.time, value: vv ? pv/vv : tp} }) } } },
+  ST:{ label:'슈퍼트렌드', overlay:true, params:{period:10, mult:3}, colors:['#16c784','#ea3943'], series:[{key:'s',type:'line'}], title:p=>`ST ${p.period} ${p.mult}`,
+    calc:(c,p) => { const atr = rma(trueRange(c), +p.period); let up=null, dn=null, trend=1; const out = [];
+      c.forEach((b,i) => { if(atr[i]==null) return; const hl = (b.high+b.low)/2;
+        let nu = hl - p.mult*atr[i], nd = hl + p.mult*atr[i]; const pc = i ? c[i-1].close : b.close;
+        if(up!=null && pc > up) nu = Math.max(nu, up); if(dn!=null && pc < dn) nd = Math.min(nd, dn);
+        if(trend===1 && b.close < (up ?? nu)) trend = -1; else if(trend===-1 && b.close > (dn ?? nd)) trend = 1;
+        up = nu; dn = nd; out.push({time:b.time, value: trend===1 ? up : dn, color: trend===1 ? '#16c784' : '#ea3943'}) });
+      return { s: out } } },
+  RSI:{ label:'RSI', overlay:false, params:{period:14}, colors:['#b38cff'], series:[{key:'r',type:'line'}], levels:[70,30], title:p=>`RSI ${p.period}`,
+    calc:(c,p) => ({ r: toSeries(c, rsiCalc(src(c,'close'), +p.period)) }) },
+  MACD:{ label:'MACD', overlay:false, params:{fast:12, slow:26, signal:9}, colors:['#4aa3ff','#f0a33b','#888'],
+    series:[{key:'m',type:'line'},{key:'s',type:'line'},{key:'h',type:'hist'}], levels:[0], title:p=>`MACD ${p.fast} ${p.slow} ${p.signal}`,
+    calc:(c,p) => { const v = src(c,'close'), f = ema(v,+p.fast), s = ema(v,+p.slow);
+      const m = f.map((x,i) => x==null || s[i]==null ? null : x - s[i]);
+      const sig = ema(m, +p.signal);
+      const h = m.map((x,i) => x==null || sig[i]==null ? null : x - sig[i]);
+      return { m:toSeries(c,m), s:toSeries(c,sig), h: toSeries(c,h).map((d,i,a) => ({...d, color: d.value>=0 ? (i && a[i-1].value>d.value ? 'rgba(22,199,132,.45)' : '#16c784') : (i && a[i-1].value<d.value ? 'rgba(234,57,67,.45)' : '#ea3943')})) } } },
+  STOCHRSI:{ label:'스토캐스틱 RSI', overlay:false, params:{rsi:14, stoch:14, k:3, d:3}, colors:['#4aa3ff','#f0a33b'],
+    series:[{key:'k',type:'line'},{key:'d',type:'line'}], levels:[80,20], title:p=>`StochRSI ${p.rsi} ${p.stoch}`,
+    calc:(c,p) => { const r = rsiCalc(src(c,'close'), +p.rsi);
+      const st = r.map((x,i) => { if(x==null || i < +p.stoch-1) return null; const w = r.slice(i-p.stoch+1, i+1); if(w.some(v=>v==null)) return null;
+        const lo = Math.min(...w), hi = Math.max(...w); return hi===lo ? 0 : (x-lo)/(hi-lo)*100 });
+      const k = smaN(st, +p.k), d = smaN(k, +p.d);
+      return { k:toSeries(c,k), d:toSeries(c,d) } } },
+  ATR:{ label:'ATR', overlay:false, params:{period:14}, colors:['#ff7aa8'], series:[{key:'a',type:'line'}], title:p=>`ATR ${p.period}`,
+    calc:(c,p) => ({ a: toSeries(c, rma(trueRange(c), +p.period)) }) },
+  OBV:{ label:'OBV', overlay:false, params:{}, colors:['#2ec4b6'], series:[{key:'o',type:'line'}], title:()=>'OBV',
+    calc:c => { let o = 0; return { o: c.map((b,i) => { if(i){ if(b.close>c[i-1].close) o += b.volume; else if(b.close<c[i-1].close) o -= b.volume } return {time:b.time, value:o} }) } } },
+  OI:{ label:'미결제약정 (선물)', overlay:false, async:true, futuresOnly:true, params:{}, colors:['#f0b90b'], series:[{key:'o',type:'area'}], title:()=>'Open Interest',
+    fetch: async (ctx) => { const per = {'1m':'5m','3m':'5m'}[ctx.tf] || (['5m','15m','30m','1h','2h','4h','12h','1d'].includes(ctx.tf) ? ctx.tf : '1d');
+      const rows = await LC.getJSON(`${LC.EP.futures.data}/openInterestHist?symbol=${ctx.sym}&period=${per}&limit=500`);
+      return { o: rows.map(r => ({time: Math.floor(r.timestamp/1000), value: +r.sumOpenInterestValue})) } } },
+  LSR:{ label:'롱/숏 비율 (선물)', overlay:false, async:true, futuresOnly:true, params:{}, colors:['#16c784'], series:[{key:'r',type:'line'}], levels:[1], title:()=>'Long/Short 계정 비율',
+    fetch: async (ctx) => { const per = {'1m':'5m','3m':'5m'}[ctx.tf] || (['5m','15m','30m','1h','2h','4h','12h','1d'].includes(ctx.tf) ? ctx.tf : '1d');
+      const rows = await LC.getJSON(`${LC.EP.futures.data}/globalLongShortAccountRatio?symbol=${ctx.sym}&period=${per}&limit=500`);
+      return { r: rows.map(r => ({time: Math.floor(r.timestamp/1000), value: +r.longShortRatio})) } } }
+};
+const PARAM_LABEL = {period:'기간', type:'종류', source:'기준값', mult:'배수', fast:'빠른선', slow:'느린선', signal:'시그널', rsi:'RSI 기간', stoch:'스토캐스틱 기간', k:'%K', d:'%D'};
+LC.IND = { DEFS, PARAM_LABEL, sma, ema, smaN, rsiCalc };
+})();
+</script>
+<script>/* js/drawings.js */
+/* 작도 엔진: 차트 위 캔버스에 선·도형을 그리고, 끌어서 옮기고, 종목별로 저장해요 */
+(() => {
+const FIB = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1, 1.272, 1.618];
+const FIB_COL = ['#8a94a6','#ea3943','#f0a33b','#16c784','#2ec4b6','#4aa3ff','#8a94a6','#b38cff','#e05bd6'];
+const COLORS = ['#f0b90b','#4aa3ff','#16c784','#ea3943','#e05bd6','#ffffff'];
+const TWO = ['trend','ray','ext','rect','fib','pos','measure'];
+const ONE = ['hline','hray','vline','text','alert'];
+const DEFAULT_COLOR = {alert:'#ff9f1c', pos:'#16c784', text:'#d7dee8'};
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+class Drawings {
+  constructor(view){
+    this.v = view; this.items = []; this.sel = null; this.draft = null; this.drag = null; this.undoStack = [];
+    const cv = this.cv = document.createElement('canvas'); cv.className = 'draw-layer';
+    view.box.appendChild(cv);
+    this.ctx = cv.getContext('2d');
+    this.bar = document.createElement('div'); this.bar.className = 'sel-bar'; view.box.appendChild(this.bar);
+    const cap = {capture:true};
+    ['pointerdown','mousedown','touchstart'].forEach(ev => view.box.addEventListener(ev, e => this.onDown(e), cap));
+    view.box.addEventListener('mousemove', e => this.onHover(e));
+    window.addEventListener('mousemove', e => this.onMove(e));
+    window.addEventListener('mouseup', e => this.onUp(e));
+    view.box.addEventListener('dblclick', e => this.onDbl(e), cap);
+    const loop = () => { if(this.dead) return; try{ this.render() }catch(e){ console.error(e) } requestAnimationFrame(loop) };
+    requestAnimationFrame(loop);
+  }
+  destroy(){ this.dead = true; this.cv.remove(); this.bar.remove() }
+  get app(){ return LC.app }
+  key(){ return 'dr_' + this.v.sym }
+  load(){ this.items = LC.store.get(this.key(), []); this.sel = null; this.draft = null; this.undoStack = []; this.updateBar() }
+  save(){ LC.store.set(this.key(), this.items); this.app && this.app.views.forEach(o => { if(o !== this.v && o.sym === this.v.sym) o.drawings.load() }) }
+  snapshot(){ this.undoStack.push(JSON.stringify(this.items)); if(this.undoStack.length > 50) this.undoStack.shift() }
+  undo(){ const s = this.undoStack.pop(); if(s){ this.items = JSON.parse(s); this.sel = null; this.save(); this.updateBar() } }
+  clear(){ if(!this.items.length) return; this.snapshot(); this.items = []; this.sel = null; this.save(); this.updateBar() }
+  remove(it){ this.snapshot(); this.items = this.items.filter(x => x !== it); if(this.sel === it) this.sel = null; this.save(); this.updateBar() }
+
+  /* 좌표 변환: 시간(초) ↔ x, 가격 ↔ y */
+  bars(){ return this.v.shown }
+  tfSec(){ return LC.TFMS[this.v.tf] / 1000 }
+  tToL(t){ const c = this.bars(); if(!c.length) return null; const n = c.length, sec = this.tfSec();
+    if(t >= c[n-1].time) return n-1 + (t - c[n-1].time)/sec;
+    if(t <= c[0].time) return (t - c[0].time)/sec;
+    let lo = 0, hi = n-1; while(hi - lo > 1){ const m = (lo+hi) >> 1; if(c[m].time <= t) lo = m; else hi = m }
+    return lo + (t - c[lo].time)/(c[hi].time - c[lo].time) }
+  /* 지표 칸이 다른 시간 점을 더할 수 있어서, 봉 시각 → 화면 좌표를 직접 이어 계산해요 */
+  spacing(){ const ts = this.v.chart.timeScale(); const a = ts.logicalToCoordinate(0), b = ts.logicalToCoordinate(1); return (a != null && b != null && b !== a) ? b - a : 6 }
+  tToX(t){ const c = this.bars(); if(!c.length) return null; const ts = this.v.chart.timeScale(), n = c.length, sec = this.tfSec();
+    if(t >= c[n-1].time){ const xl = ts.timeToCoordinate(c[n-1].time); return xl == null ? null : xl + (t - c[n-1].time)/sec * this.spacing() }
+    if(t <= c[0].time){ const x0 = ts.timeToCoordinate(c[0].time); return x0 == null ? null : x0 + (t - c[0].time)/sec * this.spacing() }
+    let lo = 0, hi = n-1; while(hi - lo > 1){ const m = (lo+hi) >> 1; if(c[m].time <= t) lo = m; else hi = m }
+    const x0 = ts.timeToCoordinate(c[lo].time); if(x0 == null || t === c[lo].time) return x0;
+    const x1 = ts.timeToCoordinate(c[hi].time); return x1 == null ? x0 : x0 + (x1 - x0) * (t - c[lo].time)/(c[hi].time - c[lo].time) }
+  xToT(x){ const c = this.bars(); if(!c.length) return null; const ts = this.v.chart.timeScale(), n = c.length, sec = this.tfSec(), sp = this.spacing();
+    const xl = ts.timeToCoordinate(c[n-1].time), x0 = ts.timeToCoordinate(c[0].time);
+    if(xl != null && x > xl + sp/2) return c[n-1].time + Math.round((x - xl)/sp) * sec;
+    if(x0 != null && x < x0 - sp/2) return c[0].time + Math.round((x - x0)/sp) * sec;
+    const t = ts.coordinateToTime(x); if(t == null) return null;
+    let lo = 0, hi = n-1; while(hi - lo > 1){ const m = (lo+hi) >> 1; if(c[m].time <= t) lo = m; else hi = m }
+    return Math.abs(c[hi].time - t) < Math.abs(t - c[lo].time) ? c[hi].time : c[lo].time }
+  pToY(p){ return this.v.series.priceToCoordinate(p) }
+  yToP(y){ return this.v.series.coordinateToPrice(y) }
+  area(){ const ch = this.v.chart; return { w: ch.timeScale().width(), h: ch.panes()[0].getHeight() } }
+  snap(t, p, y){
+    if(!this.app || !this.app.magnet) return p;
+    const c = this.bars(); const l = Math.round(this.tToL(t)); const b = c[l]; if(!b) return p;
+    let best = p, bd = 1e9; [b.open, b.high, b.low, b.close].forEach(v => { const d = Math.abs(this.pToY(v) - y); if(d < bd){ bd = d; best = v } });
+    return bd < 40 ? best : p;
+  }
+  pos(e){ const r = this.v.box.getBoundingClientRect(); const pt = e.touches ? e.touches[0] : e; return { x: pt.clientX - r.left, y: pt.clientY - r.top } }
+  ptAt(x, y){ const t = this.xToT(x); let p = this.yToP(y); if(t == null || p == null) return null; p = this.snap(t, p, y); return { t, p } }
+
+  /* 마우스 */
+  onDown(e){
+    if(e.type === 'touchstart' || e.button > 0) return;
+    if(e.type === 'pointerdown' && e.pointerType !== 'mouse') return;
+    if(e.type === 'mousedown' && this._handled){ this._handled = false; e.stopPropagation(); e.preventDefault(); return }
+    const {x, y} = this.pos(e); const A = this.area();
+    if(x > A.w || (y > A.h && !this.draft)) return;
+    this.app && this.app.setActive(this.v);
+    const tool = this.app ? this.app.tool : 'cross';
+    const stop = () => { e.stopPropagation(); e.preventDefault(); if(e.type === 'pointerdown') this._handled = true };
+    if(tool !== 'cross'){
+      const pt = this.ptAt(x, y); if(!pt){ stop(); return }
+      if(this.draft){ this.finishDraft(pt); stop(); return }
+      if(ONE.includes(tool)){
+        if(tool === 'text'){ this.askText(txt => { if(!txt) return; this.add({type:'text', pts:[pt], text:txt}) }); stop(); return }
+        this.add({type:tool, pts:[pt]}); stop(); return;
+      }
+      this.draft = { id:uid(), type:tool, pts:[pt, {...pt}], color: DEFAULT_COLOR[tool] || COLORS[0] };
+      stop(); return;
+    }
+    if(this.app && this.app.drawLocked) return;
+    const hit = this.hitTest(x, y);
+    if(hit){
+      this.sel = hit.item; this.updateBar();
+      if(!hit.item.locked){ this.snapshot(); this.drag = { item: hit.item, handle: hit.handle, start: this.ptAt(x, y), orig: JSON.parse(JSON.stringify(hit.item.pts)), moved:false } }
+      stop();
+    } else if(this.sel){ this.sel = null; this.updateBar() }
+  }
+  onHover(e){
+    const {x, y} = this.pos(e);
+    if(this.draft){ const pt = this.ptAt(x, y); if(pt) this.draft.pts[1] = pt; return }
+    if(this.drag) return;
+    const tool = this.app ? this.app.tool : 'cross';
+    const hit = tool === 'cross' && !(this.app && this.app.drawLocked) ? this.hitTest(x, y) : null;
+    this.v.box.classList.toggle('hover-draw', !!hit);
+    this.v.box.classList.toggle('tool-on', tool !== 'cross');
+  }
+  onMove(e){
+    if(!this.drag) return;
+    const {x, y} = this.pos(e); const pt = this.ptAt(x, y); if(!pt || !this.drag.start) return;
+    const d = this.drag, it = d.item; d.moved = true;
+    if(d.handle == null){
+      const dt = pt.t - d.start.t, dp = pt.p - d.start.p;
+      it.pts = d.orig.map(o => ({ t: ['hline','alert'].includes(it.type) ? o.t : o.t + dt, p: it.type === 'vline' ? o.p : o.p + dp }));
+      if(it.type === 'alert') it.fired = false;
+    } else if(it.type === 'pos' && d.handle > 0){
+      it.pts[d.handle] = { t: it.pts[d.handle].t, p: pt.p };
+      if(d.handle === 1) it.pts[1].t = pt.t;
+    } else {
+      it.pts[d.handle] = pt;
+      if(it.type === 'pos' && d.handle === 0){ const dp = pt.p - d.orig[0].p; it.pts[1].p = d.orig[1].p + dp; it.pts[2].p = d.orig[2].p + dp }
+    }
+  }
+  onUp(){ if(this.drag){ if(this.drag.moved) this.save(); else this.undoStack.pop(); this.drag = null } }
+  onDbl(e){ const {x, y} = this.pos(e); const hit = this.hitTest(x, y);
+    if(hit && hit.item.type === 'text'){ e.stopPropagation(); this.askText(t => { if(t){ this.snapshot(); hit.item.text = t; this.save() } }, hit.item.text) } }
+  finishDraft(pt){
+    const d = this.draft; d.pts[1] = pt; this.draft = null;
+    if(d.type === 'measure'){ this.measure = d; setTimeout(() => { if(this.measure === d) this.measure = null }, 8000); this.app && this.app.setTool('cross'); return }
+    if(d.type === 'pos'){ const e = d.pts[0].p, s = d.pts[1].p; d.pts[2] = { t: d.pts[1].t, p: e + 2*(e - s) } }
+    this.add(d);
+  }
+  add(it){
+    this.snapshot(); it.id = it.id || uid(); it.color = it.color || DEFAULT_COLOR[it.type] || COLORS[0];
+    this.items.push(it); this.sel = it; this.save(); this.updateBar();
+    if(this.app && !this.app.keepTool) this.app.setTool('cross');
+  }
+  askText(cb, cur = ''){
+    LC.modal('글자 넣기', `<input class="inp" id="txtIn" maxlength="120" value="${LC.esc(cur)}" placeholder="차트에 적을 글자"><div class="row-end"><button class="btn pri" id="txtOk">넣기</button></div>`, (mb, close) => {
+      const i = mb.querySelector('#txtIn'); i.focus();
+      const ok = () => { const v = i.value.trim(); close(); cb(v) };
+      mb.querySelector('#txtOk').onclick = ok; i.onkeydown = e => { if(e.key === 'Enter') ok() };
+    });
+  }
+
+  /* 선택된 개체 도구 막대 */
+  updateBar(){
+    const it = this.sel;
+    if(!it){ this.bar.style.display = 'none'; return }
+    this.bar.style.display = 'flex';
+    this.bar.innerHTML = COLORS.map(c => `<button class="sw ${it.color===c?'on':''}" data-c="${c}" style="background:${c}" aria-label="색 ${c}"></button>`).join('')
+      + `<button data-a="lock" title="잠그기">${it.locked ? '🔒' : '🔓'}</button><button data-a="del" title="지우기 (Delete)">🗑</button>`;
+    this.bar.onmousedown = e => e.stopPropagation();
+    this.bar.onclick = e => { const b = e.target.closest('button'); if(!b) return;
+      if(b.dataset.c){ this.snapshot(); it.color = b.dataset.c; this.save(); this.updateBar() }
+      else if(b.dataset.a === 'lock'){ it.locked = !it.locked; this.save(); this.updateBar() }
+      else if(b.dataset.a === 'del') this.remove(it) };
+  }
+
+  /* 맞춤 검사 */
+  hitTest(x, y){
+    if(this.app && this.app.drawHidden) return null;
+    const A = this.area(); const TOL = 6;
+    const segD = (px, py, x1, y1, x2, y2) => { const dx = x2-x1, dy = y2-y1; const L = dx*dx+dy*dy; let t = L ? ((px-x1)*dx+(py-y1)*dy)/L : 0; t = Math.max(0, Math.min(1, t)); return Math.hypot(px-x1-t*dx, py-y1-t*dy) };
+    const list = this.sel ? [this.sel, ...this.items.filter(i => i !== this.sel).reverse()] : [...this.items].reverse();
+    for(const it of list){
+      const P = it.pts.map(p => ({x: this.tToX(p.t), y: this.pToY(p.p)}));
+      if(P.some(p => p.x == null || p.y == null)) continue;
+      if(it === this.sel) for(let i=0;i<P.length;i++) if(Math.hypot(P[i].x-x, P[i].y-y) < 8) return {item:it, handle:i};
+      const [a, b] = P; let hit = false;
+      switch(it.type){
+        case 'trend': case 'measure': hit = segD(x,y,a.x,a.y,b.x,b.y) < TOL; break;
+        case 'ray': { const k = (b.y-a.y)/((b.x-a.x)||1e-9); const ex = b.x >= a.x ? A.w : 0; hit = segD(x,y,a.x,a.y,ex,a.y+k*(ex-a.x)) < TOL; break }
+        case 'ext': { const k = (b.y-a.y)/((b.x-a.x)||1e-9); hit = segD(x,y,0,a.y-k*a.x,A.w,a.y+k*(A.w-a.x)) < TOL; break }
+        case 'hline': case 'alert': hit = Math.abs(y-a.y) < TOL; break;
+        case 'hray': hit = Math.abs(y-a.y) < TOL && x >= a.x - TOL; break;
+        case 'vline': hit = Math.abs(x-a.x) < TOL; break;
+        case 'rect': { const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x), t = Math.min(a.y,b.y), bo = Math.max(a.y,b.y); hit = x>=l-TOL && x<=r+TOL && y>=t-TOL && y<=bo+TOL; break }
+        case 'fib': { const l = Math.min(a.x,b.x); hit = x >= l-TOL && FIB.some(f => Math.abs(y - this.pToY(it.pts[1].p + (it.pts[0].p-it.pts[1].p)*f)) < TOL); break }
+        case 'pos': { const c = P[2]; const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x); const ys = [a.y,b.y,c.y]; hit = x>=l && x<=r && y>=Math.min(...ys)-TOL && y<=Math.max(...ys)+TOL; break }
+        case 'text': { this.ctx.font = '13px "IBM Plex Sans KR", sans-serif'; const w = this.ctx.measureText(it.text||'').width; hit = x>=a.x-4 && x<=a.x+w+8 && y>=a.y-18 && y<=a.y+6; break }
+      }
+      if(hit) return {item:it, handle:null};
+    }
+    return null;
+  }
+
+  /* 그리기 */
+  render(){
+    const cv = this.cv, ctx = this.ctx, dpr = window.devicePixelRatio || 1;
+    const W = this.v.box.clientWidth, H = this.v.box.clientHeight;
+    if(cv.width !== Math.round(W*dpr) || cv.height !== Math.round(H*dpr)){ cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr); cv.style.width = W+'px'; cv.style.height = H+'px' }
+    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+    if(!this.bars().length) return;
+    const A = this.area();
+    ctx.save(); ctx.beginPath(); ctx.rect(0,0,A.w,A.h); ctx.clip();
+    if(this.v.bubbles) this.v.bubbles.draw(ctx, this, A);
+    const hidden = this.app && this.app.drawHidden;
+    const list = hidden ? [] : [...this.items];
+    if(this.draft) list.push(this.draft);
+    if(this.measure) list.push(this.measure);
+    for(const it of list) this.drawItem(ctx, it, A);
+    ctx.restore();
+    if(this.sel && !hidden && this.items.includes(this.sel)){
+      const a = this.sel.pts.map(p => ({x:this.tToX(p.t), y:this.pToY(p.p)}));
+      a.forEach(p => { if(p.x==null||p.y==null) return; ctx.beginPath(); ctx.arc(p.x,p.y,4.5,0,7); ctx.fillStyle = '#0d1117'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = this.sel.color; ctx.stroke() });
+    }
+  }
+  label(ctx, txt, x, y, bg, fg = '#0d1117', align = 'left'){
+    ctx.font = '11px "IBM Plex Mono", monospace'; const w = ctx.measureText(txt).width + 8;
+    const lx = align === 'right' ? x - w : align === 'center' ? x - w/2 : x;
+    ctx.fillStyle = bg; ctx.fillRect(lx, y-9, w, 18); ctx.fillStyle = fg; ctx.textBaseline = 'middle'; ctx.fillText(txt, lx+4, y);
+  }
+  drawItem(ctx, it, A){
+    const P = it.pts.map(p => ({x:this.tToX(p.t), y:this.pToY(p.p)}));
+    if(P.some(p => p.x == null || p.y == null)) return;
+    const [a, b] = P; const col = it.color || '#f0b90b'; const prec = this.v.prec;
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+    const line = (x1,y1,x2,y2) => { ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke() };
+    switch(it.type){
+      case 'trend': line(a.x,a.y,b.x,b.y); break;
+      case 'ray': { const k = (b.y-a.y)/((b.x-a.x)||1e-9); const ex = b.x >= a.x ? A.w : 0; line(a.x,a.y,ex,a.y+k*(ex-a.x)); break }
+      case 'ext': { const k = (b.y-a.y)/((b.x-a.x)||1e-9); line(0,a.y-k*a.x,A.w,a.y+k*(A.w-a.x)); break }
+      case 'hline': line(0,a.y,A.w,a.y); this.label(ctx, LC.fmtN(it.pts[0].p, prec), A.w-2, a.y, col, '#0d1117', 'right'); break;
+      case 'hray': line(a.x,a.y,A.w,a.y); this.label(ctx, LC.fmtN(it.pts[0].p, prec), A.w-2, a.y, col, '#0d1117', 'right'); break;
+      case 'vline': line(a.x,0,a.x,A.h); break;
+      case 'alert': { const fired = it.fired; ctx.setLineDash([6,4]); ctx.strokeStyle = fired ? '#5b6676' : col; line(0,a.y,A.w,a.y); ctx.setLineDash([]);
+        this.label(ctx, (fired ? '✓ ' : '🔔 ') + LC.fmtN(it.pts[0].p, prec), A.w-2, a.y, fired ? '#5b6676' : col, '#0d1117', 'right'); break }
+      case 'rect': { ctx.globalAlpha = 0.12; ctx.fillRect(Math.min(a.x,b.x), Math.min(a.y,b.y), Math.abs(b.x-a.x), Math.abs(b.y-a.y)); ctx.globalAlpha = 1;
+        ctx.strokeRect(Math.min(a.x,b.x), Math.min(a.y,b.y), Math.abs(b.x-a.x), Math.abs(b.y-a.y)); break }
+      case 'fib': { const l = Math.min(a.x,b.x); const p0 = it.pts[0].p, p1 = it.pts[1].p;
+        ctx.setLineDash([4,3]); ctx.strokeStyle = '#5b6676'; ctx.lineWidth = 1; line(a.x,a.y,b.x,b.y); ctx.setLineDash([]);
+        FIB.forEach((f,i) => { const pr = p1 + (p0-p1)*f; const y = this.pToY(pr); if(y == null) return;
+          ctx.strokeStyle = FIB_COL[i]; line(l,y,A.w,y); ctx.font = '11px "IBM Plex Mono", monospace'; ctx.fillStyle = FIB_COL[i]; ctx.textBaseline = 'bottom';
+          ctx.fillText(`${f} (${LC.fmtN(pr, prec)})`, l+4, y-2) }); break }
+      case 'pos': { const e = it.pts[0].p, s = it.pts[1].p, t = it.pts[2] ? it.pts[2].p : e + 2*(e - s); const long = t > e;
+        const c = {x:b.x, y:this.pToY(t)}; if(c.y == null) break; const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x), w = Math.max(r-l, 30);
+        ctx.globalAlpha = 0.18; ctx.fillStyle = '#16c784'; ctx.fillRect(l, Math.min(a.y,c.y), w, Math.abs(c.y-a.y));
+        ctx.fillStyle = '#ea3943'; ctx.fillRect(l, Math.min(a.y,b.y), w, Math.abs(b.y-a.y)); ctx.globalAlpha = 1;
+        ctx.strokeStyle = '#d7dee8'; ctx.lineWidth = 1; line(l,a.y,l+w,a.y);
+        const rr = Math.abs(t-e)/Math.abs(e-s || 1e-9);
+        this.label(ctx, `${long?'롱':'숏'} 목표 ${LC.fmtN(t,prec)} (${LC.fmtPct((t-e)/e*100)})`, l+w/2, c.y + (long?-11:11), '#16c784', '#0d1117', 'center');
+        this.label(ctx, `손절 ${LC.fmtN(s,prec)} (${LC.fmtPct((s-e)/e*100)})`, l+w/2, b.y + (long?11:-11), '#ea3943', '#fff', 'center');
+        this.label(ctx, `진입 ${LC.fmtN(e,prec)} · 손익비 ${rr.toFixed(2)}`, l+w/2, a.y, '#d7dee8', '#0d1117', 'center');
+        if(this.v.last){ const lp = this.v.last.close; const pnl = (long ? lp-e : e-lp)/e*100;
+          this.label(ctx, `지금 ${LC.fmtPct(pnl)}`, l+w+4, a.y, pnl>=0?'#16c784':'#ea3943', '#0d1117') }
+        break }
+      case 'measure': { const up = b.y < a.y; ctx.globalAlpha = 0.15; ctx.fillStyle = up ? '#4aa3ff' : '#ea3943';
+        ctx.fillRect(Math.min(a.x,b.x), Math.min(a.y,b.y), Math.abs(b.x-a.x), Math.abs(b.y-a.y)); ctx.globalAlpha = 1;
+        const p0 = it.pts[0].p, p1 = it.pts[1].p; const bars = Math.round(this.tToL(it.pts[1].t) - this.tToL(it.pts[0].t));
+        const secs = Math.abs(it.pts[1].t - it.pts[0].t);
+        const dur = secs >= 86400 ? (secs/86400).toFixed(1)+'일' : secs >= 3600 ? (secs/3600).toFixed(1)+'시간' : Math.round(secs/60)+'분';
+        this.label(ctx, `${LC.fmtN(p1-p0, prec)} (${LC.fmtPct((p1-p0)/p0*100)}) · ${bars}봉 · ${dur}`, (a.x+b.x)/2, b.y + (up?-14:14), up ? '#4aa3ff' : '#ea3943', '#fff', 'center'); break }
+      case 'text': { ctx.font = '13px "IBM Plex Sans KR", sans-serif'; ctx.textBaseline = 'alphabetic'; const w = ctx.measureText(it.text||'').width;
+        ctx.globalAlpha = 0.85; ctx.fillStyle = '#131922'; ctx.fillRect(a.x-4, a.y-17, w+8, 22); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillText(it.text||'', a.x, a.y); break }
+    }
+  }
+}
+LC.Drawings = Drawings;
+LC.DRAW_TOOLS = { TWO, ONE };
+})();
+</script>
+<script>/* js/chartview.js */
+/* 차트 한 칸: 캔들, 지표, 작도, 알림, 리플레이 */
+(() => {
+const L = LightweightCharts;
+const SERIES_BY_TYPE = { candle:L.CandlestickSeries, hollow:L.CandlestickSeries, ha:L.CandlestickSeries, bar:L.BarSeries, line:L.LineSeries, area:L.AreaSeries };
+const UP = '#16c784', DN = '#ea3943';
+let seq = 0;
+
+class ChartView {
+  constructor(app, host, cfg){
+    this.app = app; this.id = ++seq;
+    this.sym = cfg.sym || 'BTCUSDT'; this.market = cfg.market || 'futures'; this.tf = cfg.tf || '1m'; this.type = cfg.type || 'candle';
+    this.candles = []; this.shown = []; this.inds = []; this.prec = 2; this.replay = null; this.log = false;
+    const box = this.box = document.createElement('div'); box.className = 'cv';
+    box.innerHTML = `<div class="cv-chart"></div>
+      <div class="lg"><div class="lg1"><b class="lg-t"></b><span class="lg-o"></span></div><div class="lg-i"></div></div>
+      <div class="cv-cd num"></div><div class="cv-load">차트 불러오는 중…</div>
+      <div class="cv-replay" hidden><span class="rp-t">리플레이</span><button data-r="play" title="재생/멈춤">▶</button><button data-r="step" title="한 봉 앞으로 (Shift+→)">⏭</button>
+        <select data-r="speed" aria-label="속도"><option value="1000">1x</option><option value="333">3x</option><option value="100">10x</option></select><span class="rp-time num"></span><button data-r="exit">실시간으로</button></div>`;
+    host.appendChild(box);
+    this.q = s => box.querySelector(s);
+    this.chart = L.createChart(this.q('.cv-chart'), {
+      autoSize:true,
+      layout:{ background:{color:'transparent'}, textColor:'#8b97a8', fontFamily:'IBM Plex Mono, monospace', fontSize:11, panes:{separatorColor:'#232d3b', separatorHoverColor:'#3b4a5e'} },
+      grid:{ vertLines:{color:'rgba(35,45,59,.6)'}, horzLines:{color:'rgba(35,45,59,.6)'} },
+      crosshair:{ mode:L.CrosshairMode.Normal },
+      rightPriceScale:{ borderColor:'#232d3b', scaleMargins:{top:0.1, bottom:0.2} },
+      timeScale:{ borderColor:'#232d3b', timeVisible:true, secondsVisible:false, rightOffset:8,
+        tickMarkFormatter:(t, type) => { const d = new Date(t*1000); return type===0 ? String(d.getFullYear()) : type===1 ? (d.getMonth()+1)+'월' : type===2 ? (d.getMonth()+1)+'/'+d.getDate() : LC.pad(d.getHours())+':'+LC.pad(d.getMinutes()) } },
+      localization:{ locale:'ko-KR', timeFormatter:t => { const d = new Date(t*1000); return `${d.getFullYear()}-${LC.pad(d.getMonth()+1)}-${LC.pad(d.getDate())} ${LC.pad(d.getHours())}:${LC.pad(d.getMinutes())}` } }
+    });
+    this.makeMain();
+    this.bubbles = LC.Bubbles ? new LC.Bubbles() : null;
+    this.drawings = new LC.Drawings(this);
+    this.chart.subscribeCrosshairMove(p => this.onCross(p));
+    this.chart.subscribeClick(p => this.onClick(p));
+    this.chart.timeScale().subscribeVisibleLogicalRangeChange(r => { if(r && r.from < 15 && !this.replay) this.loadMore() });
+    this.q('.cv-replay').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return;
+      ({play:() => this.replayToggle(), step:() => this.replayStep(), exit:() => this.replayExit()})[b.dataset.r]() });
+    this.q('.cv-replay select').onchange = e => { if(this.replay){ this.replay.speed = +e.target.value; if(this.replay.timer){ this.replayToggle(); this.replayToggle() } } };
+    this.q('.lg-i').addEventListener('click', e => this.onLegendClick(e));
+    (cfg.inds || [{key:'VOL'}, {key:'MA', params:{period:7, type:'SMA', source:'close'}, color:'#f0b90b'}, {key:'MA', params:{period:25, type:'SMA', source:'close'}, color:'#e05bd6'}, {key:'MA', params:{period:99, type:'SMA', source:'close'}, color:'#4aa3ff'}])
+      .forEach(c => this.addInd(c.key, c.params, c.color, c.hidden, true));
+    this.load();
+  }
+  cfg(){ return { sym:this.sym, market:this.market, tf:this.tf, type:this.type, inds:this.inds.map(i => ({key:i.key, params:i.params, color:i.color, hidden:i.hidden})) } }
+  destroy(){ this.closeStreams(); this.replayExit(true); this.drawings.destroy(); this.chart.remove(); this.box.remove() }
+
+  makeMain(){
+    if(this.series) this.chart.removeSeries(this.series);
+    const t = this.type, opts = { priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec} };
+    if(t === 'candle' || t === 'ha') Object.assign(opts, { upColor:UP, downColor:DN, borderVisible:false, wickUpColor:UP, wickDownColor:DN });
+    if(t === 'hollow') Object.assign(opts, { upColor:'rgba(0,0,0,0)', downColor:DN, borderUpColor:UP, borderDownColor:DN, wickUpColor:UP, wickDownColor:DN });
+    if(t === 'bar') Object.assign(opts, { upColor:UP, downColor:DN, thinBars:false });
+    if(t === 'line') Object.assign(opts, { color:'#4aa3ff', lineWidth:2 });
+    if(t === 'area') Object.assign(opts, { lineColor:'#4aa3ff', topColor:'rgba(74,163,255,.35)', bottomColor:'rgba(74,163,255,0)', lineWidth:2 });
+    this.series = this.chart.addSeries(SERIES_BY_TYPE[t], opts, 0);
+    if(this.drawings) this.drawings.v = this;
+  }
+  setType(t){ this.type = t; this.makeMain(); this.renderAll(); this.app.save(); LC.paper && LC.paper.lines() }
+  toMain(bars){
+    if(this.type === 'line' || this.type === 'area') return bars.map(b => ({time:b.time, value:b.close}));
+    if(this.type !== 'ha') return bars.map(b => ({time:b.time, open:b.open, high:b.high, low:b.low, close:b.close}));
+    const out = []; bars.forEach((b, i) => { const c = (b.open+b.high+b.low+b.close)/4; const o = i ? (out[i-1].open + out[i-1].close)/2 : (b.open+b.close)/2;
+      out.push({time:b.time, open:o, high:Math.max(b.high,o,c), low:Math.min(b.low,o,c), close:c}) }); this.ha = out; return out;
+  }
+  mainLast(b){
+    if(this.type === 'line' || this.type === 'area') return {time:b.time, value:b.close};
+    if(this.type !== 'ha') return {time:b.time, open:b.open, high:b.high, low:b.low, close:b.close};
+    const prev = this.ha && this.ha.length > 1 ? this.ha[this.ha.length - (this.ha[this.ha.length-1].time === b.time ? 2 : 1)] : null;
+    const c = (b.open+b.high+b.low+b.close)/4, o = prev ? (prev.open+prev.close)/2 : (b.open+b.close)/2;
+    const h = {time:b.time, open:o, high:Math.max(b.high,o,c), low:Math.min(b.low,o,c), close:c};
+    if(this.ha){ if(this.ha.length && this.ha[this.ha.length-1].time === b.time) this.ha[this.ha.length-1] = h; else this.ha.push(h) }
+    return h;
+  }
+
+  /* 데이터 */
+  get rest(){ return LC.EP[this.market].rest }
+  async load(){
+    const tok = this.tok = Math.random();
+    this.closeStreams(); this.replayExit(true); this.noMore = false;
+    const ld = this.q('.cv-load'); ld.hidden = false; ld.textContent = '차트 불러오는 중…';
+    this.q('.lg-t').textContent = `${this.sym}${this.market==='futures'?'.P':''} · ${(LC.TF.find(x=>x[0]===this.tf)||[,''])[1]} · BINANCE`;
+    this.drawings.load(); if(this.bubbles) this.bubbles.items = [];
+    try{
+      const rows = await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000`);
+      if(tok !== this.tok) return;
+      this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5]}));
+      this.prec = this.app.precOf(this.sym, this.market) ?? LC.autoPrec(this.candles.length ? this.candles[this.candles.length-1].close : 1);
+      this.series.applyOptions({ priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec} });
+      this.shown = this.candles; this.renderAll(); this.chart.timeScale().scrollToRealTime();
+      ld.hidden = true;
+    }catch(e){ ld.textContent = '데이터를 못 불러왔어요. 종목이나 인터넷 연결을 확인해 주세요.'; return }
+    this.prevPrice = this.last && this.last.close;
+    this.kws = LC.openWS(`${LC.EP[this.market].ws}/${this.sym.toLowerCase()}@kline_${this.tf}`, m => {
+      if(tok !== this.tok || !m.k) return; const k = m.k;
+      this.onBar({time:Math.floor(k.t/1000), open:+k.o, high:+k.h, low:+k.l, close:+k.c, volume:+k.v});
+    }, ok => this.app.setConn(this, ok));
+    this.inds.filter(i => i.def.async).forEach(i => this.fetchAsync(i));
+    clearInterval(this.asyncTimer); this.asyncTimer = setInterval(() => this.inds.filter(i => i.def.async).forEach(i => this.fetchAsync(i)), 60000);
+    this.app.onViewLoaded(this);
+  }
+  closeStreams(){ this.kws && this.kws.close(); this.kws = null; clearInterval(this.asyncTimer) }
+  async loadMore(){
+    if(this.loadingMore || this.noMore || !this.candles.length) return;
+    this.loadingMore = true; const tok = this.tok;
+    try{
+      const rows = await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000&endTime=${this.candles[0].time*1000-1}`);
+      if(tok !== this.tok) return; if(!rows.length){ this.noMore = true; return }
+      this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5]})).concat(this.candles);
+      this.shown = this.candles; this.renderAll();
+    }catch(e){} finally{ this.loadingMore = false }
+  }
+  get last(){ return this.candles[this.candles.length-1] }
+  set(sym, market){ this.sym = sym; if(market) this.market = market; this.load(); this.app.save() }
+  setTf(tf){ this.tf = tf; this.load(); this.app.save() }
+
+  onBar(b){
+    const c = this.candles, last = c[c.length-1];
+    if(last && last.time === b.time) c[c.length-1] = b; else if(!last || b.time > last.time) c.push(b); else return;
+    this.checkAlerts(b.close);
+    if(this.replay) return;
+    this.shown = c;
+    this.series.update(this.mainLast(b));
+    this.updateInds(false);
+    if(!this.hovering) this.setLegend(b);
+  }
+  renderAll(){
+    this.series.setData(this.toMain(this.shown));
+    this.updateInds(true);
+    this.setLegend(this.shown[this.shown.length-1]);
+  }
+
+  /* 지표 */
+  addInd(key, params, color, hidden, silent){
+    const def = LC.IND.DEFS[key]; if(!def) return;
+    const ind = { id:Math.random().toString(36).slice(2,8), key, def, params:{...def.params, ...(params||{})}, color: color || (def.colors||[])[0], hidden:!!hidden, series:[], data:{} };
+    const pane = def.overlay ? 0 : this.chart.panes().length;
+    def.series.forEach((s, i) => {
+      const col = i === 0 && ind.color ? ind.color : (def.colors||[])[i] || '#888';
+      const base = { priceLineVisible:false, lastValueVisible:!def.overlay, visible:!ind.hidden };
+      let se;
+      if(s.type === 'hist') se = this.chart.addSeries(L.HistogramSeries, {...base, color:col, priceScaleId: s.scale || 'right', priceFormat:{type: key==='VOL' ? 'volume' : 'price', precision:4, minMove:0.0001}, lastValueVisible:false}, pane);
+      else if(s.type === 'area') se = this.chart.addSeries(L.AreaSeries, {...base, lineColor:col, topColor:col+'55', bottomColor:col+'05', lineWidth:2, priceFormat:{type:'volume'}}, pane);
+      else se = this.chart.addSeries(L.LineSeries, {...base, color:col, lineWidth: def.overlay ? 1 : 1.5, lineStyle: s.dash ? 2 : 0, crosshairMarkerVisible:!def.overlay,
+                 priceFormat: def.overlay ? {type:'price', precision:this.prec, minMove:1/10**this.prec} : {type:'price', precision:2, minMove:0.01}}, pane);
+      if(s.scale === 'vol') se.priceScale().applyOptions({ scaleMargins:{top:0.82, bottom:0} });
+      ind.series.push(se);
+    });
+    (def.levels||[]).forEach(l => ind.series[0].createPriceLine({price:l, color:'#4a5568', lineWidth:1, lineStyle:2, axisLabelVisible:false}));
+    this.inds.push(ind); this.layoutPanes();
+    if(!silent){ this.computeInd(ind, true); if(def.async) this.fetchAsync(ind); this.renderLegendInds(); this.app.save() }
+    return ind;
+  }
+  removeInd(ind){ ind.series.forEach(s => this.chart.removeSeries(s)); this.inds = this.inds.filter(i => i !== ind); this.layoutPanes(); this.renderLegendInds(); this.app.save() }
+  layoutPanes(){ try{ this.chart.panes().forEach((p, i) => p.setStretchFactor(i === 0 ? 4 : 1)) }catch(e){} }
+  computeInd(ind, full){
+    if(ind.def.async || !this.shown.length) return;
+    const r = ind.def.calc(this.shown, ind.params);
+    ind.def.series.forEach((s, i) => { const arr = r[s.key] || []; ind.data[s.key] = arr;
+      if(ind.hidden) return;
+      if(full) ind.series[i].setData(arr); else if(arr.length) ind.series[i].update(arr[arr.length-1]) });
+  }
+  updateInds(full){
+    if(full){ this.inds.forEach(i => this.computeInd(i, true)); this.lastIndCalc = Date.now(); this.renderLegendInds(); return }
+    if(Date.now() - (this.lastIndCalc||0) < 400) return;
+    this.lastIndCalc = Date.now(); this.inds.forEach(i => this.computeInd(i, false));
+  }
+  async fetchAsync(ind){
+    if(ind.def.futuresOnly && this.market !== 'futures'){ ind.series.forEach(s => s.setData([])); return }
+    try{ const r = await ind.def.fetch({sym:this.sym, tf:this.tf}); const t0 = this.candles.length ? this.candles[0].time : 0;
+      ind.def.series.forEach((s, i) => { r[s.key] = r[s.key].filter(d => d.time >= t0); ind.data[s.key] = r[s.key]; if(!ind.hidden) ind.series[i].setData(r[s.key]) }) }catch(e){}
+  }
+  renderLegendInds(){
+    this.q('.lg-i').innerHTML = this.inds.map(i => `<div class="lgr ${i.hidden?'off':''}" data-id="${i.id}"><span class="nm" style="color:${i.color||'#ccc'}">${LC.esc(i.def.title ? i.def.title(i.params) : i.def.label)}</span><span class="vals num"></span>
+      <span class="act"><button data-a="eye" title="보이기/숨기기">${i.hidden?'◌':'◉'}</button><button data-a="set" title="설정">⚙</button><button data-a="del" title="지우기">✕</button></span></div>`).join('');
+    this.setLegend(this.hoverBar || this.shown[this.shown.length-1]);
+  }
+  onLegendClick(e){
+    const b = e.target.closest('button'); if(!b) return; const row = b.closest('.lgr'); const ind = this.inds.find(i => i.id === row.dataset.id); if(!ind) return;
+    if(b.dataset.a === 'del') this.removeInd(ind);
+    if(b.dataset.a === 'eye'){ ind.hidden = !ind.hidden; ind.series.forEach(s => s.applyOptions({visible:!ind.hidden})); if(!ind.hidden){ ind.def.async ? this.fetchAsync(ind) : this.computeInd(ind, true) } this.renderLegendInds(); this.app.save() }
+    if(b.dataset.a === 'set') this.editInd(ind);
+  }
+  editInd(ind){
+    const P = ind.params, keys = Object.keys(P);
+    const field = k => k === 'type' ? `<select class="inp" data-k="type"><option ${P.type==='SMA'?'selected':''}>SMA</option><option ${P.type==='EMA'?'selected':''}>EMA</option></select>`
+      : k === 'source' ? `<select class="inp" data-k="source">${['close','open','high','low','hl2','hlc3'].map(s => `<option ${P.source===s?'selected':''}>${s}</option>`).join('')}</select>`
+      : `<input class="inp" type="number" step="any" data-k="${k}" value="${LC.esc(P[k])}">`;
+    LC.modal(ind.def.label + ' 설정', `<div class="form">${keys.map(k => `<label>${LC.IND.PARAM_LABEL[k]||k}${field(k)}</label>`).join('')}
+      <label>색<input class="inp" type="color" data-k="__color" value="${ind.color||'#f0b90b'}"></label></div><div class="row-end"><button class="btn pri" id="indOk">적용</button></div>`, (mb, close) => {
+      mb.querySelector('#indOk').onclick = () => {
+        const np = {...P}; let color = ind.color;
+        mb.querySelectorAll('[data-k]').forEach(el => { if(el.dataset.k === '__color') color = el.value; else np[el.dataset.k] = el.type === 'number' ? Math.max(1, +el.value || P[el.dataset.k]) : el.value });
+        const idx = this.inds.indexOf(ind); this.removeInd(ind);
+        const n = this.addInd(ind.key, np, color, ind.hidden); this.inds.splice(this.inds.indexOf(n), 1); this.inds.splice(idx, 0, n); this.renderLegendInds(); this.app.save(); close();
+      };
+    });
+  }
+
+  /* 범례 */
+  onCross(p){
+    this.hovering = !!(p && p.time);
+    const b = p && p.time ? this.shown.find(x => x.time === p.time) : null;
+    this.hoverBar = b; this.setLegend(b || this.shown[this.shown.length-1]);
+  }
+  setLegend(b){
+    if(!b) return; const pr = this.prec, cls = b.close >= b.open ? 'up' : 'down', d = b.close - b.open;
+    this.q('.lg-o').innerHTML = ['시','고','저','종'].map((k, i) => `<i>${k}</i><span class="num ${cls}">${LC.fmtN([b.open,b.high,b.low,b.close][i], pr)}</span>`).join('')
+      + `<span class="num ${cls}">${d>=0?'+':''}${LC.fmtN(d, pr)} (${LC.fmtPct(b.open ? d/b.open*100 : 0)})</span>`;
+    this.q('.lg-i').querySelectorAll('.lgr').forEach(row => { const ind = this.inds.find(i => i.id === row.dataset.id); if(!ind) return;
+      const vals = ind.def.series.map(s => { const arr = ind.data[s.key] || []; let v = null;
+        for(let i = arr.length-1; i >= 0 && i >= arr.length-1500; i--) if(arr[i].time <= b.time){ if(arr[i].time === b.time || ind.def.async) v = arr[i].value; break }
+        return v == null ? '-' : ind.key === 'VOL' || ind.key === 'OBV' || ind.key === 'OI' ? LC.fmtBig(v) : ind.def.overlay ? LC.fmtN(v, pr) : LC.fmtN(v, 2) });
+      row.querySelector('.vals').textContent = vals.join('  ') });
+  }
+
+  /* 클릭: 리플레이 시작점 고르기 */
+  onClick(p){
+    if(this.replayPick && p.time){ this.replayPick = false; this.app.hint(''); const i = this.candles.findIndex(b => b.time === p.time); if(i > 5) this.replayStart(i) }
+  }
+  /* 알림 */
+  checkAlerts(price){
+    const prev = this.prevPrice; this.prevPrice = price; if(prev == null) return;
+    let changed = false;
+    this.drawings.items.forEach(it => { if(it.type !== 'alert' || it.fired) return; const lv = it.pts[0].p;
+      if((prev < lv && price >= lv) || (prev > lv && price <= lv)){ it.fired = true; changed = true;
+        LC.notify(`${this.sym} 가격 알림`, `${LC.fmtN(lv, this.prec)} ${price >= lv ? '위로 돌파' : '아래로 이탈'} · 지금 ${LC.fmtN(price, this.prec)}`) } });
+    if(changed) this.drawings.save();
+  }
+
+  /* 리플레이 */
+  replayBegin(){ this.replayPick = true; this.app.hint('차트에서 리플레이를 시작할 봉을 누르세요 (Esc 취소)') }
+  replayStart(i){
+    this.replay = { idx:i, speed:+this.q('.cv-replay select').value, timer:null };
+    this.q('.cv-replay').hidden = false; this.shown = this.candles.slice(0, i+1); this.renderAll(); this.replayLabel();
+  }
+  replayStep(){
+    const r = this.replay; if(!r) return; if(r.idx >= this.candles.length-1){ this.replayExit(); return }
+    r.idx++; const b = this.candles[r.idx]; this.shown = this.candles.slice(0, r.idx+1);
+    this.series.update(this.mainLast(b)); this.inds.forEach(i => this.computeInd(i, false)); this.setLegend(b); this.replayLabel();
+  }
+  replayToggle(){ const r = this.replay; if(!r) return;
+    if(r.timer){ clearInterval(r.timer); r.timer = null } else r.timer = setInterval(() => this.replayStep(), r.speed);
+    this.q('[data-r=play]').textContent = r.timer ? '⏸' : '▶' }
+  replayLabel(){ const b = this.shown[this.shown.length-1]; const d = new Date(b.time*1000);
+    this.q('.rp-time').textContent = `${d.getMonth()+1}/${d.getDate()} ${LC.pad(d.getHours())}:${LC.pad(d.getMinutes())} · 남은 봉 ${this.candles.length-1-this.replay.idx}` }
+  replayExit(silent){
+    this.replayPick = false;
+    if(!this.replay) return; clearInterval(this.replay.timer); this.replay = null; this.q('.cv-replay').hidden = true; this.q('[data-r=play]').textContent = '▶';
+    if(!silent){ this.shown = this.candles; this.renderAll(); this.chart.timeScale().scrollToRealTime() }
+  }
+
+  tick(){
+    const ms = LC.TFMS[this.tf], now = Date.now(); const b = this.last;
+    const left = this.tf === '1w' && b ? b.time*1000 + ms - now : ms - (now % ms);
+    this.q('.cv-cd').textContent = this.replay ? '' : '봉 마감까지 ' + LC.fmtDur(left);
+  }
+  setLog(on){ this.log = on; this.chart.priceScale('right').applyOptions({ mode: on ? L.PriceScaleMode.Logarithmic : L.PriceScaleMode.Normal }) }
+  setPercent(on){ this.chart.priceScale('right').applyOptions({ mode: on ? L.PriceScaleMode.Percentage : L.PriceScaleMode.Normal }) }
+  screenshot(){
+    const c = this.chart.takeScreenshot(); const ctx = c.getContext('2d');
+    ctx.drawImage(this.drawings.cv, 0, 0, this.drawings.cv.width, this.drawings.cv.height, 0, 0, c.width, c.height);
+    ctx.font = '600 14px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = '#d7dee8'; ctx.fillText(this.q('.lg-t').textContent, 12, 22);
+    const d = new Date(); LC.download(`${this.sym}_${this.tf}_${d.getFullYear()}${LC.pad(d.getMonth()+1)}${LC.pad(d.getDate())}_${LC.pad(d.getHours())}${LC.pad(d.getMinutes())}.png`, c.toDataURL('image/png'));
+  }
+}
+LC.ChartView = ChartView;
+})();
+</script>
+<script>/* js/panel-list.js */
+/* 오른쪽 창: 종목 목록(즐겨찾기·전체) */
+(() => {
+const { esc, store } = LC;
+const P = {
+  id:'list', label:'목록', tab:'fav', market:null, ws:null, sortKey:'q', sortDir:-1,
+  mount(el, app){
+    this.el = el; this.app = app;
+    el.innerHTML = `<div class="sub-tabs"><button data-t="fav" class="on">즐겨찾기</button><button data-t="all">전체 종목</button><button data-t="gain">상승</button><button data-t="loss">하락</button></div>
+      <div class="search"><input id="q" placeholder="종목 검색 (예: SOL)" autocomplete="off" aria-label="종목 검색"></div>
+      <div class="lhead"><div></div><div data-s="s">종목</div><div data-s="c">현재가</div><div data-s="P">등락률</div></div>
+      <div class="list"></div>`;
+    this.list = el.querySelector('.list');
+    el.querySelector('.sub-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.tab = b.dataset.t;
+      el.querySelectorAll('.sub-tabs button').forEach(x => x.classList.toggle('on', x === b)); this.render() };
+    el.querySelector('#q').oninput = () => this.render();
+    el.querySelector('.lhead').onclick = e => { const d = e.target.closest('[data-s]'); if(!d) return;
+      if(this.sortKey === d.dataset.s) this.sortDir *= -1; else { this.sortKey = d.dataset.s; this.sortDir = -1 } this.render() };
+    this.list.onclick = e => {
+      const st = e.target.closest('[data-star]'); const m = this.market;
+      if(st){ const s = st.dataset.star, f = this.favs(); store.set('favs_'+m, f.includes(s) ? f.filter(x => x !== s) : [...f, s]); this.render(); return }
+      const r = e.target.closest('.wrow'); if(r) app.openSymbol(r.dataset.s, m);
+    };
+    this.list.onscroll = () => { this.scrolled = Date.now() };
+  },
+  favs(){ return store.get('favs_' + this.market, ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT','DOGEUSDT','BNBUSDT']) },
+  onSymbol(v){ if(v.market !== this.market) this.onMarket(v.market); else this.markSel() },
+  async onMarket(m){
+    if(this.market === m) return; this.market = m; this.ws && this.ws.close();
+    const T = this.app.tickers[m] = {};
+    try{ const rows = await LC.getJSON(`${LC.EP[m].rest}/ticker/24hr`);
+      rows.forEach(r => { if(r.symbol.endsWith('USDT') && +r.quoteVolume > 0) T[r.symbol] = { c:+r.lastPrice, P:+r.priceChangePercent, q:+r.quoteVolume, h:+r.highPrice, l:+r.lowPrice } }) }catch(e){}
+    const fut = async () => { if(m !== 'futures') return; for(let i = 0; i < 20 && !this.app.info.futures; i++) await new Promise(r => setTimeout(r, 300));
+      const inf = this.app.info.futures; if(inf) Object.keys(T).forEach(k => { if(!inf[k]) delete T[k] }) };
+    await fut(); this.render(); this.app.updateHeader();
+    this.ws = LC.openWS(`${LC.EP[m].ws}/!miniTicker@arr`, arr => {
+      if(!Array.isArray(arr) || this.market !== m) return; const ch = [];
+      arr.forEach(r => { const t = T[r.s]; if(!t) return; const nc = +r.c, o = +r.o; const dir = nc > t.c ? 1 : nc < t.c ? -1 : 0;
+        Object.assign(t, { c:nc, P: o ? (nc-o)/o*100 : 0, q:+r.q, h:+r.h, l:+r.l }); if(dir) ch.push([r.s, dir]) });
+      LC.bus && LC.bus.emit('tickers', {market:m, arr});
+      this.patch(ch);
+    });
+  },
+  syms(){
+    const T = this.app.tickers[this.market] || {}, q = (this.el.querySelector('#q').value || '').trim().toUpperCase();
+    let s = q ? Object.keys(T).filter(k => k.includes(q)) : this.tab === 'fav' ? this.favs() : Object.keys(T);
+    if(!q && this.tab === 'gain') s = s.sort((a,b) => T[b].P - T[a].P).slice(0, 50);
+    else if(!q && this.tab === 'loss') s = s.sort((a,b) => T[a].P - T[b].P).slice(0, 50);
+    else if(this.tab !== 'fav' || q){ const k = this.sortKey, d = this.sortDir; s = s.sort((a,b) => k === 's' ? d*(a < b ? 1 : -1) : d*((T[a]||{})[k] - (T[b]||{})[k])) }
+    return s.slice(0, 400);
+  },
+  row(s){
+    const t = (this.app.tickers[this.market] || {})[s] || {}, fav = this.favs().includes(s), cls = (t.P||0) >= 0 ? 'up' : 'down';
+    return `<div class="wrow ${this.app.v && s === this.app.v.sym ? 'sel' : ''}" data-s="${esc(s)}"><button class="star ${fav?'on':''}" data-star="${esc(s)}" aria-label="즐겨찾기">★</button>
+      <div class="nm">${esc(s.replace(/USDT$/, ''))}<small>${t.q ? '거래대금 ' + LC.fmtBig(t.q) : ''}</small></div>
+      <div class="px num ${cls}">${t.c != null ? LC.fmtPx(t.c) : '-'}</div><div class="pc num ${cls}">${t.P != null ? LC.fmtPct(t.P) : '-'}</div></div>`;
+  },
+  render(){ if(!this.market) return; const s = this.syms(); this.list.innerHTML = s.length ? s.map(x => this.row(x)).join('') : `<div class="empty">${this.tab === 'fav' ? '★을 눌러 즐겨찾기를 추가해 보세요' : '검색 결과가 없어요'}</div>` },
+  markSel(){ this.list.querySelectorAll('.wrow').forEach(r => r.classList.toggle('sel', this.app.v && r.dataset.s === this.app.v.sym)) },
+  patch(ch){
+    if(this.el.hidden) return;
+    if(this.tab === 'gain' || this.tab === 'loss'){ if(!this.lastFull || Date.now() - this.lastFull > 3000){ this.lastFull = Date.now(); this.render() } return }
+    const map = {}; this.list.querySelectorAll('.wrow').forEach(r => map[r.dataset.s] = r);
+    const T = this.app.tickers[this.market];
+    ch.forEach(([s, dir]) => { const r = map[s]; if(!r) return; const t = T[s], cls = t.P >= 0 ? 'up' : 'down';
+      const px = r.querySelector('.px'), pc = r.querySelector('.pc');
+      px.textContent = LC.fmtPx(t.c); px.className = 'px num ' + cls; pc.textContent = LC.fmtPct(t.P); pc.className = 'pc num ' + cls;
+      r.querySelector('small').textContent = '거래대금 ' + LC.fmtBig(t.q);
+      r.classList.remove('flash-up','flash-down'); void r.offsetWidth; r.classList.add(dir > 0 ? 'flash-up' : 'flash-down') });
+  },
+  onShow(on){ if(on) this.render() }
+};
+LC.panels.push(P);
+
+/* 아주 작은 이벤트 버스: 다른 창들이 시세 흐름을 함께 쓰도록 */
+LC.bus = LC.bus || { h:{}, on(k, f){ (this.h[k] = this.h[k] || []).push(f) }, emit(k, d){ (this.h[k] || []).forEach(f => { try{ f(d) }catch(e){ console.error(e) } }) } };
+})();
+</script>
+<script>/* js/panel-flow.js */
+/* 오른쪽 창: 체결·청산, 호가, 급등락 알림 + 차트 위 큰 체결 버블 */
+(() => {
+const { esc, store } = LC;
+const AMTS = [[0,'전체'],[1e3,'$1K+'],[1e4,'$10K+'],[5e4,'$50K+'],[1e5,'$100K+'],[5e5,'$500K+']];
+
+/* 차트 위 버블: 큰 시장가 체결을 가격·시간 위치에 원으로 */
+class Bubbles {
+  constructor(){ this.items = [] }
+  add(b){ this.items.push(b); if(this.items.length > 400) this.items.shift() }
+  draw(ctx, dr, A){
+    const P = LC.panels.find(p => p.id === 'flow'); if(!P || !P.cfg.bubbles) return;
+    const base = Math.max(P.cfg.bubbleMin, 1);
+    for(const b of this.items){
+      const x = dr.tToX(b.t), y = dr.pToY(b.p); if(x == null || y == null || x < -20 || x > A.w + 20) continue;
+      const r = Math.min(28, 3 + Math.sqrt(b.usd / base) * 4);
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 7);
+      ctx.fillStyle = b.liq ? 'rgba(240,185,11,.35)' : b.buy ? 'rgba(22,199,132,.28)' : 'rgba(234,57,67,.28)'; ctx.fill();
+      ctx.lineWidth = 1; ctx.strokeStyle = b.liq ? '#f0b90b' : b.buy ? '#16c784' : '#ea3943'; ctx.stroke();
+      if(r > 12){ ctx.font = '10px "IBM Plex Mono", monospace'; ctx.fillStyle = '#e8eef6'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(LC.fmtBig(b.usd), x, y); ctx.textAlign = 'left' }
+    }
+  }
+}
+
+/* 체결·청산 */
+const FLOW = {
+  id:'flow', label:'체결·청산', tab:'trades',
+  cfg: Object.assign({ tradeMin:1e4, liqMin:0, liqAll:true, sound:false, bubbles:true, bubbleMin:5e4 }, store.get('flowCfg', {})),
+  trades:[], liqs:[], liqMin:{},
+  mount(el, app){
+    this.el = el; this.app = app;
+    const opt = (sel) => AMTS.map(([v,n]) => `<option value="${v}" ${+sel===v?'selected':''}>${n}</option>`).join('');
+    el.innerHTML = `<div class="sub-tabs"><button data-t="trades" class="on">큰 체결</button><button data-t="liqs">청산</button></div>
+      <div class="flow-ctl">
+        <label>체결 <select data-c="tradeMin">${opt(this.cfg.tradeMin)}</select></label>
+        <label>청산 <select data-c="liqMin">${opt(this.cfg.liqMin)}</select></label>
+        <label class="chk"><input type="checkbox" data-c="liqAll" ${this.cfg.liqAll?'checked':''}>청산 모든 종목</label>
+        <label class="chk"><input type="checkbox" data-c="bubbles" ${this.cfg.bubbles?'checked':''}>차트 버블</label>
+        <label>버블 <select data-c="bubbleMin">${opt(this.cfg.bubbleMin)}</select></label>
+        <label class="chk"><input type="checkbox" data-c="sound" ${this.cfg.sound?'checked':''}>소리</label>
+      </div>
+      <div class="liq-chart"><canvas></canvas><div class="liq-sum num"></div></div>
+      <div class="feed-head"><span>가격</span><span>금액</span><span>시각</span></div>
+      <div class="feed"></div>`;
+    this.feed = el.querySelector('.feed'); this.cv = el.querySelector('.liq-chart canvas');
+    el.querySelector('.sub-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.tab = b.dataset.t;
+      el.querySelectorAll('.sub-tabs button').forEach(x => x.classList.toggle('on', x === b)); this.renderFeed() };
+    el.querySelector('.flow-ctl').onchange = e => { const k = e.target.dataset.c; if(!k) return;
+      this.cfg[k] = e.target.type === 'checkbox' ? e.target.checked : +e.target.value; store.set('flowCfg', this.cfg); this.renderFeed() };
+    this.feed.onclick = e => { const r = e.target.closest('[data-s]'); if(r && r.dataset.s !== (app.v && app.v.sym)) app.openSymbol(r.dataset.s, 'futures') };
+    this.startLiq();
+    setInterval(() => { this.drawLiqChart(); if(this.dirty && !this.el.hidden){ this.dirty = false; this.renderFeed() } }, 500);
+  },
+  onSymbol(v){
+    if(this.sym === v.sym && this.market === v.market) return;
+    this.sym = v.sym; this.market = v.market; this.trades = []; this.ws && this.ws.close(); this.bybit && this.bybit.close();
+    this.app.views.forEach(x => { x.bubbles = x.bubbles || new Bubbles() });
+    const s = v.sym.toLowerCase(), sym = v.sym, mkt = v.market;
+    this.ws = LC.openWS(`${LC.EP[mkt].ws}/${s}@aggTrade`, m => {
+      if(sym !== this.sym) return; const p = +m.p, q = +m.q, usd = p*q, buy = !m.m;
+      if(usd >= this.cfg.bubbleMin) this.app.views.forEach(x => { if(x.sym === sym && x.market === mkt) x.bubbles.add({t:Math.floor(m.T/1000), p, usd, buy}) });
+      if(usd < this.cfg.tradeMin) return;
+      this.trades.unshift({T:m.T, p, usd, buy, s:sym}); if(this.trades.length > 300) this.trades.pop();
+      if(this.cfg.sound && usd >= Math.max(this.cfg.tradeMin, 5e4)) LC.beep(buy ? 660 : 440, 0.05, 0.08);
+      this.dirty = true;
+    });
+    if(mkt === 'futures'){
+      this.bybit = LC.openWS('wss://stream.bybit.com/v5/public/linear', m => {
+        if(!m.topic || !m.data) return; (Array.isArray(m.data) ? m.data : [m.data]).forEach(d => this.onLiq({ ex:'Bybit', s:d.s, long: d.S === 'Buy', p:+d.p, usd:+d.p * +d.v, T:+d.T }));
+      }, null, ws => ws.send(JSON.stringify({op:'subscribe', args:[`allLiquidation.${sym}`]})));
+      this.bybit.keepAlive({op:'ping'}, 20000);
+    }
+  },
+  startLiq(){
+    this.liqWS = LC.openWS(`${LC.EP.futures.ws}/!forceOrder@arr`, m => { const o = m.o; if(!o) return;
+      this.onLiq({ ex:'Binance', s:o.s, long: o.S === 'SELL', p:+o.ap || +o.p, usd:(+o.ap || +o.p) * +(o.z || o.q), T:+o.T }) });
+  },
+  onLiq(l){
+    if(!l.usd) return;
+    this.liqs.unshift(l); if(this.liqs.length > 500) this.liqs.pop();
+    const min = Math.floor(l.T / 6e4); const k = this.liqMin[min] = this.liqMin[min] || {long:0, short:0, sym:{}};
+    k[l.long ? 'long' : 'short'] += l.usd;
+    if(this.app.v && l.s === this.app.v.sym){
+      this.app.views.forEach(x => { if(x.sym === l.s && x.market === 'futures' && x.bubbles) x.bubbles.add({t:Math.floor(l.T/1000), p:l.p, usd:l.usd, liq:true}) });
+      if(this.cfg.sound && l.usd >= Math.max(this.cfg.liqMin, 1e4)) LC.beep(l.long ? 300 : 900, 0.12, 0.1);
+    }
+    this.dirty = true;
+  },
+  renderFeed(){
+    if(this.el.hidden) return;
+    const c = this.cfg, cur = this.app.v ? this.app.v.sym : '';
+    let rows;
+    if(this.tab === 'trades'){
+      rows = this.trades.filter(t => t.usd >= c.tradeMin).slice(0, 120).map(t =>
+        `<div class="frow ${t.usd >= 1e5 ? 'big' : ''}"><span class="num ${t.buy?'up':'down'}">${t.buy?'▲':'▼'} ${LC.fmtPx(t.p)}</span><span class="num">$${LC.fmtBig(t.usd)}</span><span class="num dim">${LC.fmtClock(t.T)}</span></div>`);
+      if(this.market === 'spot' && !rows.length) rows = ['<div class="empty">현물 큰 체결을 기다리는 중이에요</div>'];
+    } else {
+      rows = this.liqs.filter(l => l.usd >= c.liqMin && (c.liqAll || l.s === cur)).slice(0, 150).map(l =>
+        `<div class="frow liq ${l.usd >= 1e5 ? 'big' : ''}" data-s="${esc(l.s)}"><span><b class="${l.long?'down':'up'}">${l.long?'롱 청산':'숏 청산'}</b> ${esc(l.s.replace(/USDT$/,''))} <small class="dim">${l.ex}</small></span><span class="num">$${LC.fmtBig(l.usd)}</span><span class="num dim">${LC.fmtClock(l.T)}</span></div>`);
+    }
+    this.feed.innerHTML = rows.length ? rows.join('') : '<div class="empty">조건에 맞는 내역을 기다리는 중이에요</div>';
+  },
+  drawLiqChart(){
+    if(this.el.hidden) return;
+    const cv = this.cv, box = cv.parentElement, W = box.clientWidth, H = 70, dpr = window.devicePixelRatio || 1;
+    if(cv.width !== W*dpr){ cv.width = W*dpr; cv.height = H*dpr; cv.style.width = W+'px'; cv.style.height = H+'px' }
+    const ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+    const now = Math.floor(Date.now()/6e4), mins = []; let max = 1, tl = 0, ts = 0;
+    for(let i = 29; i >= 0; i--){ const k = this.liqMin[now - i] || {long:0, short:0}; mins.push(k); max = Math.max(max, k.long, k.short); tl += k.long; ts += k.short }
+    const bw = W / 30, mid = H / 2;
+    mins.forEach((k, i) => { const hl = k.long / max * (mid - 4), hs = k.short / max * (mid - 4);
+      ctx.fillStyle = '#ea3943'; ctx.fillRect(i*bw + 1, mid, bw - 2, hl); ctx.fillStyle = '#16c784'; ctx.fillRect(i*bw + 1, mid - hs, bw - 2, hs) });
+    ctx.fillStyle = '#232d3b'; ctx.fillRect(0, mid, W, 1);
+    this.el.querySelector('.liq-sum').innerHTML = `30분 청산 · <span class="down">롱 $${LC.fmtBig(tl)}</span> · <span class="up">숏 $${LC.fmtBig(ts)}</span>`;
+    Object.keys(this.liqMin).forEach(k => { if(k < now - 60) delete this.liqMin[k] });
+  },
+  onShow(on){ if(on){ this.renderFeed(); this.drawLiqChart() } }
+};
+
+/* 호가창 */
+const BOOK = {
+  id:'book', label:'호가', ex: store.get('bookEx', 'Binance'), group:0, bids:new Map(), asks:new Map(),
+  mount(el, app){
+    this.el = el; this.app = app;
+    el.innerHTML = `<div class="book-ctl"><div class="seg" data-c="ex"><button data-v="Binance">Binance</button><button data-v="Bybit">Bybit</button></div>
+      <label>묶음 <select data-c="group"></select></label></div>
+      <div class="book-head"><span>가격</span><span>수량</span><span>누적(USDT)</span></div>
+      <div class="book"><div class="asks"></div><div class="mid num"></div><div class="bids"></div></div>
+      <div class="imb"><div class="imb-bar"><i></i></div><div class="imb-t num"></div></div>`;
+    el.querySelector('[data-c=ex]').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.ex = b.dataset.v; store.set('bookEx', this.ex); this.connect() };
+    el.querySelector('[data-c=group]').onchange = e => { this.group = +e.target.value; this.render() };
+    setInterval(() => this.render(), 250);
+  },
+  onSymbol(v){ if(this.sym === v.sym && this.market === v.market) return; this.sym = v.sym; this.market = v.market; this.setupGroups(v); this.connect() },
+  setupGroups(v){
+    const tick = 1 / 10 ** v.prec; const g = [1, 2, 5, 10, 50, 100, 500].map(m => +(tick*m).toFixed(10));
+    this.group = g[0];
+    this.el.querySelector('[data-c=group]').innerHTML = g.map(x => `<option value="${x}">${x}</option>`).join('');
+  },
+  connect(){
+    this.ws && this.ws.close(); this.bids = new Map(); this.asks = new Map();
+    this.el.querySelectorAll('[data-c=ex] button').forEach(b => b.classList.toggle('on', b.dataset.v === this.ex));
+    const s = this.sym, m = this.market;
+    if(this.ex === 'Binance'){
+      this.ws = LC.openWS(`${LC.EP[m].wsPub}/${s.toLowerCase()}@depth20@100ms`, d => {
+        const b = d.b || d.bids, a = d.a || d.asks; if(!b) return;
+        this.bids = new Map(b.map(x => [+x[0], +x[1]])); this.asks = new Map(a.map(x => [+x[0], +x[1]])) });
+    } else {
+      const url = m === 'futures' ? 'wss://stream.bybit.com/v5/public/linear' : 'wss://stream.bybit.com/v5/public/spot';
+      this.ws = LC.openWS(url, d => {
+        if(!d.topic || !d.data) return;
+        if(d.type === 'snapshot'){ this.bids = new Map(); this.asks = new Map() }
+        d.data.b.forEach(([p, q]) => +q ? this.bids.set(+p, +q) : this.bids.delete(+p));
+        d.data.a.forEach(([p, q]) => +q ? this.asks.set(+p, +q) : this.asks.delete(+p));
+      }, null, ws => ws.send(JSON.stringify({op:'subscribe', args:[`orderbook.50.${s}`]})));
+      this.ws.keepAlive({op:'ping'}, 20000);
+    }
+  },
+  agg(map, side){
+    const g = this.group || 0, out = new Map();
+    map.forEach((q, p) => { const k = g ? (side === 'bid' ? Math.floor(p/g)*g : Math.ceil(p/g)*g) : p; out.set(+k.toFixed(10), (out.get(+k.toFixed(10)) || 0) + q) });
+    return [...out.entries()].sort((a, b) => side === 'bid' ? b[0] - a[0] : a[0] - b[0]).slice(0, 14);
+  },
+  render(){
+    if(this.el.hidden || !this.sym) return;
+    const bids = this.agg(this.bids, 'bid'), asks = this.agg(this.asks, 'ask');
+    if(!bids.length || !asks.length){ this.el.querySelector('.mid').textContent = '호가 불러오는 중…'; return }
+    const v = this.app.v, pr = v ? Math.max(0, v.prec) : 2;
+    const cum = arr => { let c = 0; return arr.map(([p, q]) => { c += p*q; return [p, q, c] }) };
+    const B = cum(bids), A = cum(asks); const max = Math.max(B[B.length-1][2], A[A.length-1][2]);
+    const row = ([p, q, c], side) => `<div class="brow ${side}"><i style="width:${(c/max*100).toFixed(1)}%"></i><span class="num">${LC.fmtN(p, pr)}</span><span class="num">${q >= 1000 ? LC.fmtBig(q) : q.toFixed(q < 10 ? 3 : 1)}</span><span class="num">${LC.fmtBig(c)}</span></div>`;
+    this.el.querySelector('.asks').innerHTML = A.slice().reverse().map(r => row(r, 'ask')).join('');
+    this.el.querySelector('.bids').innerHTML = B.map(r => row(r, 'bid')).join('');
+    const bb = bids[0][0], ba = asks[0][0], spread = ba - bb;
+    const last = v && v.last ? v.last.close : (bb + ba) / 2;
+    this.el.querySelector('.mid').innerHTML = `<b class="${last >= (this.prevLast||last) ? 'up' : 'down'}">${LC.fmtN(last, pr)}</b> <small class="dim">스프레드 ${LC.fmtN(spread, pr)} (${(spread/ba*1e4).toFixed(2)}bp)</small>`;
+    this.prevLast = last;
+    const bs = B[B.length-1][2], as = A[A.length-1][2], r = bs / (bs + as) * 100;
+    this.el.querySelector('.imb i').style.width = r.toFixed(1) + '%';
+    this.el.querySelector('.imb-t').innerHTML = `<span class="up">매수 ${r.toFixed(1)}%</span><span class="down">매도 ${(100-r).toFixed(1)}%</span>`;
+  }
+};
+
+/* 급등락 알림: 전체 종목 시세 흐름에서 1분·5분 사이 크게 움직인 종목 */
+const MOVE = {
+  id:'move', label:'급등락', events:[], hist:{}, last:{},
+  cfg: Object.assign({ th1:1.5, th5:3, sound:true, toast:true }, store.get('moveCfg', {})),
+  mount(el, app){
+    this.el = el; this.app = app;
+    el.innerHTML = `<div class="flow-ctl"><label>1분 <input type="number" step="0.1" min="0.2" data-c="th1" value="${this.cfg.th1}">%</label>
+      <label>5분 <input type="number" step="0.1" min="0.5" data-c="th5" value="${this.cfg.th5}">%</label>
+      <label class="chk"><input type="checkbox" data-c="sound" ${this.cfg.sound?'checked':''}>소리</label>
+      <label class="chk"><input type="checkbox" data-c="toast" ${this.cfg.toast?'checked':''}>팝업</label></div>
+      <p class="muted pad">지금 보고 있는 시장(선물/현물)의 모든 USDT 종목을 지켜보다가 1분·5분 사이 기준보다 크게 움직이면 알려 줘요. 같은 종목은 5분에 한 번만 알려요.</p>
+      <div class="feed"></div>`;
+    this.feed = el.querySelector('.feed');
+    el.querySelector('.flow-ctl').onchange = e => { const k = e.target.dataset.c; if(!k) return;
+      this.cfg[k] = e.target.type === 'checkbox' ? e.target.checked : Math.max(0.1, +e.target.value || this.cfg[k]); store.set('moveCfg', this.cfg) };
+    this.feed.onclick = e => { const r = e.target.closest('[data-s]'); if(r) app.openSymbol(r.dataset.s, r.dataset.m) };
+    LC.bus.on('tickers', d => this.onTickers(d));
+    this.render();
+  },
+  onTickers({market, arr}){
+    const now = Date.now(), sec = Math.floor(now / 5000);
+    if(this.market !== market){ this.market = market; this.hist = {} }
+    arr.forEach(r => {
+      const s = r.s; if(!s.endsWith('USDT')) return; const c = +r.c; const h = this.hist[s] = this.hist[s] || [];
+      if(!h.length || h[h.length-1][0] !== sec) h.push([sec, c]); else h[h.length-1][1] = c;
+      while(h.length && h[0][0] < sec - 62) h.shift();
+      if(+r.q < 5e5) return;
+      const ref = (back) => { for(const x of h) if(x[0] >= sec - back) return x[1]; return null };
+      const p1 = ref(12), p5 = ref(60);
+      const c1 = p1 ? (c - p1) / p1 * 100 : 0, c5 = p5 ? (c - p5) / p5 * 100 : 0;
+      let hit = null;
+      if(Math.abs(c1) >= this.cfg.th1) hit = {w:'1분', ch:c1}; else if(Math.abs(c5) >= this.cfg.th5 && h[0][0] <= sec - 55) hit = {w:'5분', ch:c5};
+      if(hit && (!this.last[s] || now - this.last[s] > 3e5)){
+        this.last[s] = now; const ev = { s, m:market, ...hit, p:c, T:now };
+        this.events.unshift(ev); if(this.events.length > 200) this.events.pop();
+        if(this.cfg.sound) LC.beep(hit.ch > 0 ? 1046 : 330, 0.15, 0.12);
+        if(this.cfg.toast) LC.toast(`${s.replace(/USDT$/,'')} ${hit.w} ${LC.fmtPct(hit.ch)} · ${LC.fmtPx(c)}`, hit.ch > 0 ? 'up' : 'down', 6000);
+        this.render();
+      }
+    });
+  },
+  render(){
+    this.feed.innerHTML = this.events.length ? this.events.map(e => `<div class="frow mv" data-s="${esc(e.s)}" data-m="${e.m}"><span><b>${esc(e.s.replace(/USDT$/,''))}</b> <small class="dim">${e.w}</small></span>
+      <span class="num ${e.ch > 0 ? 'up' : 'down'}">${e.ch > 0 ? '급등' : '급락'} ${LC.fmtPct(e.ch)}</span><span class="num dim">${LC.fmtClock(e.T)}</span></div>`).join('')
+      : '<div class="empty">아직 기준을 넘은 종목이 없어요. 켜 두면 여기 쌓여요.</div>';
+  }
+};
+
+LC.panels.push(FLOW, BOOK, MOVE);
+LC.Bubbles = Bubbles;
+})();
+</script>
+<script>/* js/market.js */
+/* 시장 자료 창: 김치 프리미엄, 히트맵, 펀딩·OI 흐름, 시장 온도·공포 탐욕 지수 */
+(() => {
+const { $, esc, getJSON } = LC;
+const TABS = [['kimp','김치 프리미엄'],['heat','히트맵'],['flow','펀딩·OI 흐름'],['temp','시장 온도·공포 탐욕']];
+let timer = null;
+
+const M = LC.market = {
+  open(tab){
+    LC.modal('시장 자료', `<div class="sub-tabs mk-tabs">${TABS.map(([k,n]) => `<button data-t="${k}">${n}</button>`).join('')}</div><div class="mk-body"></div>`, (mb, close) => {
+      this.mb = mb; this.body = mb.querySelector('.mk-body');
+      mb.querySelector('.mk-tabs').onclick = e => { const b = e.target.closest('button'); if(b) this.show(b.dataset.t) };
+      this.show(tab || LC.store.get('mkTab', 'kimp'));
+      const obs = new MutationObserver(() => { if(!document.body.contains(mb)){ clearInterval(timer); obs.disconnect() } });
+      obs.observe(document.body, {childList:true});
+    }, true);
+  },
+  show(t){
+    clearInterval(timer); LC.store.set('mkTab', t); this.tab = t;
+    this.mb.querySelectorAll('.mk-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+    this.body.innerHTML = '<div class="empty">불러오는 중…</div>';
+    const run = () => this[t]().catch(e => { if(this.tab === t) this.body.innerHTML = `<div class="empty">자료를 못 불러왔어요 (${esc(e.message)}). 잠시 뒤 다시 열어 주세요.</div>` });
+    run(); timer = setInterval(run, t === 'flow' ? 60000 : t === 'kimp' ? 15000 : 10000);
+  },
+  goto(sym){ LC.app.openSymbol(sym, 'futures'); document.querySelector('.modal-bg .x') && document.querySelector('.modal-bg .x').click() },
+
+  /* 김치 프리미엄: 업비트·빗썸 원화 가격 ÷ (바이낸스 현물 USDT 가격 × 환율) − 1 */
+  async kimp(){
+    /* 업비트는 브라우저 요청을 10초에 한 번쯤만 받아 줘서, 원화 전체 시세를 한 번에 받고 실패하면 직전 값을 써요 */
+    let up = this.upCache;
+    try{ up = await getJSON('https://api.upbit.com/v1/ticker/all?quote_currencies=KRW'); this.upCache = up; this.upAt = Date.now() }catch(e){ if(!up) throw new Error('업비트 요청이 잠시 막혔어요') }
+    if(!this.fx || Date.now() - this.fxAt > 6e5){ try{ const f = await getJSON('https://open.er-api.com/v6/latest/USD'); this.fx = f.rates.KRW; this.fxAt = Date.now() }catch(e){ this.fx = this.fx || 1400 } }
+    const [bn, bt] = await Promise.all([getJSON(`${LC.EP.spot.rest}/ticker/price`), getJSON('https://api.bithumb.com/public/ticker/ALL_KRW').catch(() => ({data:{}}))]);
+    const bnP = Object.fromEntries(bn.filter(x => x.symbol.endsWith('USDT')).map(x => [x.symbol.slice(0, -4), +x.price]));
+    const usdt = (up.find(x => x.market === 'KRW-USDT') || {}).trade_price;
+    const totalVol = up.reduce((s, x) => s + x.acc_trade_price_24h, 0);
+    const rows = up.filter(x => bnP[x.market.slice(4)]).map(x => { const c = x.market.slice(4), b = bnP[c];
+      const bth = bt.data && bt.data[c] ? +bt.data[c].closing_price : null;
+      return { c, up:x.trade_price, ch:x.signed_change_rate*100, vol:x.acc_trade_price_24h, share:x.acc_trade_price_24h/totalVol*100, b, kp:(x.trade_price/(b*this.fx)-1)*100, tp: usdt ? (x.trade_price/(b*usdt)-1)*100 : null, bth, bkp: bth ? (bth/(b*this.fx)-1)*100 : null } })
+      .sort((a, b) => b.vol - a.vol).slice(0, 60);
+    if(this.tab !== 'kimp') return;
+    const btc = rows.find(r => r.c === 'BTC') || {};
+    /* 김프가 ±15%를 넘으면 같은 이름의 다른 코인일 가능성이 커서 평균에서 빼고 표시해요 */
+    const ok = rows.filter(r => Math.abs(r.kp) < 15).slice(0, 20), avg = ok.reduce((s, r) => s + r.kp, 0) / (ok.length || 1);
+    const pc = v => v == null ? '-' : `<span class="${v >= 0 ? 'up' : 'down'}">${LC.fmtPct(v)}</span>`;
+    this.body.innerHTML = `<div class="kpis">
+        <div><small>BTC 김프 (환율)</small><b class="num">${pc(btc.kp)}</b></div><div><small>BTC 김프 (업비트 테더)</small><b class="num">${pc(btc.tp)}</b></div>
+        <div><small>거래 상위 20 평균 김프</small><b class="num">${pc(avg)}</b></div><div><small>원/달러 · 업비트 USDT</small><b class="num">${LC.fmtN(this.fx, 1)} · ${usdt ? LC.fmtN(usdt, 0) : '-'}</b></div></div>
+      <p class="muted">김프 = 업비트 원화 가격 ÷ (바이낸스 현물 가격 × 원/달러 환율) − 1. 테더 김프는 환율 대신 업비트 USDT 원화 가격으로 나눠요. 업비트 거래대금 순, 15초마다 새로 고쳐요. 업비트 시세 기준 ${LC.fmtClock(this.upAt)}.</p>
+      <div class="scroll"><table class="tbl"><thead><tr><th>코인</th><th>업비트 (원)</th><th>24h</th><th>바이낸스 ($)</th><th>김프</th><th>테더 김프</th><th>빗썸 김프</th><th>업비트 거래대금</th><th>점유율</th></tr></thead>
+      <tbody>${rows.map(r => `<tr data-s="${esc(r.c)}USDT"><td><b>${esc(r.c)}</b>${Math.abs(r.kp) >= 15 ? ' <span class="tag" title="업비트와 바이낸스에서 같은 이름의 다른 코인일 수 있어요">이름 겹침?</span>' : ''}</td><td class="num">${LC.fmtN(r.up, r.up < 100 ? 2 : 0)}</td><td class="num">${pc(r.ch)}</td>
+        <td class="num">${LC.fmtPx(r.b)}</td><td class="num">${pc(r.kp)}</td><td class="num">${pc(r.tp)}</td><td class="num">${pc(r.bkp)}</td><td class="num">${LC.fmtBig(r.vol)}</td><td class="num">${r.share.toFixed(1)}%</td></tr>`).join('')}</tbody></table></div>`;
+    this.body.querySelector('tbody').onclick = e => { const tr = e.target.closest('tr'); if(tr) this.goto(tr.dataset.s) };
+  },
+
+  /* 히트맵: 선물 거래대금 상위 종목을 네모 크기로, 색은 고른 값으로 */
+  async heat(){
+    const [tk, pi] = await Promise.all([getJSON(`${LC.EP.futures.rest}/ticker/24hr`), getJSON(`${LC.EP.futures.rest}/premiumIndex`)]);
+    const fund = Object.fromEntries(pi.map(x => [x.symbol, +x.lastFundingRate * 100]));
+    const inf = LC.app.info.futures;
+    let items = tk.filter(x => x.symbol.endsWith('USDT') && (!inf || inf[x.symbol])).map(x => ({ s:x.symbol, q:+x.quoteVolume, ch:+x.priceChangePercent, f:fund[x.symbol] ?? 0, p:+x.lastPrice }))
+      .sort((a, b) => b.q - a.q).slice(0, 70);
+    if(this.tab !== 'heat') return;
+    const metric = this.heatMetric || 'ch';
+    if(!this.body.querySelector('.heat')){
+      this.body.innerHTML = `<div class="heat-ctl"><div class="seg"><button data-m="ch">24h 등락률</button><button data-m="f">펀딩비</button></div><span class="muted">선물 거래대금 상위 70개 · 네모 크기 = 거래대금(제곱근 비율) · 눌러서 차트 열기</span></div><div class="heat"></div>`;
+      this.body.querySelector('.heat-ctl .seg').onclick = e => { const b = e.target.closest('button'); if(b){ this.heatMetric = b.dataset.m; this.heat() } };
+      this.body.querySelector('.heat').onclick = e => { const t = e.target.closest('[data-s]'); if(t) this.goto(t.dataset.s) };
+    }
+    this.body.querySelectorAll('.heat-ctl button').forEach(b => b.classList.toggle('on', b.dataset.m === metric));
+    const box = this.body.querySelector('.heat'), W = box.clientWidth, H = box.clientHeight;
+    const rects = squarify(items.map(i => ({...i, v:Math.sqrt(i.q)})), 0, 0, W, H);
+    const col = v => { const lim = metric === 'ch' ? 8 : 0.05; const t = Math.max(-1, Math.min(1, v / lim)); const a = 0.18 + Math.abs(t) * 0.72;
+      return metric === 'f' && Math.abs(v - 0.01) < 0.002 ? 'rgba(125,138,156,.35)' : t >= 0 ? `rgba(22,199,132,${a})` : `rgba(234,57,67,${a})` };
+    box.innerHTML = rects.map(r => { const big = r.w > 70 && r.h > 38;
+      return `<div class="tile" data-s="${esc(r.s)}" style="left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;background:${col(metric === 'ch' ? r.ch : r.f)}" title="${esc(r.s)} ${LC.fmtPct(r.ch)} · 펀딩 ${r.f.toFixed(4)}%">
+        ${r.w > 34 && r.h > 18 ? `<b>${esc(r.s.replace(/USDT$/,''))}</b>` : ''}${big ? `<span class="num">${metric === 'ch' ? LC.fmtPct(r.ch) : r.f.toFixed(4) + '%'}</span>` : ''}</div>` }).join('');
+  },
+
+  /* 펀딩·OI 흐름: 가격과 미결제약정이 함께 어떻게 움직였는지 */
+  async flow(){
+    const [tk, pi] = await Promise.all([getJSON(`${LC.EP.futures.rest}/ticker/24hr`), getJSON(`${LC.EP.futures.rest}/premiumIndex`)]);
+    const fund = Object.fromEntries(pi.map(x => [x.symbol, +x.lastFundingRate * 100]));
+    const inf = LC.app.info.futures;
+    const top = tk.filter(x => x.symbol.endsWith('USDT') && (!inf || inf[x.symbol])).sort((a, b) => b.quoteVolume - a.quoteVolume).slice(0, 30);
+    const rows = [];
+    for(let i = 0; i < top.length; i += 6){
+      const part = await Promise.all(top.slice(i, i+6).map(async x => {
+        const [oi, ls] = await Promise.all([getJSON(`${LC.EP.futures.data}/openInterestHist?symbol=${x.symbol}&period=1h&limit=25`).catch(() => []),
+                                            getJSON(`${LC.EP.futures.data}/globalLongShortAccountRatio?symbol=${x.symbol}&period=1h&limit=1`).catch(() => [])]);
+        const n = oi.length, cur = n ? +oi[n-1].sumOpenInterestValue : 0;
+        const ch = k => n > k ? (cur / +oi[n-1-k].sumOpenInterestValue - 1) * 100 : null;
+        return { s:x.symbol, p:+x.lastPrice, pc:+x.priceChangePercent, f:fund[x.symbol], oi:cur, oi1:ch(1), oi24:ch(24), ls: ls[0] ? +ls[0].longShortRatio : null };
+      }));
+      rows.push(...part); if(this.tab !== 'flow') return;
+    }
+    const tag = r => r.oi24 == null ? '' : r.pc >= 0 && r.oi24 >= 0 ? '<span class="tag up">롱 유입</span>' : r.pc < 0 && r.oi24 >= 0 ? '<span class="tag down">숏 유입</span>' : r.pc >= 0 ? '<span class="tag">숏 정리</span>' : '<span class="tag">롱 정리</span>';
+    const pc = v => v == null ? '-' : `<span class="${v >= 0 ? 'up' : 'down'}">${LC.fmtPct(v)}</span>`;
+    this.body.innerHTML = `<p class="muted">선물 거래대금 상위 30개. 가격과 미결제약정(OI)이 같이 오르면 새 롱 돈이, 가격이 내리는데 OI가 늘면 새 숏 돈이 들어온 걸로 봐요. 1분마다 새로 고쳐요.</p>
+      <div class="scroll"><table class="tbl"><thead><tr><th>종목</th><th>가격</th><th>24h</th><th>펀딩비</th><th>OI</th><th>OI 1h</th><th>OI 24h</th><th>롱/숏 계정</th><th>해석</th></tr></thead>
+      <tbody>${rows.map(r => `<tr data-s="${esc(r.s)}"><td><b>${esc(r.s.replace(/USDT$/,''))}</b></td><td class="num">${LC.fmtPx(r.p)}</td><td class="num">${pc(r.pc)}</td>
+        <td class="num ${r.f > 0.01 ? 'up' : r.f < 0 ? 'down' : ''}">${r.f != null ? r.f.toFixed(4) + '%' : '-'}</td><td class="num">$${LC.fmtBig(r.oi)}</td><td class="num">${pc(r.oi1)}</td><td class="num">${pc(r.oi24)}</td>
+        <td class="num">${r.ls != null ? r.ls.toFixed(2) : '-'}</td><td>${tag(r)}</td></tr>`).join('')}</tbody></table></div>`;
+    this.body.querySelector('tbody').onclick = e => { const tr = e.target.closest('tr'); if(tr) this.goto(tr.dataset.s) };
+  },
+
+  /* 시장 온도 + 공포·탐욕 */
+  async temp(){
+    const t = await M.measureTemp();
+    if(!this.fng || Date.now() - this.fngAt > 6e5){ try{ this.fng = (await getJSON('https://api.alternative.me/fng/?limit=60')).data.reverse(); this.fngAt = Date.now() }catch(e){} }
+    if(this.tab !== 'temp') return;
+    const f = this.fng ? this.fng[this.fng.length-1] : null;
+    const KO = {'Extreme Fear':'극단적 공포','Fear':'공포','Neutral':'중립','Greed':'탐욕','Extreme Greed':'극단적 탐욕'};
+    this.body.innerHTML = `<div class="temp-grid">
+      <div class="card"><h4>시장 온도 · BTC</h4><div class="gauge"><b class="num" style="color:${t.color}">${t.label}</b><span class="num">${t.score.toFixed(2)}배</span></div>
+        <p class="muted">최근 3분을 앞 1시간 평소(3분 평균)와 견줘요.</p>
+        <div class="bars">${[['체결 수', t.trades],['거래량', t.vol],['움직임(고저폭)', t.range]].map(([n, v]) => `<div class="bar-row"><span>${n}</span><div class="bar"><i style="width:${Math.min(100, v/3*100)}%;background:${v >= 2 ? 'var(--down)' : v >= 1.2 ? 'var(--accent)' : 'var(--blue)'}"></i></div><b class="num">${v.toFixed(2)}배</b></div>`).join('')}</div></div>
+      <div class="card"><h4>공포·탐욕 지수</h4>${f ? `<div class="gauge"><b class="num" style="color:${+f.value < 25 ? 'var(--down)' : +f.value > 75 ? 'var(--up)' : 'var(--accent)'}">${f.value}</b><span>${KO[f.value_classification] || f.value_classification}</span></div>
+        <svg class="spark" viewBox="0 0 300 70" preserveAspectRatio="none">${spark(this.fng.map(x => +x.value), 300, 70)}</svg><p class="muted">최근 60일 · 0 = 극단적 공포, 100 = 극단적 탐욕 · 자료: alternative.me</p>` : '<p class="muted">지수를 못 불러왔어요</p>'}</div></div>`;
+  },
+  async measureTemp(){
+    const k = await getJSON(`${LC.EP.futures.rest}/klines?symbol=BTCUSDT&interval=1m&limit=64`); k.pop();
+    const last = k.slice(-3), prev = k.slice(-63, -3);
+    const sum = (a, f) => a.reduce((s, x) => s + f(x), 0);
+    const ratio = f => (sum(last, f)) / (sum(prev, f) / 20 || 1);
+    const trades = ratio(x => +x[8]), vol = ratio(x => +x[5]), range = (Math.max(...last.map(x => +x[2])) - Math.min(...last.map(x => +x[3]))) / (sum(prev, x => +x[2] - +x[3]) / 60 * 3 || 1);
+    const score = (trades + vol + range) / 3;
+    const [label, color] = score < 0.7 ? ['조용', 'var(--blue)'] : score < 1.3 ? ['보통', 'var(--ink)'] : score < 2.2 ? ['활발', 'var(--accent)'] : ['과열', 'var(--down)'];
+    return { trades, vol, range, score, label, color };
+  }
+};
+
+function squarify(items, x, y, w, h){
+  const out = []; const total = items.reduce((s, i) => s + i.v, 0); if(!total) return out;
+  const scale = w * h / total; let rest = items.map(i => ({...i, a: i.v * scale}));
+  while(rest.length){
+    const short = Math.min(w, h); let row = [rest[0]], best = worst(row, short);
+    for(let i = 1; i < rest.length; i++){ const r = [...row, rest[i]], wv = worst(r, short); if(wv > best) break; row = r; best = wv }
+    const sum = row.reduce((s, i) => s + i.a, 0), thick = sum / short;
+    let off = 0; row.forEach(i => { const len = i.a / thick;
+      if(w >= h) out.push({...i, x:Math.round(x), y:Math.round(y + off), w:Math.round(thick) - 2, h:Math.round(len) - 2});
+      else out.push({...i, x:Math.round(x + off), y:Math.round(y), w:Math.round(len) - 2, h:Math.round(thick) - 2}); off += len });
+    if(w >= h){ x += thick; w -= thick } else { y += thick; h -= thick }
+    rest = rest.slice(row.length);
+  }
+  return out;
+  function worst(r, s){ const sum = r.reduce((a, i) => a + i.a, 0), mx = Math.max(...r.map(i => i.a)), mn = Math.min(...r.map(i => i.a)); return Math.max(s*s*mx/(sum*sum), sum*sum/(s*s*mn)) }
+}
+function spark(vals, W, H){
+  const n = vals.length; if(n < 2) return ''; const pts = vals.map((v, i) => `${(i/(n-1)*W).toFixed(1)},${(H - v/100*H).toFixed(1)}`).join(' ');
+  return `<line x1="0" x2="${W}" y1="${H/2}" y2="${H/2}" stroke="#232d3b"/><polyline points="${pts}" fill="none" stroke="#f0b90b" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+}
+
+/* 헤더의 작은 시장 온도 표시 (1분마다) */
+async function headerTemp(){
+  try{ const t = await M.measureTemp(); const el = $('hTemp'); if(el){ el.innerHTML = `시장 온도 <b style="color:${t.color}">${t.label}</b>`; el.title = `BTC 최근 3분 ÷ 앞 1시간 평소 · 체결 ${t.trades.toFixed(2)}배 · 거래량 ${t.vol.toFixed(2)}배 · 움직임 ${t.range.toFixed(2)}배` } }catch(e){}
+}
+window.addEventListener('DOMContentLoaded', () => { headerTemp(); setInterval(headerTemp, 60000) });
+LC.headerTemp = headerTemp;
+})();
+</script>
+<script>/* js/paper.js */
+/* 오른쪽 창: 가상 매매(모의 선물 거래)와 내 현물 포트폴리오 */
+(() => {
+const { esc, store } = LC;
+const FEE = 0.0004, START = 10000;
+const uid = () => Math.random().toString(36).slice(2, 9);
+const prices = {};          // 종목별 최신가 (선물)
+let pollT = 0;
+
+function livePx(sym){
+  const v = LC.app.views.find(x => x.sym === sym && x.market === 'futures' && x.last);
+  if(v) return v.last.close;
+  const t = LC.app.tickers.futures[sym]; if(t && t.c) return t.c;
+  return prices[sym];
+}
+
+const PAPER = {
+  id:'paper', label:'가상 매매',
+  st: store.get('paper', { bal:START, pos:[], orders:[], hist:[] }),
+  side:'long', type:'market',
+  save(){ store.set('paper', this.st) },
+  mount(el, app){
+    this.el = el; this.app = app;
+    el.innerHTML = `<div class="pp-scroll">
+      <div class="pp-acc"><div><small>잔고</small><b class="num pp-bal"></b></div><div><small>평가 자산</small><b class="num pp-eq"></b></div><div><small>미실현 손익</small><b class="num pp-upnl"></b></div></div>
+      <div class="pp-form">
+        <div class="seg pp-side"><button data-s="long" class="on">롱</button><button data-s="short">숏</button></div>
+        <div class="seg pp-type"><button data-t="market" class="on">시장가</button><button data-t="limit">지정가</button></div>
+        <label class="pp-limit" hidden>주문 가격<input class="inp num" id="ppPrice" type="number" step="any"></label>
+        <label>증거금 (USDT)<input class="inp num" id="ppAmt" type="number" step="any" min="1" value="100"></label>
+        <div class="pp-pcts">${[10,25,50,100].map(p => `<button data-p="${p}">${p}%</button>`).join('')}</div>
+        <label>레버리지 <b class="num" id="ppLevT">10x</b><input id="ppLev" type="range" min="1" max="100" value="10"></label>
+        <div class="pp-two"><label>익절 가격<input class="inp num" id="ppTp" type="number" step="any" placeholder="선택"></label><label>손절 가격<input class="inp num" id="ppSl" type="number" step="any" placeholder="선택"></label></div>
+        <div class="pp-info muted"></div>
+        <button class="btn pri pp-go" id="ppGo">롱 주문</button>
+        <p class="muted small">실제 돈은 오가지 않아요. 바이낸스 선물 실시간 가격으로 계산하고, 수수료 0.04%를 양쪽에 매겨요. 청산가는 대략 값이에요.</p>
+      </div>
+      <h5>포지션 <span class="dim pp-pn"></span></h5><div class="pp-pos"></div>
+      <h5>대기 주문</h5><div class="pp-ord"></div>
+      <h5>최근 거래 <button class="lnk" id="ppReset">처음부터 (잔고 ${START.toLocaleString()} USDT)</button></h5><div class="pp-hist"></div></div>`;
+    const q = s => el.querySelector(s);
+    q('.pp-side').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.side = b.dataset.s; q('.pp-side').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); this.form() };
+    q('.pp-type').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.type = b.dataset.t; q('.pp-type').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+      q('.pp-limit').hidden = this.type !== 'limit'; if(this.type === 'limit' && !q('#ppPrice').value){ const p = livePx(this.sym); if(p) q('#ppPrice').value = p } this.form() };
+    q('.pp-pcts').onclick = e => { const b = e.target.closest('button'); if(b){ q('#ppAmt').value = Math.floor(this.st.bal * b.dataset.p / 100 * 100) / 100; this.form() } };
+    q('#ppLev').oninput = () => { q('#ppLevT').textContent = q('#ppLev').value + 'x'; this.form() };
+    ['#ppAmt','#ppPrice','#ppTp','#ppSl'].forEach(s => q(s).oninput = () => this.form());
+    q('#ppGo').onclick = () => this.submit();
+    q('#ppReset').onclick = () => { this.st = { bal:START, pos:[], orders:[], hist:[] }; this.save(); this.render(); this.lines(); LC.toast('가상 매매를 처음부터 시작해요') };
+    el.addEventListener('click', e => { const b = e.target.closest('[data-close],[data-cancel],[data-go]'); if(!b) return;
+      if(b.dataset.close){ const p = this.st.pos.find(x => x.id === b.dataset.close); if(p) this.close(p, livePx(p.sym), '직접 종료') }
+      if(b.dataset.cancel){ const o = this.st.orders.find(x => x.id === b.dataset.cancel); if(o){ this.st.bal += o.margin; this.st.orders = this.st.orders.filter(x => x !== o); this.save(); this.render(); this.lines() } }
+      if(b.dataset.go) app.openSymbol(b.dataset.go, 'futures') });
+    setInterval(() => this.tick(), 1000);
+    this.render();
+  },
+  onSymbol(v){ this.sym = v.sym; this.form(); this.lines() },
+  onShow(on){ if(on){ this.form(); this.render() } },
+  form(){
+    if(!this.el) return; const q = s => this.el.querySelector(s);
+    const lev = +q('#ppLev').value, amt = +q('#ppAmt').value || 0, px = this.type === 'limit' ? +q('#ppPrice').value : livePx(this.sym);
+    const long = this.side === 'long';
+    q('#ppGo').textContent = `${esc(this.sym || '')} ${long ? '롱' : '숏'} ${this.type === 'limit' ? '지정가' : '시장가'} 주문`;
+    q('#ppGo').className = 'btn pp-go ' + (long ? 'buy' : 'sell');
+    if(!px){ q('.pp-info').textContent = this.app && this.app.v && this.app.v.market !== 'futures' ? '가상 매매는 선물 가격으로 해요. 선물로 바꾸면 바로 쓸 수 있어요.' : '가격을 기다리는 중…'; return }
+    const size = amt * lev, liq = long ? px * (1 - 1/lev + 0.004) : px * (1 + 1/lev - 0.004);
+    q('.pp-info').innerHTML = `포지션 크기 <b class="num">${LC.fmtN(size, 2)} USDT</b> · 수량 <b class="num">${(size/px).toPrecision(5)}</b><br>예상 청산가 <b class="num down">${LC.fmtPx(liq)}</b> · 수수료 약 <b class="num">${LC.fmtN(size*FEE, 2)}</b>`;
+  },
+  submit(){
+    const q = s => this.el.querySelector(s), sym = this.sym;
+    if(!sym || !this.app.v || this.app.v.market !== 'futures') return LC.toast('가상 매매는 선물 차트에서 할 수 있어요');
+    const margin = +q('#ppAmt').value, lev = +q('#ppLev').value, tp = +q('#ppTp').value || null, sl = +q('#ppSl').value || null;
+    const px = this.type === 'limit' ? +q('#ppPrice').value : livePx(sym);
+    if(!(margin > 0) || !px) return LC.toast('증거금과 가격을 확인해 주세요');
+    const fee = margin * lev * FEE;
+    if(margin + fee > this.st.bal) return LC.toast('잔고가 모자라요');
+    const long = this.side === 'long';
+    if(tp && (long ? tp <= px : tp >= px)) return LC.toast('익절 가격이 진입가 반대쪽에 있어요');
+    if(sl && (long ? sl >= px : sl <= px)) return LC.toast('손절 가격이 진입가 반대쪽에 있어요');
+    if(this.type === 'limit'){
+      this.st.bal -= margin; this.st.orders.push({ id:uid(), sym, side:this.side, price:px, margin, lev, tp, sl, t:Date.now(), above: px > livePx(sym) });
+      LC.toast(`${sym} ${long ? '롱' : '숏'} 지정가 ${LC.fmtPx(px)} 주문을 걸었어요`);
+    } else this.open({ sym, side:this.side, entry:px, margin, lev, tp, sl });
+    this.save(); this.render(); this.lines();
+  },
+  open(o){
+    const fee = o.margin * o.lev * FEE; this.st.bal -= o.margin + fee;
+    this.st.pos.push({ id:uid(), sym:o.sym, side:o.side, entry:o.entry, margin:o.margin, lev:o.lev, qty:o.margin*o.lev/o.entry, tp:o.tp, sl:o.sl, t:Date.now() });
+    LC.toast(`${o.sym} ${o.side === 'long' ? '롱' : '숏'} ${LC.fmtPx(o.entry)} 체결 · ${o.lev}x`, o.side === 'long' ? 'up' : 'down');
+  },
+  pnl(p, px){ return (p.side === 'long' ? px - p.entry : p.entry - px) * p.qty },
+  liq(p){ return p.side === 'long' ? p.entry * (1 - 1/p.lev + 0.004) : p.entry * (1 + 1/p.lev - 0.004) },
+  close(p, px, reason){
+    if(!px) return; const pnl = this.pnl(p, px), fee = p.qty * px * FEE;
+    const back = reason === '강제 청산' ? 0 : Math.max(0, p.margin + pnl - fee);
+    this.st.bal += back; this.st.pos = this.st.pos.filter(x => x !== p);
+    const real = back - p.margin;
+    this.st.hist.unshift({ sym:p.sym, side:p.side, entry:p.entry, exit:px, lev:p.lev, pnl:real, roe:real/p.margin*100, reason, t:Date.now() }); this.st.hist = this.st.hist.slice(0, 50);
+    LC.toast(`${p.sym} ${reason} · ${real >= 0 ? '+' : ''}${LC.fmtN(real, 2)} USDT`, real >= 0 ? 'up' : 'down', 7000); if(reason !== '직접 종료') LC.beep(real >= 0 ? 880 : 300, 0.2);
+    this.save(); this.render(); this.lines();
+  },
+  async tick(){
+    const syms = [...new Set([...this.st.pos.map(p => p.sym), ...this.st.orders.map(o => o.sym)])];
+    if(syms.some(s => !livePx(s) || !LC.app.views.some(v => v.sym === s)) && Date.now() - pollT > 2000){
+      pollT = Date.now(); try{ (await LC.getJSON(`${LC.EP.futures.rest}/ticker/price`)).forEach(x => prices[x.symbol] = +x.price) }catch(e){} }
+    let changed = false;
+    for(const o of [...this.st.orders]){ const px = livePx(o.sym); if(!px) continue;
+      if(o.above ? px >= o.price : px <= o.price){ this.st.orders = this.st.orders.filter(x => x !== o); this.st.bal += o.margin; this.open({...o, entry:o.price}); changed = true } }
+    for(const p of [...this.st.pos]){ const px = livePx(p.sym); if(!px) continue; const long = p.side === 'long';
+      if(long ? px <= this.liq(p) : px >= this.liq(p)) this.close(p, px, '강제 청산');
+      else if(p.tp && (long ? px >= p.tp : px <= p.tp)) this.close(p, p.tp, '익절');
+      else if(p.sl && (long ? px <= p.sl : px >= p.sl)) this.close(p, p.sl, '손절') }
+    if(changed){ this.save(); this.lines() }
+    if(!this.el.hidden || changed) this.render();
+  },
+  render(){
+    if(!this.el) return; const q = s => this.el.querySelector(s);
+    let upnl = 0, used = 0;
+    const pos = this.st.pos.map(p => { const px = livePx(p.sym), pnl = px ? this.pnl(p, px) : 0; upnl += pnl; used += p.margin;
+      return `<div class="pp-row"><div class="pp-r1"><button class="lnk" data-go="${esc(p.sym)}"><b>${esc(p.sym.replace(/USDT$/,''))}</b></button> <span class="tag ${p.side === 'long' ? 'up' : 'down'}">${p.side === 'long' ? '롱' : '숏'} ${p.lev}x</span>
+        <span class="num ${pnl >= 0 ? 'up' : 'down'}">${pnl >= 0 ? '+' : ''}${LC.fmtN(pnl, 2)} (${LC.fmtPct(pnl/p.margin*100)})</span><button class="btn sm" data-close="${p.id}">종료</button></div>
+        <div class="pp-r2 num dim">진입 ${LC.fmtPx(p.entry)} · 지금 ${px ? LC.fmtPx(px) : '-'} · 청산 ${LC.fmtPx(this.liq(p))}${p.tp ? ' · 익절 ' + LC.fmtPx(p.tp) : ''}${p.sl ? ' · 손절 ' + LC.fmtPx(p.sl) : ''}</div></div>` }).join('');
+    const ord = this.st.orders.map(o => `<div class="pp-row"><div class="pp-r1"><b>${esc(o.sym.replace(/USDT$/,''))}</b> <span class="tag ${o.side === 'long' ? 'up' : 'down'}">${o.side === 'long' ? '롱' : '숏'} ${o.lev}x</span><span class="num">${LC.fmtPx(o.price)} · ${LC.fmtN(o.margin, 2)} USDT</span><button class="btn sm" data-cancel="${o.id}">취소</button></div></div>`).join('');
+    const hist = this.st.hist.slice(0, 20).map(h => `<div class="pp-row"><div class="pp-r1"><b>${esc(h.sym.replace(/USDT$/,''))}</b> <span class="tag">${h.side === 'long' ? '롱' : '숏'} ${h.lev}x · ${esc(h.reason)}</span><span class="num ${h.pnl >= 0 ? 'up' : 'down'}">${h.pnl >= 0 ? '+' : ''}${LC.fmtN(h.pnl, 2)} (${LC.fmtPct(h.roe)})</span></div>
+      <div class="pp-r2 num dim">${LC.fmtPx(h.entry)} → ${LC.fmtPx(h.exit)} · ${new Date(h.t).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'})}</div></div>`).join('');
+    q('.pp-bal').textContent = LC.fmtN(this.st.bal, 2);
+    q('.pp-eq').textContent = LC.fmtN(this.st.bal + used + upnl + this.st.orders.reduce((s, o) => s + o.margin, 0), 2);
+    q('.pp-upnl').innerHTML = `<span class="${upnl >= 0 ? 'up' : 'down'}">${upnl >= 0 ? '+' : ''}${LC.fmtN(upnl, 2)}</span>`;
+    q('.pp-pn').textContent = this.st.pos.length ? this.st.pos.length + '개' : '';
+    q('.pp-pos').innerHTML = pos || '<div class="empty sm">열린 포지션이 없어요</div>';
+    q('.pp-ord').innerHTML = ord || '<div class="empty sm">대기 주문이 없어요</div>';
+    q('.pp-hist').innerHTML = hist || '<div class="empty sm">아직 거래가 없어요</div>';
+  },
+  /* 차트에 진입·청산·익절·손절 가격선 */
+  lines(){
+    LC.app.views.forEach(v => {
+      (v.paperLines || []).forEach(l => { try{ v.series.removePriceLine(l) }catch(e){} }); v.paperLines = [];
+      if(v.market !== 'futures') return;
+      this.st.pos.filter(p => p.sym === v.sym).forEach(p => {
+        const add = (price, color, title, style = 0) => v.paperLines.push(v.series.createPriceLine({ price, color, title, lineWidth:1, lineStyle:style, axisLabelVisible:true }));
+        add(p.entry, p.side === 'long' ? '#16c784' : '#ea3943', `가상 ${p.side === 'long' ? '롱' : '숏'} ${p.lev}x`);
+        add(this.liq(p), '#b38cff', '청산', 2); if(p.tp) add(p.tp, '#16c784', '익절', 2); if(p.sl) add(p.sl, '#ea3943', '손절', 2) });
+      this.st.orders.filter(o => o.sym === v.sym).forEach(o => v.paperLines.push(v.series.createPriceLine({ price:o.price, color:'#8a94a6', title:'가상 지정가', lineWidth:1, lineStyle:1, axisLabelVisible:true })));
+    });
+  }
+};
+
+/* 포트폴리오: 현물 보유 코인의 평단가·수량으로 손익 보기 */
+const PF = {
+  id:'pf', label:'포트폴리오',
+  rows: store.get('pf', []), px:{},
+  mount(el, app){
+    this.el = el; this.app = app;
+    el.innerHTML = `<div class="pp-scroll"><div class="pp-acc"><div><small>평가 금액</small><b class="num pf-val">-</b></div><div><small>매수 금액</small><b class="num pf-cost">-</b></div><div><small>손익</small><b class="num pf-pnl">-</b></div></div>
+      <form class="pf-form"><input class="inp" id="pfCoin" placeholder="코인 (예: BTC)" autocomplete="off" aria-label="코인"><input class="inp num" id="pfQty" type="number" step="any" placeholder="수량" aria-label="수량">
+        <input class="inp num" id="pfAvg" type="number" step="any" placeholder="평단가 (USDT)" aria-label="평단가"><button class="btn pri">추가</button></form>
+      <p class="muted small pad">바이낸스 현물 가격으로 5초마다 계산해요. 같은 코인을 다시 넣으면 평단가를 합쳐 줘요. 이 브라우저에만 저장돼요.</p>
+      <div class="pf-list"></div></div>`;
+    el.querySelector('.pf-form').onsubmit = e => { e.preventDefault();
+      const c = el.querySelector('#pfCoin').value.trim().toUpperCase().replace(/USDT$/, ''), qn = +el.querySelector('#pfQty').value, a = +el.querySelector('#pfAvg').value;
+      if(!/^[A-Z0-9]{1,15}$/.test(c) || !(qn > 0) || !(a > 0)) return LC.toast('코인, 수량, 평단가를 확인해 주세요');
+      const ex = this.rows.find(r => r.c === c);
+      if(ex){ const tq = ex.q + qn; ex.a = (ex.a*ex.q + a*qn) / tq; ex.q = tq } else this.rows.push({ c, q:qn, a });
+      store.set('pf', this.rows); e.target.reset(); this.refresh() };
+    el.querySelector('.pf-list').onclick = e => { const b = e.target.closest('[data-del]'); if(b){ this.rows = this.rows.filter(r => r.c !== b.dataset.del); store.set('pf', this.rows); this.render() }
+      const g = e.target.closest('[data-go]'); if(g) app.openSymbol(g.dataset.go + 'USDT', 'spot') };
+    setInterval(() => { if(!this.el.hidden) this.refresh() }, 5000);
+  },
+  onShow(on){ if(on) this.refresh() },
+  async refresh(){
+    if(this.rows.length){ try{ const syms = JSON.stringify(this.rows.map(r => r.c + 'USDT'));
+      (await LC.getJSON(`${LC.EP.spot.rest}/ticker/price?symbols=${encodeURIComponent(syms)}`)).forEach(x => this.px[x.symbol.replace(/USDT$/, '')] = +x.price) }catch(e){
+      try{ (await LC.getJSON(`${LC.EP.spot.rest}/ticker/price`)).forEach(x => { if(x.symbol.endsWith('USDT')) this.px[x.symbol.slice(0, -4)] = +x.price }) }catch(e2){} } }
+    this.render();
+  },
+  render(){
+    let val = 0, cost = 0;
+    const list = this.rows.map(r => { const p = this.px[r.c], v = p ? p*r.q : null, c = r.a*r.q; if(v != null){ val += v; cost += c }
+      const pnl = v != null ? v - c : null;
+      return `<div class="pp-row"><div class="pp-r1"><button class="lnk" data-go="${esc(r.c)}"><b>${esc(r.c)}</b></button><span class="num">${v != null ? LC.fmtN(v, 2) + ' USDT' : '가격 없음'}</span>
+        <span class="num ${pnl >= 0 ? 'up' : 'down'}">${pnl != null ? (pnl >= 0 ? '+' : '') + LC.fmtN(pnl, 2) + ' (' + LC.fmtPct(pnl/c*100) + ')' : '-'}</span><button class="btn sm" data-del="${esc(r.c)}" aria-label="${esc(r.c)} 빼기">빼기</button></div>
+        <div class="pp-r2 num dim">${r.q} 개 · 평단 ${LC.fmtPx(r.a)} · 지금 ${p ? LC.fmtPx(p) : '-'}</div></div>` }).join('');
+    this.el.querySelector('.pf-list').innerHTML = list || '<div class="empty sm">위에서 보유 코인을 넣어 보세요</div>';
+    const pnl = val - cost;
+    this.el.querySelector('.pf-val').textContent = this.rows.length ? LC.fmtN(val, 2) : '-';
+    this.el.querySelector('.pf-cost').textContent = this.rows.length ? LC.fmtN(cost, 2) : '-';
+    this.el.querySelector('.pf-pnl').innerHTML = this.rows.length ? `<span class="${pnl >= 0 ? 'up' : 'down'}">${pnl >= 0 ? '+' : ''}${LC.fmtN(pnl, 2)} (${LC.fmtPct(cost ? pnl/cost*100 : 0)})</span>` : '-';
+  }
+};
+LC.panels.push(PAPER, PF);
+LC.paper = PAPER;
+})();
+</script>
+<script>/* js/app.js */
+/* 화면 전체: 헤더, 작도 도구 막대, 차트 칸 배치, 오른쪽 창 */
+(() => {
+const { $, esc, store } = LC;
+const TOOLS = [
+  ['cross','십자선 (Esc)','<path d="M12 3v18M3 12h18"/>'],
+  ['trend','추세선 (Alt+T)','<path d="M4 19L20 5"/><circle cx="4" cy="19" r="1.6"/><circle cx="20" cy="5" r="1.6"/>'],
+  ['ray','반직선','<path d="M4 18L21 6"/><circle cx="4" cy="18" r="1.6"/>'],
+  ['ext','연장선','<path d="M2 20L22 4"/>'],
+  ['hline','수평선 (Alt+H)','<path d="M2 12h20"/><circle cx="12" cy="12" r="1.6"/>'],
+  ['hray','수평 반직선','<path d="M8 12h14"/><circle cx="8" cy="12" r="1.6"/>'],
+  ['vline','수직선 (Alt+V)','<path d="M12 2v20"/>'],
+  ['rect','사각형','<rect x="4" y="6" width="16" height="12" rx="1"/>'],
+  ['fib','피보나치 되돌림 (Alt+F)','<path d="M3 5h18M3 9.5h18M3 14h18M3 19h18"/>'],
+  ['pos','롱/숏 포지션 (진입 → 손절 순서로 클릭)','<rect x="5" y="4" width="14" height="8" fill="rgba(22,199,132,.35)"/><rect x="5" y="12" width="14" height="7" fill="rgba(234,57,67,.35)"/>'],
+  ['measure','재기 (가격·% ·봉 수)','<path d="M4 20V4M4 20h16M8 16l8-8"/>'],
+  ['text','글자','<path d="M5 6h14M12 6v13"/>'],
+  ['alert','가격 알림선 (Alt+A)','<path d="M6 16V11a6 6 0 0112 0v5l2 2H4zM10 20a2 2 0 004 0"/>']
+];
+const EXTRA = [
+  ['magnet','자석 (봉의 시가·고가·저가·종가에 붙임)','<path d="M6 4v8a6 6 0 0012 0V4h-4v8a2 2 0 01-4 0V4z"/>'],
+  ['keepTool','그리기 유지 (도구가 계속 선택돼 있음)','<path d="M5 19l4-1 10-10-3-3L6 15z"/><path d="M14 5l3 3"/>'],
+  ['drawLocked','모든 작도 잠그기','<rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V8a4 4 0 018 0v3"/>'],
+  ['drawHidden','모든 작도 숨기기','<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'],
+  ['undo','되돌리기 (Ctrl+Z)','<path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/>'],
+  ['clear','이 종목 작도 모두 지우기','<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/>']
+];
+const CHART_TYPES = [['candle','캔들'],['hollow','속 빈 캔들'],['ha','하이킨 아시'],['bar','바'],['line','라인'],['area','영역']];
+const LAYOUTS = [['1','1칸'],['2h','좌우 2칸'],['2v','위아래 2칸'],['4','4칸']];
+const DEFAULT_SYMS = ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT'];
+
+const app = LC.app = {
+  views: [], active: null, tool: 'cross',
+  magnet: store.get('magnet', false), keepTool: false, drawHidden: false, drawLocked: false,
+  layout: store.get('layout', '1'), tickers: { futures:{}, spot:{} }, info: { futures:null, spot:null }, panels: LC.panels || [],
+
+  init(){
+    this.buildHeader(); this.buildTools();
+    document.documentElement.dataset.theme = this.theme = store.get('theme', 'dark');
+    const saved = store.get('views', null);
+    const cfgs = saved && saved.length ? saved : [{ sym:store.get('sym','BTCUSDT'), market:store.get('market','futures'), tf:store.get('tf','1m') }];
+    this.applyLayout(this.layout, cfgs);
+    this.buildAside();
+    this.loadInfo('futures'); this.loadInfo('spot');
+    setInterval(() => { this.views.forEach(v => v.tick()); this.updateHeader(); this.updateFunding() }, 1000);
+    document.addEventListener('keydown', e => this.onKey(e));
+    if('Notification' in window && Notification.permission === 'default') document.addEventListener('click', () => { try{ Notification.requestPermission() }catch(e){} }, {once:true});
+  },
+  save(){ store.set('views', this.views.map(v => v.cfg())); store.set('layout', this.layout) },
+  get v(){ return this.active },
+
+  /* 칸 배치 */
+  applyLayout(lay, cfgs){
+    this.layout = lay; const n = lay === '1' ? 1 : lay === '4' ? 4 : 2;
+    const host = $('views'); host.className = 'views l' + lay;
+    cfgs = cfgs || this.views.map(v => v.cfg());
+    while(this.views.length > n){ const v = this.views.pop(); v.destroy() }
+    for(let i = 0; i < n; i++){
+      if(this.views[i]) continue;
+      const v0 = this.views[0]; const base = cfgs[i] || { sym: DEFAULT_SYMS.find(x => !this.views.some(v => v.sym === x)) || DEFAULT_SYMS[i], market: v0 ? v0.market : 'futures', tf: v0 ? v0.tf : '1m' };
+      this.views.push(new LC.ChartView(this, host, base));
+    }
+    if(!this.views.includes(this.active)) this.setActive(this.views[0]);
+    if(this.theme) this.setTheme(this.theme);
+    host.classList.toggle('multi', n > 1);
+    $('laySel').value = lay; this.save();
+  },
+  setActive(v){
+    if(this.active === v) return;
+    this.active = v; this.views.forEach(o => o.box.classList.toggle('active', o === v));
+    this.syncHeader(); if(this.asideReady) this.panels.forEach(p => p.onSymbol && p.onSymbol(v));
+  },
+  onViewLoaded(v){ if(v === this.active && this.asideReady){ this.syncHeader(); this.panels.forEach(p => p.onSymbol && p.onSymbol(v)) } this.loadFunding(); LC.paper && LC.paper.lines() },
+  openSymbol(sym, market){
+    const v = this.active; if(!v) return;
+    if(market && market !== v.market) v.market = market;
+    v.set(sym); this.syncHeader(); this.panels.forEach(p => p.onSymbol && p.onSymbol(v));
+  },
+  setConn(v, ok){ if(v === this.active){ $('dot').classList.toggle('ok', ok); $('connTxt').textContent = ok ? '실시간 연결됨' : '재연결 중…' } },
+  hint(t){ const h = $('hint'); h.textContent = t; h.classList.toggle('show', !!t) },
+
+  /* 거래소 종목 정보 (가격 소수점) */
+  async loadInfo(m){
+    try{ const d = await LC.getJSON(`${LC.EP[m].rest}/exchangeInfo`); const map = {};
+      d.symbols.forEach(s => { if(m === 'futures' && (s.contractType !== 'PERPETUAL' || s.status !== 'TRADING')) return; if(m === 'spot' && s.status !== 'TRADING') return;
+        const f = (s.filters||[]).find(x => x.filterType === 'PRICE_FILTER'); const ts = f ? f.tickSize : '0.01';
+        map[s.symbol] = { prec: Math.max(0, (ts.replace(/0+$/,'').split('.')[1]||'').length), base:s.baseAsset } });
+      this.info[m] = map; this.views.forEach(v => { if(v.market === m){ const p = this.precOf(v.sym, m); if(p != null && p !== v.prec){ v.prec = p; v.series.applyOptions({priceFormat:{type:'price', precision:p, minMove:1/10**p}}) } } });
+    }catch(e){}
+  },
+  precOf(sym, m){ const i = this.info[m] && this.info[m][sym]; return i ? i.prec : null },
+
+  /* 헤더 */
+  buildHeader(){
+    $('tfs').innerHTML = LC.TF.map(([k,n]) => `<button data-tf="${k}">${n}</button>`).join('');
+    $('tfs').onclick = e => { const b = e.target.closest('button'); if(b && this.v){ this.v.setTf(b.dataset.tf); this.syncHeader() } };
+    $('typeSel').innerHTML = CHART_TYPES.map(([k,n]) => `<option value="${k}">${n}</option>`).join('');
+    $('typeSel').onchange = e => this.v && this.v.setType(e.target.value);
+    $('laySel').innerHTML = LAYOUTS.map(([k,n]) => `<option value="${k}">${n}</option>`).join('');
+    $('laySel').onchange = e => this.applyLayout(e.target.value);
+    $('mkt').onclick = e => { const b = e.target.closest('button'); if(!b || !this.v || b.dataset.m === this.v.market) return;
+      const m = b.dataset.m, sym = this.v.sym; this.v.market = m; this.v.set(sym, m); this.syncHeader(); this.panels.forEach(p => p.onMarket && p.onMarket(m)) };
+    $('btnInd').onclick = () => this.indModal();
+    $('btnReplay').onclick = () => this.v && (this.v.replay ? this.v.replayExit() : this.v.replayBegin());
+    $('btnLog').onclick = () => { if(!this.v) return; this.v.setLog(!this.v.log); $('btnLog').classList.toggle('on', this.v.log); $('btnPct').classList.remove('on') };
+    $('btnPct').onclick = () => { if(!this.v) return; const on = !$('btnPct').classList.contains('on'); this.v.setPercent(on); this.v.log = false; $('btnPct').classList.toggle('on', on); $('btnLog').classList.remove('on') };
+    $('btnShot').onclick = () => this.v && this.v.screenshot();
+    $('btnMarket').onclick = () => LC.market.open();
+    $('hTemp').onclick = () => LC.market.open('temp');
+    $('btnTheme').onclick = () => this.setTheme(this.theme === 'light' ? 'dark' : 'light');
+    $('btnFull').onclick = () => { try{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() }catch(e){} };
+  },
+  setTheme(t){
+    this.theme = t; store.set('theme', t); document.documentElement.dataset.theme = t;
+    const light = t === 'light', grid = light ? 'rgba(0,0,0,.06)' : 'rgba(35,45,59,.6)', border = light ? '#d6dce4' : '#232d3b';
+    this.views.forEach(v => v.chart.applyOptions({ layout:{ textColor: light ? '#4a5566' : '#8b97a8', panes:{separatorColor:border} }, grid:{ vertLines:{color:grid}, horzLines:{color:grid} },
+      rightPriceScale:{borderColor:border}, timeScale:{borderColor:border} }));
+  },
+  syncHeader(){
+    const v = this.v; if(!v) return;
+    $('hSym').textContent = v.sym + (v.market === 'futures' ? '.P' : '');
+    [...$('tfs').children].forEach(b => b.classList.toggle('on', b.dataset.tf === v.tf));
+    [...$('mkt').children].forEach(b => b.classList.toggle('on', b.dataset.m === v.market));
+    $('typeSel').value = v.type; $('btnLog').classList.toggle('on', v.log);
+    $('fundBox').style.display = v.market === 'futures' ? '' : 'none';
+    this.updateHeader();
+  },
+  updateHeader(){
+    const v = this.v; if(!v) return;
+    const t = this.tickers[v.market][v.sym], last = v.last, pr = v.prec;
+    if(last){ $('hLast').textContent = LC.fmtN(last.close, pr); document.title = `${v.sym} ${LC.fmtN(last.close, pr)} · wuho.com` }
+    if(t){ const cls = t.P >= 0 ? 'up' : 'down'; $('hLast').className = 'last num ' + cls; $('hChg').textContent = LC.fmtPct(t.P); $('hChg').className = 'chg num ' + cls;
+      $('sHigh').textContent = LC.fmtN(t.h, pr); $('sLow').textContent = LC.fmtN(t.l, pr); $('sVol').textContent = LC.fmtBig(t.q) + ' USDT' }
+  },
+  async loadFunding(){
+    const v = this.v; if(!v || v.market !== 'futures') return;
+    try{ const d = await LC.getJSON(`${LC.EP.futures.rest}/premiumIndex?symbol=${v.sym}`); this.fund = { sym:v.sym, rate:+d.lastFundingRate, next:+d.nextFundingTime, mark:+d.markPrice } }catch(e){}
+  },
+  updateFunding(){
+    const f = this.fund, v = this.v; if(!f || !v || f.sym !== v.sym) return;
+    const left = f.next - Date.now(); if(left <= 0){ this.fund = null; this.loadFunding(); return }
+    $('sFund').innerHTML = `<span class="${f.rate>=0?'up':'down'}">${(f.rate*100).toFixed(4)}%</span> · ${LC.fmtDur(left)}`;
+  },
+
+  /* 작도 도구 막대 */
+  buildTools(){
+    const svg = p => `<svg viewBox="0 0 24 24">${p}</svg>`;
+    $('tools').innerHTML = TOOLS.map(([k,t,p]) => `<button data-tool="${k}" title="${t}" aria-label="${t}">${svg(p)}</button>`).join('')
+      + '<span class="tsep"></span>' + EXTRA.map(([k,t,p]) => `<button data-x="${k}" title="${t}" aria-label="${t}">${svg(p)}</button>`).join('');
+    $('tools').onclick = e => { const b = e.target.closest('button'); if(!b) return;
+      if(b.dataset.tool) return this.setTool(this.tool === b.dataset.tool && b.dataset.tool !== 'cross' ? 'cross' : b.dataset.tool);
+      const x = b.dataset.x;
+      if(x === 'undo') return this.v && this.v.drawings.undo();
+      if(x === 'clear') return this.v && this.v.drawings.clear();
+      this[x] = !this[x]; if(x === 'magnet') store.set('magnet', this.magnet); this.syncTools() };
+    this.syncTools();
+  },
+  syncTools(){ document.querySelectorAll('#tools [data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === this.tool));
+    document.querySelectorAll('#tools [data-x]').forEach(b => b.classList.toggle('on', !!this[b.dataset.x])) },
+  setTool(t){ this.tool = t; this.views.forEach(v => { v.drawings.draft = null; v.box.classList.toggle('tool-on', t !== 'cross') }); this.syncTools() },
+
+  onKey(e){
+    const tag = (e.target.tagName || '').toLowerCase(); if(tag === 'input' || tag === 'textarea' || tag === 'select') return;
+    const v = this.v;
+    if(e.key === 'Escape'){ this.setTool('cross'); this.hint(''); if(v){ v.replayPick = false; v.drawings.sel = null; v.drawings.updateBar() } }
+    else if((e.key === 'Delete' || e.key === 'Backspace') && v && v.drawings.sel){ v.drawings.remove(v.drawings.sel); e.preventDefault() }
+    else if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && v){ v.drawings.undo(); e.preventDefault() }
+    else if(e.altKey && !e.ctrlKey){ const m = {t:'trend', h:'hline', v:'vline', f:'fib', a:'alert', r:'rect'}[e.key.toLowerCase()]; if(m){ this.setTool(m); e.preventDefault() } }
+    else if(e.shiftKey && e.key === 'ArrowRight' && v && v.replay){ v.replayStep(); e.preventDefault() }
+  },
+
+  /* 지표 고르기 */
+  indModal(){
+    const v = this.v; if(!v) return;
+    const D = LC.IND.DEFS;
+    const html = `<p class="muted">누르면 지금 선택된 차트에 추가돼요. 같은 지표를 여러 번 넣을 수 있어요. 설정은 차트 왼쪽 위 범례의 ⚙ 버튼으로 바꿔요.</p>
+      <div class="ind-grid">${Object.entries(D).map(([k,d]) => `<button class="ind-add" data-k="${k}"><b>${esc(d.label)}</b><small>${d.overlay ? '차트 위' : '아래 칸'}${d.futuresOnly ? ' · 선물 전용' : ''}</small></button>`).join('')}</div>`;
+    LC.modal('지표', html, (mb, close) => { mb.onclick = e => { const b = e.target.closest('.ind-add'); if(!b) return; v.addInd(b.dataset.k); LC.toast(`${D[b.dataset.k].label} 추가됨`); close() } });
+  },
+
+  /* 오른쪽 창 */
+  buildAside(){
+    const tabs = $('asideTabs'), body = $('asideBody');
+    tabs.innerHTML = this.panels.map(p => `<button data-p="${p.id}">${esc(p.label)}</button>`).join('');
+    body.innerHTML = this.panels.map(p => `<div class="pn" data-p="${p.id}" hidden></div>`).join('');
+    this.panels.forEach(p => p.mount(body.querySelector(`.pn[data-p="${p.id}"]`), this));
+    tabs.onclick = e => { const b = e.target.closest('button'); if(b) this.showPanel(b.dataset.p) };
+    this.asideReady = true;
+    this.showPanel(store.get('panel', this.panels[0] && this.panels[0].id));
+    if(this.v) this.panels.forEach(p => p.onSymbol && p.onSymbol(this.v));
+  },
+  showPanel(id){
+    if(!this.panels.find(p => p.id === id)) id = this.panels[0].id;
+    document.querySelectorAll('#asideTabs button').forEach(b => b.classList.toggle('on', b.dataset.p === id));
+    document.querySelectorAll('#asideBody .pn').forEach(el => el.hidden = el.dataset.p !== id);
+    this.panels.forEach(p => p.onShow && p.onShow(p.id === id)); store.set('panel', id);
+  }
+};
+window.addEventListener('DOMContentLoaded', () => app.init());
+})();
+</script>
+</body>
+</html>
