@@ -2871,7 +2871,7 @@ const app = LC.app = {
   updateHeader(){
     const v = this.v; if(!v) return;
     const t = this.tickers[v.market][v.sym], last = v.last, pr = v.prec;
-    if(last){ $('hLast').textContent = LC.fmtN(last.close, pr); document.title = `${v.sym} ${LC.fmtN(last.close, pr)} · wuho.com` }
+    if(last){ $('hLast').textContent = LC.fmtN(last.close, pr); document.title = `${v.sym} ${LC.fmtN(last.close, pr)} · 우호` }
     if(t){ const cls = t.P >= 0 ? 'up' : 'down'; $('hLast').className = 'last num ' + cls; $('hChg').textContent = LC.fmtPct(t.P); $('hChg').className = 'chg num ' + cls;
       $('sHigh').textContent = LC.fmtN(t.h, pr); $('sLow').textContent = LC.fmtN(t.l, pr); $('sVol').textContent = LC.fmtBig(t.q) + ' USDT' }
   },
