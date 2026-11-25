@@ -17,8 +17,36 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 select{font:inherit;font-size:13px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:4px 6px}
 
-.app{display:grid;grid-template-rows:48px minmax(0,1fr);grid-template-columns:44px minmax(0,1fr) 340px;height:100vh}
-header{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:thin}
+.app{display:grid;grid-template-rows:34px 42px minmax(0,1fr) 30px;grid-template-columns:44px minmax(0,1fr) var(--asideW,340px) 44px;height:100vh}
+.topbar{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:0 10px;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap}
+#ctabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;min-width:0;align-self:stretch;align-items:flex-end}
+.ctab{display:flex;align-items:center;gap:6px;padding:0 10px;height:28px;border-radius:6px 6px 0 0;color:var(--dim);font-size:12px;cursor:pointer;flex:none}
+.ctab:hover{background:var(--panel2);color:var(--ink)}.ctab.on{background:var(--panel);color:var(--ink);box-shadow:inset 0 2px 0 var(--accent)}
+.ctab .x{opacity:.5;padding:0 2px}.ctab .x:hover{opacity:1;color:var(--down)}
+#ctabAdd{color:var(--dim);padding:2px 8px;font-size:16px;flex:none}#ctabAdd:hover{color:var(--accent)}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none}
+#clock{font-size:12px;color:var(--dim)}
+header{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:0 10px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:thin}
+.symbtn{display:flex;align-items:baseline;gap:8px;padding:4px 8px;border-radius:6px;border:1px solid var(--line)}.symbtn:hover{border-color:var(--accent)}
+.symbtn .caret{color:var(--dim);font-size:10px}
+header .right{margin-left:auto;display:flex;align-items:center;gap:6px}
+#bbar{grid-column:2/3;display:flex;align-items:center;gap:6px;padding:0 8px;background:var(--panel);border-top:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none;font-size:12px}
+#bbar>*{flex:none}#bbar .seg button,#bbar .hb{padding:3px 7px;font-size:12px}
+#bbar .right{margin-left:auto;display:flex;align-items:center;gap:9px;padding-left:10px}
+#bbar .stat{flex-direction:row;gap:5px;align-items:baseline}
+#rail{grid-row:3/5;grid-column:4;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:2px;overflow-y:auto;scrollbar-width:none}
+#rail button{width:36px;height:40px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--dim);font-size:9.5px;flex:none}
+#rail button:hover{background:var(--panel2);color:var(--ink)}#rail button.on{background:var(--panel2);color:var(--accent)}
+#rail svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#rail .tsep{width:24px;height:1px;background:var(--line);margin:4px 0}
+#asideGrip{position:absolute;left:-3px;top:0;bottom:0;width:6px;cursor:col-resize;z-index:5}#asideGrip:hover,#asideGrip.on{background:var(--accent);opacity:.5}
+#asideHead{padding:8px 12px;font-weight:600;border-bottom:1px solid var(--line);flex:none;display:flex;justify-content:space-between;align-items:center}
+.sr-list{max-height:60vh;overflow:auto;margin-top:8px}.sr-row{display:grid;grid-template-columns:minmax(0,1fr) 110px 70px 90px;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;font-size:13px}.sr-row:hover,.sr-row.on{background:var(--panel2)}
+.sr-in{width:100%;padding:9px 10px;font-size:14px}
+.wh-head{padding:8px 10px 4px;font-size:12px}.wh-sum .imb-t{flex-wrap:wrap;gap:2px 10px}
+header select{width:auto;max-width:110px}.wh-sum .imb{padding:4px 10px 8px}
+.frow.wh{grid-template-columns:minmax(0,1.4fr) 1fr 62px;cursor:pointer}.frow.wh .wh-2{grid-column:1/-1;margin-top:-2px}.frow.wh a{text-decoration:none}.frow.wh:hover{background:var(--panel2)}
+.wh-feed{flex:1;overflow:auto}.pn[data-p=whale]{display:flex;flex-direction:column;height:100%}.pn[data-p=whale][hidden]{display:none}
 header>*{flex:none}
 .brand{font-weight:600;color:var(--accent);letter-spacing:.02em;font-size:16px}.brand small{font-size:11px;color:var(--dim);font-weight:400;margin-left:2px}
 #errBar{position:fixed;left:0;right:0;bottom:0;z-index:99;background:#ea3943;color:#fff;padding:10px 14px;font-size:13px;display:none;white-space:pre-wrap}
@@ -75,7 +103,7 @@ header>*{flex:none}
 #hint{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--accent);padding:6px 12px;border-radius:6px;font-size:12px;z-index:8;display:none}
 #hint.show{display:block}
 
-aside{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+aside{grid-row:3/5;grid-column:3;position:relative;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0}
 #asideTabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;flex:none}
 #asideTabs button{flex:1 0 auto;padding:10px 10px;color:var(--dim);font-weight:500;border-bottom:2px solid transparent;font-size:13px}
 #asideTabs button.on{color:var(--ink);border-color:var(--accent)}
@@ -195,9 +223,9 @@ input[type=range]{accent-color:var(--accent);width:100%}
 .toast.alert{border-left-color:var(--accent)}.toast.up{border-left-color:var(--up)}.toast.down{border-left-color:var(--down)}
 
 @media(max-width:1000px){
-  .app{grid-template-columns:0 minmax(0,1fr);grid-template-rows:48px minmax(0,1fr) 42vh}
-  #tools{display:none}
-  aside{grid-column:1/-1;border-left:0;border-top:1px solid var(--line)}
+  .app{grid-template-columns:0 minmax(0,1fr) 44px;grid-template-rows:34px 42px minmax(0,1fr) 30px 42vh}
+  #tools{display:none}#bbar{grid-column:1/3}#rail{grid-row:5;grid-column:3}
+  aside{grid-row:5;grid-column:1/3;border-left:0;border-top:1px solid var(--line)}#asideGrip{display:none}
   .stat{display:none}#toasts{right:16px}
 }
 </style>
@@ -209,9 +237,14 @@ window.addEventListener("error",function(e){var b=document.getElementById("errBa
 window.addEventListener("unhandledrejection",function(e){var b=document.getElementById("errBar");if(!b)return;b.style.display="block";b.textContent+="문제가 생겼어요: "+(e.reason&&e.reason.message||e.reason)+"\n"});
 </script>
 <div class="app">
-  <header>
+  <div class="topbar">
     <span class="brand">우호 <small>wuho.com</small></span>
-    <span class="sym" id="hSym">-</span><span class="last num" id="hLast">-</span><span class="chg num" id="hChg">-</span>
+    <div id="ctabs"></div><button id="ctabAdd" title="차트 탭 추가">+</button>
+    <div class="right"><span class="hchip" id="hTemp" title="BTC 최근 3분 ÷ 앞 1시간 평소">시장 온도 -</span><span id="clock" class="num">-</span></div>
+  </div>
+  <header>
+    <button class="symbtn" id="btnSym" title="종목 찾기 (/)"><span class="sym" id="hSym">-</span><span class="caret">▼</span></button>
+    <span class="last num" id="hLast">-</span><span class="chg num" id="hChg">-</span>
     <span class="sep"></span>
     <div class="seg" id="mkt"><button data-m="futures">선물</button><button data-m="spot">현물</button></div>
     <span class="sep"></span>
@@ -220,29 +253,37 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
     <select id="typeSel" aria-label="차트 종류"></select>
     <button class="hb" id="btnInd">지표</button>
     <button class="hb" id="btnReplay" title="과거 봉부터 한 봉씩 다시 보기">리플레이</button>
-    <select id="laySel" aria-label="차트 분할"></select>
-    <button class="hb" id="btnLog" title="로그 눈금">Log</button>
-    <button class="hb" id="btnPct" title="퍼센트 눈금">%</button>
-    <button class="hb" id="btnShot" title="차트 그림 저장">📷</button>
-    <button class="hb" id="btnFull" title="전체 화면">⛶</button>
-    <button class="hb" id="btnTheme" title="밝은/어두운 화면">◐</button>
-    <span class="sep"></span>
     <button class="hb mk" id="btnMarket" title="김치 프리미엄, 히트맵, 펀딩·OI, 시장 온도">시장 자료</button>
-    <span class="hchip" id="hTemp" title="BTC 최근 3분 ÷ 앞 1시간 평소">시장 온도 -</span>
-    <span class="sep"></span>
-    <div class="stat"><span>24h 고가</span><b class="num" id="sHigh">-</b></div>
-    <div class="stat"><span>24h 저가</span><b class="num" id="sLow">-</b></div>
-    <div class="stat"><span>24h 거래대금</span><b class="num" id="sVol">-</b></div>
-    <div class="stat" id="fundBox"><span>펀딩비 · 남은 시간</span><b class="num" id="sFund">-</b></div>
-    <div class="conn"><span class="dot" id="dot"></span><span id="connTxt">연결 중</span></div>
+    <div class="right">
+      <select id="laySel" aria-label="차트 분할"></select>
+      <button class="hb" id="btnShot" title="차트 그림 저장">📷</button>
+      <button class="hb" id="btnTheme" title="밝은/어두운 화면">◐</button>
+      <button class="hb" id="btnFull" title="전체 화면">⛶</button>
+    </div>
   </header>
   <nav id="tools" aria-label="작도 도구"></nav>
   <section class="main"><div id="views" class="views"></div><div id="hint"></div></section>
-  <aside><div id="asideTabs" role="tablist"></div><div id="asideBody"></div></aside>
+  <div id="bbar">
+    <div class="seg" id="ranges"></div>
+    <span class="sep"></span>
+    <button class="hb" id="btnReplay2" title="과거 봉부터 한 봉씩 다시 보기">⏪ 리플레이</button>
+    <div class="right">
+      <div class="stat"><span>고가</span><b class="num" id="sHigh">-</b></div>
+      <div class="stat"><span>저가</span><b class="num" id="sLow">-</b></div>
+      <div class="stat"><span>대금</span><b class="num" id="sVol">-</b></div>
+      <div class="stat" id="fundBox"><span>펀딩</span><b class="num" id="sFund">-</b></div>
+      <span class="dim num" id="tz">UTC+9</span>
+      <button class="hb" id="btnPct" title="퍼센트 눈금">%</button>
+      <button class="hb" id="btnLog" title="로그 눈금">log</button>
+      <div class="conn"><span class="dot" id="dot"></span><span id="connTxt">연결 중</span></div>
+    </div>
+  </div>
+  <aside><div id="asideGrip" title="끌어서 너비 조절"></div><div id="asideHead"></div><div id="asideTabs" hidden></div><div id="asideBody"></div></aside>
+  <nav id="rail" aria-label="오른쪽 창"></nav>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"></script>
 <script>if(!window.LightweightCharts){var b=document.getElementById("errBar");b.style.display="block";b.textContent="차트 라이브러리를 못 불러왔어요. 인터넷 연결을 확인하고 새로 고침(F5) 해 주세요.";}</script>
-<script>/* js/util.js */
+<script>
 /* 공용 도구: 저장소, 포맷, 거래소 주소, 웹소켓, 소리, 알림창 */
 window.LC = window.LC || {};
 LC.panels = LC.panels || [];
@@ -326,8 +367,9 @@ function download(name, href){ const a = document.createElement('a'); a.href = h
 
 Object.assign(LC, { $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
 })();
+
 </script>
-<script>/* js/indicators.js */
+<script>
 /* 지표 계산과 목록. calc(candles, params, ctx)는 {키: [{time,value,color?}]}를 돌려줘요 */
 (() => {
 const sma = (vals, p) => { const out = new Array(vals.length).fill(null); let s = 0;
@@ -393,6 +435,14 @@ const DEFS = {
     calc:(c,p) => ({ a: toSeries(c, rma(trueRange(c), +p.period)) }) },
   OBV:{ label:'OBV', overlay:false, params:{}, colors:['#2ec4b6'], series:[{key:'o',type:'line'}], title:()=>'OBV',
     calc:c => { let o = 0; return { o: c.map((b,i) => { if(i){ if(b.close>c[i-1].close) o += b.volume; else if(b.close<c[i-1].close) o -= b.volume } return {time:b.time, value:o} }) } } },
+  CVD:{ label:'CVD (체결 매수−매도 누적)', overlay:false, params:{reset:'없음'}, colors:['#2ec4b6'], series:[{key:'c',type:'line'},{key:'d',type:'hist',scale:'cvdd'}], levels:[0],
+    title:p => `CVD${p.reset === '일간' ? ' (일간)' : ''}`,
+    /* 봉마다 '시장가 매수 체결량 − 시장가 매도 체결량'(델타)을 막대로, 그 누적을 선으로 보여 줘요 */
+    calc:(c,p) => { let cum = 0, day = -1; const cv = [], dv = [];
+      c.forEach(b => { if(b.tbv == null) return; const d = 2*b.tbv - b.volume; const dd = Math.floor(b.time/86400);
+        if(p.reset === '일간' && dd !== day){ day = dd; cum = 0 } cum += d;
+        cv.push({time:b.time, value:cum}); dv.push({time:b.time, value:d, color: d >= 0 ? 'rgba(22,199,132,.5)' : 'rgba(234,57,67,.5)'}) });
+      return { c:cv, d:dv } } },
   OI:{ label:'미결제약정 (선물)', overlay:false, async:true, futuresOnly:true, params:{}, colors:['#f0b90b'], series:[{key:'o',type:'area'}], title:()=>'Open Interest',
     fetch: async (ctx) => { const per = {'1m':'5m','3m':'5m'}[ctx.tf] || (['5m','15m','30m','1h','2h','4h','12h','1d'].includes(ctx.tf) ? ctx.tf : '1d');
       const rows = await LC.getJSON(`${LC.EP.futures.data}/openInterestHist?symbol=${ctx.sym}&period=${per}&limit=500`);
@@ -402,11 +452,12 @@ const DEFS = {
       const rows = await LC.getJSON(`${LC.EP.futures.data}/globalLongShortAccountRatio?symbol=${ctx.sym}&period=${per}&limit=500`);
       return { r: rows.map(r => ({time: Math.floor(r.timestamp/1000), value: +r.longShortRatio})) } } }
 };
-const PARAM_LABEL = {period:'기간', type:'종류', source:'기준값', mult:'배수', fast:'빠른선', slow:'느린선', signal:'시그널', rsi:'RSI 기간', stoch:'스토캐스틱 기간', k:'%K', d:'%D'};
+const PARAM_LABEL = {period:'기간', type:'종류', source:'기준값', mult:'배수', fast:'빠른선', slow:'느린선', signal:'시그널', rsi:'RSI 기간', stoch:'스토캐스틱 기간', k:'%K', d:'%D', reset:'누적 초기화'};
 LC.IND = { DEFS, PARAM_LABEL, sma, ema, smaN, rsiCalc };
 })();
+
 </script>
-<script>/* js/drawings.js */
+<script>
 /* 작도 엔진: 차트 위 캔버스에 선·도형을 그리고, 끌어서 옮기고, 종목별로 저장해요 */
 (() => {
 const FIB = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1, 1.272, 1.618];
@@ -605,6 +656,7 @@ class Drawings {
     const A = this.area();
     ctx.save(); ctx.beginPath(); ctx.rect(0,0,A.w,A.h); ctx.clip();
     if(this.v.bubbles) this.v.bubbles.draw(ctx, this, A);
+    (LC.overlays || []).forEach(o => { try{ o.draw(ctx, this, A) }catch(e){} });
     const hidden = this.app && this.app.drawHidden;
     const list = hidden ? [] : [...this.items];
     if(this.draft) list.push(this.draft);
@@ -669,8 +721,9 @@ class Drawings {
 LC.Drawings = Drawings;
 LC.DRAW_TOOLS = { TWO, ONE };
 })();
+
 </script>
-<script>/* js/chartview.js */
+<script>
 /* 차트 한 칸: 캔들, 지표, 작도, 알림, 리플레이 */
 (() => {
 const L = LightweightCharts;
@@ -757,7 +810,7 @@ class ChartView {
     try{
       const rows = await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000`);
       if(tok !== this.tok) return;
-      this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5]}));
+      this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5], tbv:+k[9]}));
       this.prec = this.app.precOf(this.sym, this.market) ?? LC.autoPrec(this.candles.length ? this.candles[this.candles.length-1].close : 1);
       this.series.applyOptions({ priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec} });
       this.shown = this.candles; this.renderAll(); this.chart.timeScale().scrollToRealTime();
@@ -766,7 +819,7 @@ class ChartView {
     this.prevPrice = this.last && this.last.close;
     this.kws = LC.openWS(`${LC.EP[this.market].ws}/${this.sym.toLowerCase()}@kline_${this.tf}`, m => {
       if(tok !== this.tok || !m.k) return; const k = m.k;
-      this.onBar({time:Math.floor(k.t/1000), open:+k.o, high:+k.h, low:+k.l, close:+k.c, volume:+k.v});
+      this.onBar({time:Math.floor(k.t/1000), open:+k.o, high:+k.h, low:+k.l, close:+k.c, volume:+k.v, tbv:+k.V});
     }, ok => this.app.setConn(this, ok));
     this.inds.filter(i => i.def.async).forEach(i => this.fetchAsync(i));
     clearInterval(this.asyncTimer); this.asyncTimer = setInterval(() => this.inds.filter(i => i.def.async).forEach(i => this.fetchAsync(i)), 60000);
@@ -779,7 +832,7 @@ class ChartView {
     try{
       const rows = await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000&endTime=${this.candles[0].time*1000-1}`);
       if(tok !== this.tok) return; if(!rows.length){ this.noMore = true; return }
-      this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5]})).concat(this.candles);
+      this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5], tbv:+k[9]})).concat(this.candles);
       this.shown = this.candles; this.renderAll();
     }catch(e){} finally{ this.loadingMore = false }
   }
@@ -816,7 +869,7 @@ class ChartView {
       else if(s.type === 'area') se = this.chart.addSeries(L.AreaSeries, {...base, lineColor:col, topColor:col+'55', bottomColor:col+'05', lineWidth:2, priceFormat:{type:'volume'}}, pane);
       else se = this.chart.addSeries(L.LineSeries, {...base, color:col, lineWidth: def.overlay ? 1 : 1.5, lineStyle: s.dash ? 2 : 0, crosshairMarkerVisible:!def.overlay,
                  priceFormat: def.overlay ? {type:'price', precision:this.prec, minMove:1/10**this.prec} : {type:'price', precision:2, minMove:0.01}}, pane);
-      if(s.scale === 'vol') se.priceScale().applyOptions({ scaleMargins:{top:0.82, bottom:0} });
+      if(s.scale) se.priceScale().applyOptions({ scaleMargins:{top: s.scale === 'vol' ? 0.82 : 0.6, bottom:0} });
       ind.series.push(se);
     });
     (def.levels||[]).forEach(l => ind.series[0].createPriceLine({price:l, color:'#4a5568', lineWidth:1, lineStyle:2, axisLabelVisible:false}));
@@ -857,6 +910,7 @@ class ChartView {
   editInd(ind){
     const P = ind.params, keys = Object.keys(P);
     const field = k => k === 'type' ? `<select class="inp" data-k="type"><option ${P.type==='SMA'?'selected':''}>SMA</option><option ${P.type==='EMA'?'selected':''}>EMA</option></select>`
+      : k === 'reset' ? `<select class="inp" data-k="reset">${['없음','일간'].map(s => `<option ${P.reset===s?'selected':''}>${s}</option>`).join('')}</select>`
       : k === 'source' ? `<select class="inp" data-k="source">${['close','open','high','low','hl2','hlc3'].map(s => `<option ${P.source===s?'selected':''}>${s}</option>`).join('')}</select>`
       : `<input class="inp" type="number" step="any" data-k="${k}" value="${LC.esc(P[k])}">`;
     LC.modal(ind.def.label + ' 설정', `<div class="form">${keys.map(k => `<label>${LC.IND.PARAM_LABEL[k]||k}${field(k)}</label>`).join('')}
@@ -883,7 +937,7 @@ class ChartView {
     this.q('.lg-i').querySelectorAll('.lgr').forEach(row => { const ind = this.inds.find(i => i.id === row.dataset.id); if(!ind) return;
       const vals = ind.def.series.map(s => { const arr = ind.data[s.key] || []; let v = null;
         for(let i = arr.length-1; i >= 0 && i >= arr.length-1500; i--) if(arr[i].time <= b.time){ if(arr[i].time === b.time || ind.def.async) v = arr[i].value; break }
-        return v == null ? '-' : ind.key === 'VOL' || ind.key === 'OBV' || ind.key === 'OI' ? LC.fmtBig(v) : ind.def.overlay ? LC.fmtN(v, pr) : LC.fmtN(v, 2) });
+        return v == null ? '-' : ['VOL','OBV','OI','CVD'].includes(ind.key) ? LC.fmtBig(v) : ind.def.overlay ? LC.fmtN(v, pr) : LC.fmtN(v, 2) });
       row.querySelector('.vals').textContent = vals.join('  ') });
   }
 
@@ -939,8 +993,9 @@ class ChartView {
 }
 LC.ChartView = ChartView;
 })();
+
 </script>
-<script>/* js/panel-list.js */
+<script>
 /* 오른쪽 창: 종목 목록(즐겨찾기·전체) */
 (() => {
 const { esc, store } = LC;
@@ -1017,8 +1072,9 @@ LC.panels.push(P);
 /* 아주 작은 이벤트 버스: 다른 창들이 시세 흐름을 함께 쓰도록 */
 LC.bus = LC.bus || { h:{}, on(k, f){ (this.h[k] = this.h[k] || []).push(f) }, emit(k, d){ (this.h[k] || []).forEach(f => { try{ f(d) }catch(e){ console.error(e) } }) } };
 })();
+
 </script>
-<script>/* js/panel-flow.js */
+<script>
 /* 오른쪽 창: 체결·청산, 호가, 급등락 알림 + 차트 위 큰 체결 버블 */
 (() => {
 const { esc, store } = LC;
@@ -1252,8 +1308,9 @@ const MOVE = {
 LC.panels.push(FLOW, BOOK, MOVE);
 LC.Bubbles = Bubbles;
 })();
+
 </script>
-<script>/* js/market.js */
+<script>
 /* 시장 자료 창: 김치 프리미엄, 히트맵, 펀딩·OI 흐름, 시장 온도·공포 탐욕 지수 */
 (() => {
 const { $, esc, getJSON } = LC;
@@ -1413,8 +1470,9 @@ async function headerTemp(){
 window.addEventListener('DOMContentLoaded', () => { headerTemp(); setInterval(headerTemp, 60000) });
 LC.headerTemp = headerTemp;
 })();
+
 </script>
-<script>/* js/paper.js */
+<script>
 /* 오른쪽 창: 가상 매매(모의 선물 거래)와 내 현물 포트폴리오 */
 (() => {
 const { esc, store } = LC;
@@ -1606,8 +1664,168 @@ const PF = {
 LC.panels.push(PAPER, PF);
 LC.paper = PAPER;
 })();
+
 </script>
-<script>/* js/app.js */
+<script>
+/* 하이퍼리퀴드: 고래 포지션, 고래 움직임, 청산 감지, 청산 지도 */
+(() => {
+const { esc, store } = LC;
+const API = 'https://api.hyperliquid.xyz/info';
+const N_WHALES = 120, POLL_MS = 45000;
+const post = body => fetch(API, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body) }).then(r => { if(!r.ok) throw new Error(r.status); return r.json() });
+const toCoin = sym => { const b = sym.replace(/USDT$/, ''); return /^1000/.test(b) ? 'k' + b.slice(4) : b };
+const toSym = coin => (/^k[A-Z]/.test(coin) ? '1000' + coin.slice(1) : coin) + 'USDT';
+const short = a => a.slice(0, 6) + '…' + a.slice(-4);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const HL = LC.hl = {
+  whales: [], pos: {}, marks: {}, moves: [], liqs: [], ready: false, lastPoll: 0,
+  async start(){
+    if(this.started) return; this.started = true;
+    try{ await this.loadWhales() }catch(e){ this.err = '하이퍼리퀴드 순위표를 못 불러왔어요'; LC.bus.emit('hl', 'err'); return }
+    this.loadMarks(); setInterval(() => this.loadMarks(), 15000);
+    this.poll(); setInterval(() => this.poll(), POLL_MS);
+  },
+  /* 순위표에서 계좌 규모가 큰 활동 계정 120개를 골라요 (6시간마다 새로) */
+  async loadWhales(){
+    const c = store.get('hlWhales', null);
+    if(c && Date.now() - c.t < 6*36e5 && c.list.length){ this.whales = c.list; return }
+    const lb = await LC.getJSON('https://stats-data.hyperliquid.xyz/Mainnet/leaderboard');
+    const perf = (r, w) => { const x = r.windowPerformances.find(p => p[0] === w); return x ? x[1] : {pnl:0, vlm:0} };
+    this.whales = lb.leaderboardRows.filter(r => +r.accountValue > 1e6 && +perf(r, 'month').vlm > 0)
+      .sort((a, b) => b.accountValue - a.accountValue).slice(0, N_WHALES)
+      .map(r => ({ a:r.ethAddress, av:+r.accountValue, mp:+perf(r, 'month').pnl, name:r.displayName || '' }));
+    store.set('hlWhales', { t:Date.now(), list:this.whales });
+  },
+  async loadMarks(){
+    try{ const [meta, ctx] = await post({type:'metaAndAssetCtxs'}); meta.universe.forEach((u, i) => { this.marks[u.name] = +ctx[i].markPx }) }catch(e){}
+  },
+  async poll(){
+    if(this.polling) return; this.polling = true;
+    const list = [...this.whales]; let i = 0;
+    const worker = async () => { while(i < list.length){ const w = list[i++]; try{ await this.check(w) }catch(e){} await sleep(120) } };
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    this.polling = false; this.ready = true; this.lastPoll = Date.now(); LC.bus.emit('hl', 'poll');
+  },
+  async check(w){
+    const st = await post({ type:'clearinghouseState', user:w.a });
+    const now = Date.now(), prev = this.pos[w.a];
+    const cur = (st.assetPositions || []).map(x => { const p = x.position;
+      return { coin:p.coin, szi:+p.szi, entry:+p.entryPx, val:+p.positionValue, upnl:+p.unrealizedPnl, liq: p.liquidationPx ? +p.liquidationPx : null, lev: p.leverage ? +p.leverage.value : null } });
+    this.pos[w.a] = { t:now, list:cur, av:+(st.marginSummary || {}).accountValue || w.av };
+    if(!prev) return;
+    /* 이전과 비교해서 고래 움직임과 청산을 찾아요 */
+    for(const p of prev.list){
+      const n = cur.find(x => x.coin === p.coin && Math.sign(x.szi) === Math.sign(p.szi));
+      const was = Math.abs(p.szi), now2 = n ? Math.abs(n.szi) : 0, mark = this.marks[p.coin] || p.entry;
+      if(now2 < was * 0.7){
+        const long = p.szi > 0, nearLiq = p.liq && (long ? mark <= p.liq * 1.02 : mark >= p.liq * 0.98);
+        let liqFill = null;
+        if(nearLiq){ try{ const f = await post({ type:'userFillsByTime', user:w.a, startTime:prev.t - 5000, endTime:now + 1000 }); liqFill = f.find(x => x.coin === p.coin && x.liquidation) }catch(e){} }
+        const usd = (was - now2) * (liqFill ? +liqFill.px : mark);
+        if(liqFill) this.addLiq({ coin:p.coin, a:w.a, long, usd, px:+liqFill.px, T:+liqFill.time });
+        else if(usd >= 2e5) this.addMove({ kind: now2 ? '줄임' : '종료', coin:p.coin, a:w.a, long, usd, px:mark, T:now });
+      }
+    }
+    for(const n of cur){
+      const p = prev.list.find(x => x.coin === n.coin && Math.sign(x.szi) === Math.sign(n.szi));
+      const add = (Math.abs(n.szi) - (p ? Math.abs(p.szi) : 0)) * (this.marks[n.coin] || n.entry);
+      if(add >= 2e5) this.addMove({ kind: p ? '늘림' : '진입', coin:n.coin, a:w.a, long:n.szi > 0, usd:add, px:this.marks[n.coin] || n.entry, T:now });
+    }
+  },
+  addMove(m){ this.moves.unshift(m); this.moves = this.moves.slice(0, 200); LC.bus.emit('hl', 'move');
+    if(m.usd >= 1e6) LC.toast(`고래 ${m.long ? '롱' : '숏'} ${m.kind} · ${m.coin} $${LC.fmtBig(m.usd)}`, m.long ? 'up' : 'down', 6000) },
+  addLiq(l){
+    this.liqs.unshift(l); this.liqs = this.liqs.slice(0, 200); LC.bus.emit('hl', 'liq');
+    const F = LC.panels.find(p => p.id === 'flow'); if(F && F.onLiq) F.onLiq({ ex:'Hyperliquid', s:toSym(l.coin), long:l.long, p:l.px, usd:l.usd, T:l.T });
+    LC.toast(`하이퍼리퀴드 고래 ${l.long ? '롱' : '숏'} 청산 · ${l.coin} $${LC.fmtBig(l.usd)}`, 'alert', 8000); LC.beep(l.long ? 300 : 900, 0.2);
+  },
+  /* 한 코인의 고래 포지션 전체 */
+  positions(coin){
+    const out = [];
+    Object.entries(this.pos).forEach(([a, s]) => s.list.forEach(p => { if(!coin || p.coin === coin) out.push({ ...p, a }) }));
+    return out.sort((x, y) => y.val - x.val);
+  }
+};
+
+/* 차트 위 청산 지도: 고래 포지션의 청산가를 가격대별로 모아 오른쪽에 막대로 */
+const MAP = {
+  draw(ctx, dr, A){
+    const P = LC.panels.find(p => p.id === 'whale'); if(!P || !P.cfg.map) return;
+    const v = dr.v; if(v.market !== 'futures') return;
+    const list = HL.positions(toCoin(v.sym)).filter(p => p.liq); if(!list.length) return;
+    const top = v.series.coordinateToPrice(0), bot = v.series.coordinateToPrice(A.h); if(top == null || bot == null) return;
+    const bins = 60, step = (top - bot) / bins, buck = new Array(bins).fill(null).map(() => ({l:0, s:0}));
+    list.forEach(p => { const i = Math.floor((top - p.liq) / step); if(i >= 0 && i < bins) buck[i][p.szi > 0 ? 'l' : 's'] += p.val });
+    const max = Math.max(...buck.map(b => b.l + b.s)); if(!max) return;
+    const h = A.h / bins, W = Math.min(160, A.w * 0.25);
+    buck.forEach((b, i) => { if(!b.l && !b.s) return; const y = i * h;
+      const wl = b.l / max * W, ws = b.s / max * W;
+      ctx.fillStyle = 'rgba(234,57,67,.55)'; ctx.fillRect(A.w - wl, y + 1, wl, h - 2);
+      ctx.fillStyle = 'rgba(22,199,132,.55)'; ctx.fillRect(A.w - wl - ws, y + 1, ws, h - 2);
+      if(b.l + b.s >= max * 0.35){ ctx.font = '10px "IBM Plex Mono", monospace'; ctx.fillStyle = '#e8eef6'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        ctx.fillText('$' + LC.fmtBig(b.l + b.s), A.w - wl - ws - 4, y + h/2); ctx.textAlign = 'left' } });
+    if(P.cfg.entries) list.slice(0, 12).forEach(p => { const y = dr.pToY(p.entry); if(y == null) return;
+      ctx.strokeStyle = p.szi > 0 ? 'rgba(22,199,132,.8)' : 'rgba(234,57,67,.8)'; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(A.w - 220, y); ctx.lineTo(A.w, y); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font = '10px "IBM Plex Mono", monospace'; ctx.fillStyle = ctx.strokeStyle; ctx.fillText(`${p.szi > 0 ? '롱' : '숏'} $${LC.fmtBig(p.val)}`, A.w - 218, y - 3) });
+  }
+};
+LC.overlays = LC.overlays || []; LC.overlays.push(MAP);
+
+/* 오른쪽 창: 고래 */
+const W = {
+  id:'whale', label:'고래', icon:'<path d="M3 13c2-4 7-6 11-5 3 .7 5 3 7 2-1 3-3 5-6 5H9l-3 3v-3c-2-.5-3-1-3-2z"/><circle cx="15" cy="11" r=".8"/>',
+  tab:'coin', cfg: Object.assign({ map:true, entries:false }, store.get('whaleCfg', {})),
+  mount(el, app){
+    this.el = el; this.app = app;
+    el.innerHTML = `<div class="sub-tabs"><button data-t="coin" class="on">이 종목</button><button data-t="all">전체</button><button data-t="moves">움직임</button><button data-t="liqs">청산</button></div>
+      <div class="flow-ctl"><label class="chk"><input type="checkbox" data-c="map" ${this.cfg.map?'checked':''}>차트에 청산 지도</label>
+        <label class="chk"><input type="checkbox" data-c="entries" ${this.cfg.entries?'checked':''}>고래 진입가</label><span class="dim wh-st"></span></div>
+      <div class="wh-sum"></div><div class="feed wh-feed"></div>`;
+    el.querySelector('.sub-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.tab = b.dataset.t;
+      el.querySelectorAll('.sub-tabs button').forEach(x => x.classList.toggle('on', x === b)); this.render() };
+    el.querySelector('.flow-ctl').onchange = e => { const k = e.target.dataset.c; if(k){ this.cfg[k] = e.target.checked; store.set('whaleCfg', this.cfg) } };
+    el.querySelector('.wh-feed').onclick = e => { const r = e.target.closest('[data-s]'); if(r && !e.target.closest('a')) app.openSymbol(r.dataset.s, 'futures') };
+    LC.bus.on('hl', () => { if(!this.el.hidden) this.render() });
+    HL.start();
+    setInterval(() => { if(!this.el.hidden) this.status() }, 1000);
+  },
+  onSymbol(){ if(!this.el.hidden) this.render() },
+  onShow(on){ if(on) this.render() },
+  status(){ const s = this.el.querySelector('.wh-st');
+    s.textContent = HL.err ? HL.err : !HL.ready ? `고래 ${HL.whales.length}명 불러오는 중…` : `고래 ${HL.whales.length}명 · ${Math.round((Date.now() - HL.lastPoll)/1000)}초 전` },
+  row(p){ const long = p.szi > 0, mark = HL.marks[p.coin], dist = p.liq && mark ? (p.liq/mark - 1)*100 : null;
+    return `<div class="frow wh" data-s="${esc(toSym(p.coin))}"><span><b class="${long?'up':'down'}">${long?'롱':'숏'}</b> ${this.tab === 'all' ? `<b>${esc(p.coin)}</b> ` : ''}<a class="dim" href="https://hypurrscan.io/address/${esc(p.a)}" target="_blank" rel="noopener">${short(p.a)}</a></span>
+      <span class="num">$${LC.fmtBig(p.val)}${p.lev ? ` <small class="dim">${p.lev}x</small>` : ''}</span><span class="num ${p.upnl >= 0 ? 'up' : 'down'}">${p.upnl >= 0 ? '+' : ''}${LC.fmtBig(p.upnl)}</span>
+      <small class="num dim wh-2">진입 ${LC.fmtPx(p.entry)} · 청산 ${p.liq ? LC.fmtPx(p.liq) + (dist != null ? ` (${LC.fmtPct(dist)})` : '') : '없음'}</small></div>` },
+  render(){
+    this.status();
+    const sum = this.el.querySelector('.wh-sum'), feed = this.el.querySelector('.wh-feed'), v = this.app.v;
+    if(!HL.ready){ sum.innerHTML = ''; feed.innerHTML = '<div class="empty">하이퍼리퀴드 큰 계정들의 포지션을 모으는 중이에요. 처음엔 1분쯤 걸려요.</div>'; return }
+    if(this.tab === 'coin' || this.tab === 'all'){
+      const coin = v ? toCoin(v.sym) : 'BTC', list = HL.positions(this.tab === 'coin' ? coin : null).slice(0, 80);
+      const L = list.filter(p => p.szi > 0), S = list.filter(p => p.szi < 0), sv = a => a.reduce((s, p) => s + p.val, 0);
+      const avg = a => { const q = a.reduce((s, p) => s + Math.abs(p.szi), 0); return q ? a.reduce((s, p) => s + p.entry*Math.abs(p.szi), 0) / q : null };
+      const lv = sv(L), svv = sv(S), r = lv + svv ? lv / (lv + svv) * 100 : 50;
+      sum.innerHTML = this.tab === 'coin' ? `<div class="wh-head"><b>${esc(coin)}</b> 고래 ${list.length}명 <span class="dim">(하이퍼리퀴드 계좌 상위 ${HL.whales.length}명 중)</span></div>
+        <div class="imb"><div class="imb-bar"><i style="width:${r.toFixed(1)}%"></i></div><div class="imb-t num"><span class="up">롱 $${LC.fmtBig(lv)} · 평단 ${avg(L) ? LC.fmtPx(avg(L)) : '-'}</span><span class="down">숏 $${LC.fmtBig(svv)} · 평단 ${avg(S) ? LC.fmtPx(avg(S)) : '-'}</span></div></div>` : '<div class="wh-head">모든 코인에서 가장 큰 고래 포지션</div>';
+      feed.innerHTML = list.length ? list.map(p => this.row(p)).join('') : '<div class="empty">이 코인에 포지션을 가진 고래가 없어요</div>';
+    } else if(this.tab === 'moves'){
+      sum.innerHTML = '<div class="wh-head">고래가 $20만 이상 들어가거나 줄이거나 끝낸 기록 <span class="dim">(45초마다 확인)</span></div>';
+      feed.innerHTML = HL.moves.length ? HL.moves.map(m => `<div class="frow wh" data-s="${esc(toSym(m.coin))}"><span><b class="${m.long?'up':'down'}">${m.long?'롱':'숏'} ${m.kind}</b> <b>${esc(m.coin)}</b> <a class="dim" href="https://hypurrscan.io/address/${esc(m.a)}" target="_blank" rel="noopener">${short(m.a)}</a></span>
+        <span class="num">$${LC.fmtBig(m.usd)}</span><span class="num dim">${LC.fmtClock(m.T)}</span></div>`).join('') : '<div class="empty">아직 기록이 없어요. 켜 두면 쌓여요.</div>';
+    } else {
+      sum.innerHTML = '<div class="wh-head">고래 계정의 실제 청산 <span class="dim">(포지션이 청산가 근처에서 사라지면 체결 기록으로 확인해요)</span></div>';
+      feed.innerHTML = HL.liqs.length ? HL.liqs.map(l => `<div class="frow wh" data-s="${esc(toSym(l.coin))}"><span><b class="${l.long?'down':'up'}">${l.long?'롱 청산':'숏 청산'}</b> <b>${esc(l.coin)}</b> <a class="dim" href="https://hypurrscan.io/address/${esc(l.a)}" target="_blank" rel="noopener">${short(l.a)}</a></span>
+        <span class="num">$${LC.fmtBig(l.usd)}</span><span class="num dim">${LC.fmtClock(l.T)}</span></div>`).join('') : '<div class="empty">아직 고래 청산이 없어요. 생기면 소리와 함께 여기와 체결·청산 탭에 떠요.</div>';
+    }
+  }
+};
+LC.panels.push(W);
+})();
+
+</script>
+<script>
 /* 화면 전체: 헤더, 작도 도구 막대, 차트 칸 배치, 오른쪽 창 */
 (() => {
 const { $, esc, store } = LC;
@@ -1637,6 +1855,16 @@ const EXTRA = [
 const CHART_TYPES = [['candle','캔들'],['hollow','속 빈 캔들'],['ha','하이킨 아시'],['bar','바'],['line','라인'],['area','영역']];
 const LAYOUTS = [['1','1칸'],['2h','좌우 2칸'],['2v','위아래 2칸'],['4','4칸']];
 const DEFAULT_SYMS = ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT'];
+const RANGES = [['1일','1m'],['5일','5m'],['1개월','30m'],['3개월','1h'],['1년','1d'],['전체','1w']];
+const RAIL = {
+  list:['목록','<path d="M4 6h16M4 12h16M4 18h16"/>'],
+  flow:['체결','<path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/>'],
+  book:['호가','<path d="M4 5h9M4 9h12M4 13h7M4 17h14M4 21h5"/>'],
+  move:['급변','<path d="M12 3l4 6h-3v6h-2V9H8zM5 21h14"/>'],
+  paper:['매매','<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 15l3-3 2 2 4-4"/>'],
+  pf:['자산','<circle cx="12" cy="12" r="8"/><path d="M12 4v8l6 4"/>'],
+  whale:['고래', null]
+};
 
 const app = LC.app = {
   views: [], active: null, tool: 'cross',
@@ -1718,6 +1946,44 @@ const app = LC.app = {
     $('hTemp').onclick = () => LC.market.open('temp');
     $('btnTheme').onclick = () => this.setTheme(this.theme === 'light' ? 'dark' : 'light');
     $('btnFull').onclick = () => { try{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() }catch(e){} };
+    $('btnReplay2').onclick = $('btnReplay').onclick;
+    $('btnSym').onclick = () => this.symSearch();
+    $('ranges').innerHTML = RANGES.map(([n,tf]) => `<button data-tf="${tf}" title="${n} 보기 (${tf} 봉)">${n}</button>`).join('');
+    $('ranges').onclick = e => { const b = e.target.closest('button'); if(b && this.v){ this.v.setTf(b.dataset.tf); this.syncHeader() } };
+    $('ctabAdd').onclick = () => { const v = this.v; if(!v) return; this.ctabs.push({ sym:v.sym, market:v.market, tf:v.tf }); this.ctabOn = this.ctabs.length - 1; this.saveTabs() };
+    $('ctabs').onclick = e => { const t = e.target.closest('.ctab'); if(!t) return; const i = +t.dataset.i;
+      if(e.target.closest('.x')){ if(this.ctabs.length < 2) return; this.ctabs.splice(i, 1); if(this.ctabOn >= this.ctabs.length) this.ctabOn = this.ctabs.length - 1; this.saveTabs(); this.goTab(this.ctabOn); return }
+      this.goTab(i) };
+    const clk = () => { $('clock').textContent = new Date().toLocaleTimeString('ko-KR', { timeZone:'Asia/Seoul', hour12:false }) + ' KST' }; clk(); setInterval(clk, 1000);
+  },
+  /* 위쪽 차트 탭: 종목·시장·봉 묶음을 저장해 두고 눌러서 바꿔요 */
+  ctabs: store.get('ctabs', null) || [{ sym:'BTCUSDT', market:'futures', tf:'1m' }], ctabOn: store.get('ctabOn', 0),
+  saveTabs(){ store.set('ctabs', this.ctabs); store.set('ctabOn', this.ctabOn); this.renderTabs() },
+  renderTabs(){ $('ctabs').innerHTML = this.ctabs.map((t, i) => `<div class="ctab ${i === this.ctabOn ? 'on' : ''}" data-i="${i}"><b>${esc(t.sym.replace(/USDT$/, ''))}</b><span class="dim">${t.market === 'futures' ? '선물' : '현물'} · ${esc(t.tf)}</span>${this.ctabs.length > 1 ? '<span class="x" title="탭 닫기">✕</span>' : ''}</div>`).join('') },
+  goTab(i){ const t = this.ctabs[i], v = this.v; if(!t || !v) return; this.ctabOn = i; this.saveTabs();
+    if(v.tf !== t.tf) v.tf = t.tf; this.openSymbol(t.sym, t.market) },
+  tabSync(){ const t = this.ctabs[this.ctabOn], v = this.v; if(!t || !v) return; if(t.sym !== v.sym || t.market !== v.market || t.tf !== v.tf){ Object.assign(t, { sym:v.sym, market:v.market, tf:v.tf }); this.saveTabs() } },
+  /* 종목 찾기 창 */
+  symSearch(){
+    const v = this.v; if(!v) return; let m = v.market;
+    const html = `<div class="seg" id="srM" style="margin-bottom:8px"><button data-m="futures">선물</button><button data-m="spot">현물</button></div>
+      <input class="sr-in" id="srQ" placeholder="종목 이름 (예: BTC, SOL, PEPE)" autocomplete="off"><div class="sr-list" id="srL"></div>`;
+    LC.modal('종목 찾기', html, (mb, close) => {
+      const q = mb.querySelector('#srQ'), L = mb.querySelector('#srL'); let sel = 0, rows = [];
+      const draw = () => { mb.querySelectorAll('#srM button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+        const T = this.tickers[m] || {}, k = q.value.trim().toUpperCase();
+        rows = Object.keys(T).filter(s => s.endsWith('USDT') && (!k || s.includes(k))).sort((a, b) => (k && a.startsWith(k)) - (k && b.startsWith(k)) || T[b].q - T[a].q).slice(0, 60);
+        if(k && !rows.length) rows = [k.endsWith('USDT') ? k : k + 'USDT'];
+        sel = Math.min(sel, rows.length - 1);
+        L.innerHTML = rows.map((s, i) => { const t = T[s] || {}; return `<div class="sr-row ${i === sel ? 'on' : ''}" data-s="${esc(s)}"><b>${esc(s.replace(/USDT$/, ''))}<span class="dim">/USDT${m === 'futures' ? ' 무기한' : ''}</span></b>
+          <span class="num">${t.c ? LC.fmtPx(t.c) : '-'}</span><span class="num ${(t.P||0) >= 0 ? 'up' : 'down'}">${t.P != null ? LC.fmtPct(t.P) : ''}</span><span class="num dim">${t.q ? LC.fmtBig(t.q) : ''}</span></div>` }).join('') || '<div class="empty">시세를 불러오는 중이에요</div>' };
+      const pick = s => { close(); this.openSymbol(s, m) };
+      q.oninput = () => { sel = 0; draw() };
+      q.onkeydown = e => { if(e.key === 'ArrowDown'){ sel = Math.min(sel + 1, rows.length - 1); draw(); e.preventDefault() } else if(e.key === 'ArrowUp'){ sel = Math.max(sel - 1, 0); draw(); e.preventDefault() } else if(e.key === 'Enter' && rows[sel]) pick(rows[sel]) };
+      L.onclick = e => { const r = e.target.closest('[data-s]'); if(r) pick(r.dataset.s) };
+      mb.querySelector('#srM').onclick = e => { const b = e.target.closest('button'); if(b){ m = b.dataset.m; draw(); q.focus() } };
+      draw(); q.focus();
+    });
   },
   setTheme(t){
     this.theme = t; store.set('theme', t); document.documentElement.dataset.theme = t;
@@ -1729,6 +1995,8 @@ const app = LC.app = {
     const v = this.v; if(!v) return;
     $('hSym').textContent = v.sym + (v.market === 'futures' ? '.P' : '');
     [...$('tfs').children].forEach(b => b.classList.toggle('on', b.dataset.tf === v.tf));
+    [...$('ranges').children].forEach(b => b.classList.toggle('on', b.dataset.tf === v.tf));
+    this.tabSync();
     [...$('mkt').children].forEach(b => b.classList.toggle('on', b.dataset.m === v.market));
     $('typeSel').value = v.type; $('btnLog').classList.toggle('on', v.log);
     $('fundBox').style.display = v.market === 'futures' ? '' : 'none';
@@ -1776,6 +2044,7 @@ const app = LC.app = {
     else if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && v){ v.drawings.undo(); e.preventDefault() }
     else if(e.altKey && !e.ctrlKey){ const m = {t:'trend', h:'hline', v:'vline', f:'fib', a:'alert', r:'rect'}[e.key.toLowerCase()]; if(m){ this.setTool(m); e.preventDefault() } }
     else if(e.shiftKey && e.key === 'ArrowRight' && v && v.replay){ v.replayStep(); e.preventDefault() }
+    else if(e.key === '/' && !e.ctrlKey){ this.symSearch(); e.preventDefault() }
   },
 
   /* 지표 고르기 */
@@ -1789,24 +2058,43 @@ const app = LC.app = {
 
   /* 오른쪽 창 */
   buildAside(){
-    const tabs = $('asideTabs'), body = $('asideBody');
-    tabs.innerHTML = this.panels.map(p => `<button data-p="${p.id}">${esc(p.label)}</button>`).join('');
+    const body = $('asideBody'), rail = $('rail'), svg = p => `<svg viewBox="0 0 24 24">${p}</svg>`;
+    rail.innerHTML = this.panels.map(p => { const r = RAIL[p.id] || [p.label, null]; return `<button data-p="${p.id}" title="${esc(p.label)}">${svg(p.icon || r[1] || '<circle cx="12" cy="12" r="6"/>')}<span>${esc(r[0])}</span></button>` }).join('')
+      + '<span class="tsep"></span><button data-x="market" title="시장 자료">' + svg('<rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="5"/><rect x="13" y="10" width="8" height="11"/><rect x="3" y="13" width="8" height="8"/>') + '<span>시장</span></button>';
     body.innerHTML = this.panels.map(p => `<div class="pn" data-p="${p.id}" hidden></div>`).join('');
     this.panels.forEach(p => p.mount(body.querySelector(`.pn[data-p="${p.id}"]`), this));
-    tabs.onclick = e => { const b = e.target.closest('button'); if(b) this.showPanel(b.dataset.p) };
+    rail.onclick = e => { const b = e.target.closest('button'); if(!b) return; if(b.dataset.x) return LC.market.open();
+      if(b.dataset.p === this.panelId && !this.asideHidden) return this.toggleAside(true); this.toggleAside(false); this.showPanel(b.dataset.p) };
+    /* 왼쪽 가장자리를 끌어 너비 조절 */
+    const app = document.querySelector('.app'), grip = $('asideGrip');
+    const setW = w => { w = Math.max(260, Math.min(720, w)); app.style.setProperty('--asideW', w + 'px'); return w };
+    setW(store.get('asideW', 340));
+    grip.onmousedown = e => { e.preventDefault(); grip.classList.add('on'); const x0 = e.clientX, w0 = $('asideBody').offsetWidth; let w = w0;
+      const mv = ev => { w = setW(w0 + x0 - ev.clientX); this.views.forEach(v => v.resize && v.resize()) };
+      const up = () => { grip.classList.remove('on'); store.set('asideW', w); document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); window.dispatchEvent(new Event('resize')) };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up) };
     this.asideReady = true;
     this.showPanel(store.get('panel', this.panels[0] && this.panels[0].id));
+    if(store.get('asideHidden', false)) this.toggleAside(true);
     if(this.v) this.panels.forEach(p => p.onSymbol && p.onSymbol(this.v));
+    this.renderTabs();
   },
+  toggleAside(hide){ this.asideHidden = hide; store.set('asideHidden', hide); document.querySelector('aside').style.display = hide ? 'none' : '';
+    document.querySelector('.app').style.setProperty('--asideW', hide ? '0px' : store.get('asideW', 340) + 'px');
+    document.querySelectorAll('#rail [data-p]').forEach(b => b.classList.toggle('on', !hide && b.dataset.p === this.panelId)); window.dispatchEvent(new Event('resize')) },
   showPanel(id){
     if(!this.panels.find(p => p.id === id)) id = this.panels[0].id;
-    document.querySelectorAll('#asideTabs button').forEach(b => b.classList.toggle('on', b.dataset.p === id));
+    this.panelId = id; const P = this.panels.find(p => p.id === id);
+    $('asideHead').innerHTML = `<span>${esc(P.label)}</span><button class="hb" title="창 접기" id="asideClose">›</button>`;
+    $('asideClose').onclick = () => this.toggleAside(true);
+    document.querySelectorAll('#rail [data-p]').forEach(b => b.classList.toggle('on', !this.asideHidden && b.dataset.p === id));
     document.querySelectorAll('#asideBody .pn').forEach(el => el.hidden = el.dataset.p !== id);
     this.panels.forEach(p => p.onShow && p.onShow(p.id === id)); store.set('panel', id);
   }
 };
 window.addEventListener('DOMContentLoaded', () => app.init());
 })();
+
 </script>
 </body>
 </html>
