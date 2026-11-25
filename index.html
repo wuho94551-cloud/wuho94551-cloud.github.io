@@ -2347,7 +2347,8 @@ LC.panels.push(W);
 const { getJSON } = LC;
 const RSS = u => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
 const strip = h => { const d = document.createElement('div'); d.innerHTML = String(h || ''); return (d.textContent || '').replace(/\s+/g, ' ').trim() };
-const pTime = s => { const t = Date.parse(String(s).replace(' ', 'T') + (/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? '' : 'Z')); return isNaN(t) ? Date.now() : t };
+/* 시간대 표시 없이 한국 시간으로 적힌 피드는 9시간 앞서 보이니 되돌려요 */
+const pTime = s => { let t = Date.parse(String(s).replace(' ', 'T') + (/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? '' : 'Z')); if(isNaN(t)) return Date.now(); if(t > Date.now() + 3e5) t -= 9*36e5; return Math.min(t, Date.now()) };
 const CRYPTO = /비트코인|이더리움|코인|가상자산|암호화폐|가상화폐|블록체인|스테이블|BTC|ETH|XRP|ETF|거래소|업비트|빗썸|바이낸스|연준|FOMC|금리|나스닥|증시|CPI|관세|달러/i;
 /* [이름, 언어, 주소, 일반 매체라 코인·매크로 관련만 거를지] */
 const SOURCES = [
@@ -2370,7 +2371,7 @@ const SECTIONS = [
 ];
 const BIG = /SEC\b|FOMC|금리\s?(인상|인하|동결)|rate (cut|hike)|ETF\s?(승인|거부|approv|reject)|해킹|hack|exploit|폭락|폭등|급락|급등|crash|plunge|surge|사상\s?최고|역대\s?최고|all-time high|record high|파산|bankrupt|트럼프|Trump|CPI|비상|emergency|전쟁|war\b|폭발|explosion/i;
 const MID = /비트코인|이더리움|Bitcoin|Ethereum|BTC|ETH|ETF|고래|whale|청산|liquidat|상장|listing|연준|Fed\b|관세|tariff|규제|regulat|SEC/i;
-const STOP = new Set('the a an of to in on for and or with by is are at as from its it this that be was were will has have after over new says said than into up out more amid how why what 등 및 위해 대한 관련 통해 이후 지난 올해 오늘 기자 뉴스 대해 가장 위한 것으로 있는 없는 한다 했다 밝혀 전망 분석 기대 경신 가능성 예상 소식 오전 오후 하루 이번 지금 최근 사상 최대 역대 까지 just new daily week report price prices market markets crypto'.split(' '));
+const STOP = new Set('the a an of to in on for and or with by is are at as from its it this that be was were will has have after over new says said than into up out more amid how why what 등 및 위해 대한 관련 통해 이후 지난 올해 오늘 기자 뉴스 대해 가장 위한 것으로 있는 없는 한다 했다 밝혀 전망 분석 기대 경신 가능성 예상 소식 오전 오후 하루 이번 지금 최근 사상 최대 역대 까지 just new daily week report price prices market markets crypto happened today here what's whats could would should about'.split(' '));
 const JOSA = /(으로|에서|에게|까지|부터|보다|이며|이고|에도|으로써|하고|했다|한다|하며|된|될|하는|했던|이다|에|의|은|는|이|가|을|를|로|와|과|도|만)$/;
 const words = t => (t.match(/[A-Za-z][A-Za-z0-9.]{2,}|[가-힣]{2,}/g) || []).map(w => { w = w.toLowerCase(); if(/[가-힣]/.test(w) && w.length > 2) w = w.replace(JOSA, ''); return w }).filter(w => w.length >= 2 && !STOP.has(w));
 
@@ -2405,7 +2406,7 @@ const NC = LC.news = {
     const keep = {}; this.items.forEach(x => keep[x.link] = this.seenAt[x.link]); this.seenAt = keep; LC.store.set('newsSeen', keep);
     this.cluster(); this.ok = ok; this.at = Date.now(); return this.items;
   },
-  isNew(x){ return Date.now() - x.first < 10*6e4 && this.at - x.first < 10*6e4 && this.loadedOnce },
+  isNew(x){ return Date.now() - x.t < 15*6e4 },
   trending(){
     const now = Date.now(), cnt = {}, prev = {};
     /* 같은 이야기 묶음은 한 번만 세서, 여러 이야기에 걸쳐 나오는 낱말만 뜨게 해요 */
