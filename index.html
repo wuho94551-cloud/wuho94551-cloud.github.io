@@ -41,7 +41,17 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:6px}
 #asideGrip{position:absolute;left:-3px;top:0;bottom:0;width:6px;cursor:col-resize;z-index:5}#asideGrip:hover,#asideGrip.on{background:var(--accent);opacity:.5}
 #asideHead{padding:8px 12px;font-weight:600;border-bottom:1px solid var(--line);flex:none;display:flex;justify-content:space-between;align-items:center}
 .sr-list{max-height:60vh;overflow:auto;margin-top:8px}.sr-row{display:grid;grid-template-columns:minmax(0,1fr) 110px 70px 90px;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;font-size:13px}.sr-row:hover,.sr-row.on{background:var(--panel2)}
-.sr-in{width:100%;padding:9px 10px;font-size:14px}
+.sr-in{width:100%;padding:9px 10px;font:inherit;font-size:14px;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:6px;outline:none}.sr-in:focus{border-color:var(--accent)}
+.ix{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;height:62vh}
+.ix-cats{display:flex;flex-direction:column;gap:2px;border-right:1px solid var(--line);padding-right:8px}.ix-cats button{text-align:left;padding:8px 10px;border-radius:6px;color:var(--dim)}
+.ix-cats button:hover{background:var(--panel2);color:var(--ink)}.ix-cats button.on{background:var(--panel2);color:var(--accent)}
+.ix-main{display:flex;flex-direction:column;min-height:0;gap:8px}.ix-list{flex:1;overflow:auto}
+.ix-row{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:6px;cursor:pointer;font-size:13px}.ix-row:hover,.ix-row.on{background:var(--panel2)}
+.ix-row b{font-weight:500;white-space:nowrap}.ix-desc{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.ix-row .tag{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:10px;padding:1px 7px;white-space:nowrap}.ix-row .tag.on{color:var(--accent);border-color:var(--accent)}
+.ix-row .fav{color:var(--line);font-size:14px}.ix-row .fav.on,.ix-row .fav:hover{color:#f0b90b}
+.ix-row .dotc{width:10px;height:10px;border-radius:50%;flex:none}.ix-row.cur .dim{flex:1}.ix-act{display:flex;gap:2px}.ix-act button{width:26px;height:24px;border-radius:4px;color:var(--dim)}.ix-act button:hover{background:var(--line);color:var(--ink)}
+@media(max-width:700px){.ix{grid-template-columns:1fr;height:auto}.ix-cats{flex-direction:row;flex-wrap:wrap;border:0}}
 .cpick{display:inline-flex;align-items:center;gap:6px}.cpick input[type=color]{width:30px;height:24px;padding:0;border:1px solid var(--line);border-radius:5px;background:none;cursor:pointer}
 .cpick input[type=color]::-webkit-color-swatch-wrapper{padding:2px}.cpick input[type=color]::-webkit-color-swatch{border:0;border-radius:3px}
 .cpick input[type=range]{width:64px;accent-color:var(--accent)}
@@ -406,12 +416,57 @@ const rsiCalc = (vals, p) => { const g = [null], l = [null];
   return [null, ...ag.map((a,i) => a==null ? null : al[i]===0 ? 100 : 100 - 100/(1 + a/al[i]))] };
 const trueRange = c => c.map((b,i) => i===0 ? b.high-b.low : Math.max(b.high-b.low, Math.abs(b.high-c[i-1].close), Math.abs(b.low-c[i-1].close)));
 
+const wma = (vals, p) => vals.map((_, i) => { if(i < p-1) return null; let s = 0, w = 0; for(let j = 0; j < p; j++){ const v = vals[i-j]; if(v == null) return null; s += v*(p-j); w += p-j } return s/w });
+const hma = (vals, p) => { const h = Math.max(1, Math.round(p/2)), q = Math.max(1, Math.round(Math.sqrt(p))); const a = wma(vals, h), b = wma(vals, p); return wma(a.map((x,i) => x == null || b[i] == null ? null : 2*x - b[i]), q) };
+const maBy = (type, v, p) => type === 'EMA' ? ema(v,p) : type === 'WMA' ? wma(v,p) : type === 'HMA' ? hma(v,p) : type === 'RMA' ? rma(v,p) : sma(v,p);
+const hiN = (c, i, n, k='high') => { let m = -Infinity; for(let j = Math.max(0, i-n+1); j <= i; j++) m = Math.max(m, c[j][k]); return m };
+const loN = (c, i, n, k='low') => { let m = Infinity; for(let j = Math.max(0, i-n+1); j <= i; j++) m = Math.min(m, c[j][k]); return m };
+const UPC = '#16c784', DNC = '#ea3943';
+const colorBars = (arr, upFn) => arr.map((d, i, a) => ({...d, color: upFn(d, i, a) ? 'rgba(22,199,132,.6)' : 'rgba(234,57,67,.6)'}));
 const DEFS = {
   VOL:{ label:'거래량', overlay:true, params:{}, series:[{key:'v', type:'hist', scale:'vol'}],
     calc:c => ({ v: c.map(b => ({time:b.time, value:b.volume, color: b.close>=b.open ? 'rgba(22,199,132,.45)' : 'rgba(234,57,67,.45)'})) }) },
   MA:{ label:'이동평균선', overlay:true, params:{period:20, type:'SMA', source:'close'}, colors:['#f0b90b'], series:[{key:'m', type:'line'}],
     title:p => `${p.type} ${p.period}`,
-    calc:(c,p) => { const v = src(c,p.source); return { m: toSeries(c, p.type==='EMA' ? ema(v,+p.period) : sma(v,+p.period)) } } },
+    calc:(c,p) => { const v = src(c,p.source); return { m: toSeries(c, maBy(p.type, v, +p.period)) } } },
+  RIBBON:{ label:'이동평균 리본 (EMA 20·50·100·200)', overlay:true, params:{}, colors:['#f0b90b','#ff9f43','#e05bd6','#4aa3ff'],
+    series:[{key:'a',type:'line',name:'EMA 20'},{key:'b',type:'line',name:'EMA 50'},{key:'c',type:'line',name:'EMA 100'},{key:'d',type:'line',name:'EMA 200'}], title:()=>'EMA 20 50 100 200',
+    calc:c => { const v = src(c,'close'); return { a:toSeries(c,ema(v,20)), b:toSeries(c,ema(v,50)), c:toSeries(c,ema(v,100)), d:toSeries(c,ema(v,200)) } } },
+  KC:{ label:'켈트너 채널', overlay:true, params:{period:20, mult:2}, colors:['#2ec4b6','#8aa0b8','#2ec4b6'], series:[{key:'u',type:'line',name:'위'},{key:'m',type:'line',dash:true,name:'중심'},{key:'l',type:'line',name:'아래'}],
+    fill:{kind:'between', a:'u', b:'l', color:'rgba(46,196,182,0.07)'}, title:p=>`KC ${p.period} ${p.mult}`,
+    calc:(c,p) => { const m = ema(src(c,'close'), +p.period), a = rma(trueRange(c), +p.period);
+      return { m:toSeries(c,m), u:toSeries(c,m.map((x,i)=>x==null||a[i]==null?null:x+p.mult*a[i])), l:toSeries(c,m.map((x,i)=>x==null||a[i]==null?null:x-p.mult*a[i])) } } },
+  DC:{ label:'돈치안 채널', overlay:true, params:{period:20}, colors:['#4aa3ff','#8aa0b8','#4aa3ff'], series:[{key:'u',type:'line',name:'최고'},{key:'m',type:'line',dash:true,name:'중간'},{key:'l',type:'line',name:'최저'}],
+    fill:{kind:'between', a:'u', b:'l', color:'rgba(74,163,255,0.06)'}, title:p=>`DC ${p.period}`,
+    calc:(c,p) => { const n = +p.period, u = c.map((b,i) => i < n-1 ? null : hiN(c,i,n)), l = c.map((b,i) => i < n-1 ? null : loN(c,i,n));
+      return { u:toSeries(c,u), l:toSeries(c,l), m:toSeries(c,u.map((x,i)=>x==null?null:(x+l[i])/2)) } } },
+  ENV:{ label:'엔벨로프', overlay:true, params:{period:20, pct:2}, colors:['#ff9f43','#8aa0b8','#ff9f43'], series:[{key:'u',type:'line',name:'위'},{key:'m',type:'line',dash:true,name:'중심'},{key:'l',type:'line',name:'아래'}],
+    title:p=>`ENV ${p.period} ${p.pct}%`, calc:(c,p) => { const m = sma(src(c,'close'), +p.period);
+      return { m:toSeries(c,m), u:toSeries(c,m.map(x=>x==null?null:x*(1+p.pct/100))), l:toSeries(c,m.map(x=>x==null?null:x*(1-p.pct/100))) } } },
+  ICHI:{ label:'일목균형표', overlay:true, params:{conv:9, base:26, span:52, disp:26}, colors:['#4aa3ff','#ea3943','#16c784','#f0a33b','#b38cff'],
+    series:[{key:'t',type:'line',name:'전환선'},{key:'k',type:'line',name:'기준선'},{key:'a',type:'line',name:'선행스팬 1'},{key:'b',type:'line',name:'선행스팬 2'},{key:'g',type:'line',name:'후행스팬'}],
+    fill:{kind:'between', a:'a', b:'b', color:'rgba(22,199,132,0.12)', color2:'rgba(234,57,67,0.12)'}, title:p=>`일목 ${p.conv} ${p.base} ${p.span}`,
+    calc:(c,p) => { const mid = (i,n) => (hiN(c,i,n)+loN(c,i,n))/2, n = c.length, d = +p.disp, step = n > 1 ? c[n-1].time - c[n-2].time : 60;
+      const T = i => i < n ? c[i].time : c[n-1].time + (i-n+1)*step;
+      const t = [], k = [], a = [], b = [], g = [];
+      for(let i = 0; i < n; i++){ const tv = i >= +p.conv-1 ? mid(i,+p.conv) : null, kv = i >= +p.base-1 ? mid(i,+p.base) : null;
+        if(tv != null) t.push({time:c[i].time, value:tv}); if(kv != null) k.push({time:c[i].time, value:kv});
+        if(tv != null && kv != null && i+d-1 >= 0){ a.push({time:T(i+d-1), value:(tv+kv)/2}) }
+        if(i >= +p.span-1) b.push({time:T(i+d-1), value:mid(i,+p.span)});
+        if(i-d+1 >= 0) g.push({time:c[i-d+1].time, value:c[i].close}) }
+      const bt = new Set(b.map(x=>x.time)); const a2 = a.filter(x=>bt.has(x.time)), at = new Set(a2.map(x=>x.time));
+      return { t, k, a:a2, b:b.filter(x=>at.has(x.time)), g } } },
+  PSAR:{ label:'파라볼릭 SAR', overlay:true, params:{start:0.02, inc:0.02, max:0.2}, colors:['#f0b90b'], series:[{key:'s',type:'dots',name:'SAR'}], title:p=>`SAR ${p.start} ${p.inc} ${p.max}`,
+    calc:(c,p) => { if(c.length < 3) return {s:[]}; let up = c[1].close >= c[0].close, af = +p.start, ep = up ? c[0].high : c[0].low, sar = up ? c[0].low : c[0].high; const out = [];
+      for(let i = 1; i < c.length; i++){ const b = c[i]; sar = sar + af*(ep - sar);
+        if(up){ sar = Math.min(sar, c[i-1].low, c[Math.max(0,i-2)].low); if(b.low < sar){ up = false; sar = ep; ep = b.low; af = +p.start } else if(b.high > ep){ ep = b.high; af = Math.min(af + +p.inc, +p.max) } }
+        else { sar = Math.max(sar, c[i-1].high, c[Math.max(0,i-2)].high); if(b.high > sar){ up = true; sar = ep; ep = b.high; af = +p.start } else if(b.low < ep){ ep = b.low; af = Math.min(af + +p.inc, +p.max) } }
+        out.push({time:b.time, value:sar, color: up ? UPC : DNC}) } return { s:out } } },
+  PIVOT:{ label:'피벗 포인트 (일간)', overlay:true, params:{}, colors:['#f0b90b','#ea3943','#ea3943','#16c784','#16c784'],
+    series:[{key:'p',type:'step',name:'P'},{key:'r1',type:'step',name:'R1'},{key:'r2',type:'step',name:'R2'},{key:'s1',type:'step',name:'S1'},{key:'s2',type:'step',name:'S2'}], title:()=>'Pivot (일간)',
+    calc:c => { const o = {p:[],r1:[],r2:[],s1:[],s2:[]}; let day = -1, H = -Infinity, Lo = Infinity, C = null, cur = null;
+      c.forEach(b => { const d = Math.floor((b.time+9*3600)/86400); if(d !== day){ if(C != null){ const P = (H+Lo+C)/3; cur = {p:P, r1:2*P-Lo, s1:2*P-H, r2:P+(H-Lo), s2:P-(H-Lo)} } day = d; H = -Infinity; Lo = Infinity }
+        H = Math.max(H, b.high); Lo = Math.min(Lo, b.low); C = b.close; if(cur) Object.keys(o).forEach(k => o[k].push({time:b.time, value:cur[k]})) }); return o } },
   BB:{ label:'볼린저 밴드', overlay:true, params:{period:20, mult:2}, colors:['#4aa3ff','#8aa0b8','#4aa3ff'],
     series:[{key:'u',type:'line',name:'위 밴드'},{key:'m',type:'line',dash:true,name:'중심선'},{key:'l',type:'line',name:'아래 밴드'}], fill:{kind:'between', a:'u', b:'l', color:'rgba(74,163,255,0.08)'}, title:p=>`BB ${p.period} ${p.mult}`,
     calc:(c,p) => { const v = src(c,'close'), m = sma(v,+p.period), sd = stdev(v,+p.period,m);
@@ -456,6 +511,52 @@ const DEFS = {
         const lo = Math.min(...w), hi = Math.max(...w); return hi===lo ? 0 : (x-lo)/(hi-lo)*100 });
       const k = smaN(st, +p.k), d = smaN(k, +p.d);
       return { k:toSeries(c,k), d:toSeries(c,d) } } },
+  ADX:{ label:'ADX / DMI', overlay:false, params:{period:14}, colors:['#f0b90b','#16c784','#ea3943'], series:[{key:'a',type:'line',name:'ADX'},{key:'p',type:'line',name:'+DI'},{key:'m',type:'line',name:'−DI'}], levels:[25], title:p=>`ADX ${p.period}`,
+    calc:(c,p) => { const n = +p.period, pd = [0], md = [0];
+      for(let i = 1; i < c.length; i++){ const u = c[i].high - c[i-1].high, d = c[i-1].low - c[i].low; pd.push(u > d && u > 0 ? u : 0); md.push(d > u && d > 0 ? d : 0) }
+      const tr = rma(trueRange(c), n), P = rma(pd, n), M = rma(md, n);
+      const pi = P.map((x,i) => x==null||!tr[i] ? null : 100*x/tr[i]), mi = M.map((x,i) => x==null||!tr[i] ? null : 100*x/tr[i]);
+      const dx = pi.map((x,i) => x==null||mi[i]==null||x+mi[i]===0 ? null : 100*Math.abs(x-mi[i])/(x+mi[i]));
+      return { a:toSeries(c, rma(dx, n)), p:toSeries(c, pi), m:toSeries(c, mi) } } },
+  STOCH:{ label:'스토캐스틱', overlay:false, params:{k:14, smooth:3, d:3}, colors:['#4aa3ff','#f0a33b'], series:[{key:'k',type:'line',name:'%K'},{key:'d',type:'line',name:'%D'}], levels:[80,20],
+    fill:{kind:'levels', a:0, b:1, color:'rgba(74,163,255,0.07)'}, title:p=>`Stoch ${p.k} ${p.smooth} ${p.d}`,
+    calc:(c,p) => { const raw = c.map((b,i) => { if(i < +p.k-1) return null; const h = hiN(c,i,+p.k), l = loN(c,i,+p.k); return h===l ? 50 : (b.close-l)/(h-l)*100 });
+      const k = smaN(raw, +p.smooth), d = smaN(k, +p.d); return { k:toSeries(c,k), d:toSeries(c,d) } } },
+  CCI:{ label:'CCI', overlay:false, params:{period:20}, colors:['#2ec4b6'], series:[{key:'c',type:'line'}], levels:[100,0,-100], fill:{kind:'levels', a:0, b:2, color:'rgba(46,196,182,0.07)'}, title:p=>`CCI ${p.period}`,
+    calc:(c,p) => { const n = +p.period, tp = src(c,'hlc3'), m = sma(tp, n);
+      return { c: toSeries(c, tp.map((x,i) => { if(m[i]==null) return null; let md = 0; for(let j=i-n+1;j<=i;j++) md += Math.abs(tp[j]-m[i]); md /= n; return md ? (x-m[i])/(0.015*md) : 0 })) } } },
+  WR:{ label:'윌리엄스 %R', overlay:false, params:{period:14}, colors:['#b38cff'], series:[{key:'w',type:'line'}], levels:[-20,-50,-80], fill:{kind:'levels', a:0, b:2, color:'rgba(126,87,194,0.08)'}, title:p=>`%R ${p.period}`,
+    calc:(c,p) => ({ w: toSeries(c, c.map((b,i) => { if(i < +p.period-1) return null; const h = hiN(c,i,+p.period), l = loN(c,i,+p.period); return h===l ? -50 : (h-b.close)/(h-l)*-100 })) }) },
+  MFI:{ label:'MFI (자금 흐름 지수)', overlay:false, params:{period:14}, colors:['#ff7aa8'], series:[{key:'m',type:'line'}], levels:[80,20], fill:{kind:'levels', a:0, b:1, color:'rgba(255,122,168,0.07)'}, title:p=>`MFI ${p.period}`,
+    calc:(c,p) => { const n = +p.period, tp = src(c,'hlc3');
+      return { m: toSeries(c, c.map((b,i) => { if(i < n) return null; let po = 0, ne = 0; for(let j=i-n+1;j<=i;j++){ const f = tp[j]*c[j].volume; if(tp[j] > tp[j-1]) po += f; else if(tp[j] < tp[j-1]) ne += f } return ne ? 100 - 100/(1+po/ne) : 100 })) } } },
+  ROC:{ label:'ROC (변화율 %)', overlay:false, params:{period:9}, colors:['#4aa3ff'], series:[{key:'r',type:'line'}], levels:[0], title:p=>`ROC ${p.period}`,
+    calc:(c,p) => ({ r: toSeries(c, c.map((b,i) => i < +p.period ? null : (b.close/c[i-p.period].close - 1)*100)) }) },
+  MOM:{ label:'모멘텀', overlay:false, params:{period:10}, colors:['#f0a33b'], series:[{key:'m',type:'line'}], levels:[0], title:p=>`MOM ${p.period}`,
+    calc:(c,p) => ({ m: toSeries(c, c.map((b,i) => i < +p.period ? null : b.close - c[i-p.period].close)) }) },
+  AO:{ label:'오썸 오실레이터', overlay:false, params:{}, colors:['#16c784'], series:[{key:'a',type:'hist'}], levels:[0], title:()=>'AO',
+    calc:c => { const m = src(c,'hl2'), f = sma(m,5), s = sma(m,34); return { a: colorBars(toSeries(c, f.map((x,i)=>x==null||s[i]==null?null:x-s[i])), (d,i,a) => !i || d.value >= a[i-1].value) } } },
+  TRIX:{ label:'TRIX', overlay:false, params:{period:18}, colors:['#e05bd6'], series:[{key:'t',type:'line'}], levels:[0], title:p=>`TRIX ${p.period}`,
+    calc:(c,p) => { const e = ema(ema(ema(src(c,'close'),+p.period),+p.period),+p.period); return { t: toSeries(c, e.map((x,i)=>x==null||!e[i-1]?null:(x/e[i-1]-1)*10000)) } } },
+  AROON:{ label:'아룬', overlay:false, params:{period:14}, colors:['#16c784','#ea3943'], series:[{key:'u',type:'line',name:'아룬 업'},{key:'d',type:'line',name:'아룬 다운'}], title:p=>`Aroon ${p.period}`,
+    calc:(c,p) => { const n = +p.period, u = [], d = []; c.forEach((b,i) => { if(i < n) return; let hi = i, lo = i; for(let j=i-n;j<=i;j++){ if(c[j].high >= c[hi].high) hi = j; if(c[j].low <= c[lo].low) lo = j }
+      u.push({time:b.time, value:100*(n-(i-hi))/n}); d.push({time:b.time, value:100*(n-(i-lo))/n}) }); return { u, d } } },
+  CHOP:{ label:'초피니스 (횡보 지수)', overlay:false, params:{period:14}, colors:['#8aa0b8'], series:[{key:'c',type:'line'}], levels:[61.8,38.2], fill:{kind:'levels', a:0, b:1, color:'rgba(138,160,184,0.08)'}, title:p=>`CHOP ${p.period}`,
+    calc:(c,p) => { const n = +p.period, tr = trueRange(c); return { c: toSeries(c, c.map((b,i) => { if(i < n) return null; let s = 0; for(let j=i-n+1;j<=i;j++) s += tr[j]; const r = hiN(c,i,n)-loN(c,i,n); return r ? 100*Math.log10(s/r)/Math.log10(n) : null })) } } },
+  BBW:{ label:'볼린저 밴드 폭', overlay:false, params:{period:20, mult:2}, colors:['#4aa3ff'], series:[{key:'w',type:'line'}], title:p=>`BBW ${p.period}`,
+    calc:(c,p) => { const v = src(c,'close'), m = sma(v,+p.period), sd = stdev(v,+p.period,m); return { w: toSeries(c, m.map((x,i)=>x==null?null:2*p.mult*sd[i]/x*100)) } } },
+  BBP:{ label:'볼린저 %B', overlay:false, params:{period:20, mult:2}, colors:['#4aa3ff'], series:[{key:'b',type:'line'}], levels:[1,0.5,0], fill:{kind:'levels', a:0, b:2, color:'rgba(74,163,255,0.07)'}, title:p=>`%B ${p.period}`,
+    calc:(c,p) => { const v = src(c,'close'), m = sma(v,+p.period), sd = stdev(v,+p.period,m); return { b: toSeries(c, m.map((x,i)=>x==null||!sd[i]?null:(v[i]-(x-p.mult*sd[i]))/(2*p.mult*sd[i]))) } } },
+  HV:{ label:'역사적 변동성 (연율 %)', overlay:false, params:{period:20}, colors:['#ff9f43'], series:[{key:'h',type:'line'}], title:p=>`HV ${p.period}`,
+    calc:(c,p) => { const r = c.map((b,i) => i ? Math.log(b.close/c[i-1].close) : 0), n = +p.period, per = c.length > 1 ? (c[1].time-c[0].time) : 86400, ann = Math.sqrt(365*86400/per);
+      return { h: toSeries(c, r.map((x,i) => { if(i < n) return null; let m = 0; for(let j=i-n+1;j<=i;j++) m += r[j]; m /= n; let s = 0; for(let j=i-n+1;j<=i;j++) s += (r[j]-m)**2; return Math.sqrt(s/(n-1))*ann*100 })) } } },
+  CMF:{ label:'차이킨 자금 흐름', overlay:false, params:{period:20}, colors:['#16c784'], series:[{key:'c',type:'line'}], levels:[0], title:p=>`CMF ${p.period}`,
+    calc:(c,p) => { const n = +p.period, mf = c.map(b => b.high===b.low ? 0 : ((b.close-b.low)-(b.high-b.close))/(b.high-b.low)*b.volume);
+      return { c: toSeries(c, c.map((b,i) => { if(i < n-1) return null; let a = 0, v = 0; for(let j=i-n+1;j<=i;j++){ a += mf[j]; v += c[j].volume } return v ? a/v : 0 })) } } },
+  VOLMA:{ label:'거래량 + 이동평균', overlay:false, params:{period:20}, colors:['#8aa0b8','#f0b90b'], series:[{key:'v',type:'hist',name:'거래량'},{key:'m',type:'line',name:'이동평균'}], title:p=>`거래량 MA ${p.period}`,
+    calc:(c,p) => ({ v: c.map(b => ({time:b.time, value:b.volume, color: b.close>=b.open ? 'rgba(22,199,132,.5)' : 'rgba(234,57,67,.5)'})), m: toSeries(c, sma(c.map(b=>b.volume), +p.period)) }) },
+  DELTA:{ label:'봉별 체결 델타 (매수−매도)', overlay:false, params:{}, colors:['#16c784'], series:[{key:'d',type:'hist'}], levels:[0], title:()=>'Delta',
+    calc:c => ({ d: c.filter(b => b.tbv != null).map(b => { const d = 2*b.tbv - b.volume; return {time:b.time, value:d, color: d >= 0 ? 'rgba(22,199,132,.6)' : 'rgba(234,57,67,.6)'} }) }) },
   ATR:{ label:'ATR', overlay:false, params:{period:14}, colors:['#ff7aa8'], series:[{key:'a',type:'line'}], title:p=>`ATR ${p.period}`,
     calc:(c,p) => ({ a: toSeries(c, rma(trueRange(c), +p.period)) }) },
   OBV:{ label:'OBV', overlay:false, params:{}, colors:['#2ec4b6'], series:[{key:'o',type:'line'}], title:()=>'OBV',
@@ -472,13 +573,34 @@ const DEFS = {
     fetch: async (ctx) => { const per = {'1m':'5m','3m':'5m'}[ctx.tf] || (['5m','15m','30m','1h','2h','4h','12h','1d'].includes(ctx.tf) ? ctx.tf : '1d');
       const rows = await LC.getJSON(`${LC.EP.futures.data}/openInterestHist?symbol=${ctx.sym}&period=${per}&limit=500`);
       return { o: rows.map(r => ({time: Math.floor(r.timestamp/1000), value: +r.sumOpenInterestValue})) } } },
+  FUND:{ label:'펀딩비 (%)', overlay:false, async:true, futuresOnly:true, params:{}, colors:['#f0b90b'], series:[{key:'f',type:'hist'}], levels:[0.01], title:()=>'Funding %',
+    fetch: async (ctx) => { const rows = await LC.getJSON(`${LC.EP.futures.rest}/fundingRate?symbol=${ctx.sym}&limit=1000`);
+      return { f: rows.map(r => { const v = +r.fundingRate*100; return {time: Math.floor(r.fundingTime/1000/60)*60, value:v, color: v >= 0 ? 'rgba(22,199,132,.7)' : 'rgba(234,57,67,.7)'} }) } } },
+  TAKER:{ label:'테이커 매수/매도 비율 (선물)', overlay:false, async:true, futuresOnly:true, params:{}, colors:['#2ec4b6'], series:[{key:'r',type:'line'}], levels:[1], title:()=>'Taker Buy/Sell',
+    fetch: async (ctx) => { const per = {'1m':'5m','3m':'5m'}[ctx.tf] || (['5m','15m','30m','1h','2h','4h','12h','1d'].includes(ctx.tf) ? ctx.tf : '1d');
+      const rows = await LC.getJSON(`${LC.EP.futures.data}/takerlongshortRatio?symbol=${ctx.sym}&period=${per}&limit=500`);
+      return { r: rows.map(r => ({time: Math.floor(r.timestamp/1000), value: +r.buySellRatio})) } } },
+  TOPLSR:{ label:'상위 트레이더 롱/숏 (포지션)', overlay:false, async:true, futuresOnly:true, params:{}, colors:['#b38cff'], series:[{key:'r',type:'line'}], levels:[1], title:()=>'Top Trader L/S',
+    fetch: async (ctx) => { const per = {'1m':'5m','3m':'5m'}[ctx.tf] || (['5m','15m','30m','1h','2h','4h','12h','1d'].includes(ctx.tf) ? ctx.tf : '1d');
+      const rows = await LC.getJSON(`${LC.EP.futures.data}/topLongShortPositionRatio?symbol=${ctx.sym}&period=${per}&limit=500`);
+      return { r: rows.map(r => ({time: Math.floor(r.timestamp/1000), value: +r.longShortRatio})) } } },
   LSR:{ label:'롱/숏 비율 (선물)', overlay:false, async:true, futuresOnly:true, params:{}, colors:['#16c784'], series:[{key:'r',type:'line'}], levels:[1], title:()=>'Long/Short 계정 비율',
     fetch: async (ctx) => { const per = {'1m':'5m','3m':'5m'}[ctx.tf] || (['5m','15m','30m','1h','2h','4h','12h','1d'].includes(ctx.tf) ? ctx.tf : '1d');
       const rows = await LC.getJSON(`${LC.EP.futures.data}/globalLongShortAccountRatio?symbol=${ctx.sym}&period=${per}&limit=500`);
       return { r: rows.map(r => ({time: Math.floor(r.timestamp/1000), value: +r.longShortRatio})) } } }
 };
-const PARAM_LABEL = {ma:'이동평균 기간 (0이면 끔)', period:'기간', type:'종류', source:'기준값', mult:'배수', fast:'빠른선', slow:'느린선', signal:'시그널', rsi:'RSI 기간', stoch:'스토캐스틱 기간', k:'%K', d:'%D', reset:'누적 초기화'};
-LC.IND = { DEFS, PARAM_LABEL, sma, ema, smaN, rsiCalc };
+const PARAM_LABEL = {pct:'폭 %', conv:'전환선', base:'기준선', span:'선행스팬 2', disp:'후행 이동', start:'시작', inc:'증가', max:'최대', smooth:'%K 평활',ma:'이동평균 기간 (0이면 끔)', period:'기간', type:'종류', source:'기준값', mult:'배수', fast:'빠른선', slow:'느린선', signal:'시그널', rsi:'RSI 기간', stoch:'스토캐스틱 기간', k:'%K', d:'%D', reset:'누적 초기화'};
+/* 분류와 한 줄 설명 (지표 찾기 창) */
+const META = {
+  VOL:['거래량','봉마다 거래량'], VOLMA:['거래량','거래량과 그 평균'], VWAP:['거래량','하루 동안의 거래량 가중 평균가'], OBV:['거래량','오르면 더하고 내리면 빼는 누적 거래량'], CMF:['거래량','매집·분산 강도'], MFI:['거래량','거래량을 넣은 RSI'],
+  MA:['추세','SMA·EMA·WMA·HMA·RMA'], RIBBON:['추세','EMA 20·50·100·200 한 번에'], ST:['추세','ATR 기반 추세 따라가기'], VWT:['추세','거래량 가중 평균 + ATR 띠'], ICHI:['추세','전환·기준선과 구름'], PSAR:['추세','추세 반전 점'], ADX:['추세','추세 세기와 방향'], AROON:['추세','최근 고점·저점이 얼마나 가까운지'], PIVOT:['추세','전날 고저종으로 만든 지지·저항'],
+  RSI:['모멘텀','과매수·과매도 (이동평균 포함)'], STOCH:['모멘텀','기간 내 종가 위치'], STOCHRSI:['모멘텀','RSI의 스토캐스틱'], MACD:['모멘텀','두 EMA 차이와 시그널'], CCI:['모멘텀','평균에서 얼마나 벗어났는지'], WR:['모멘텀','기간 고가 대비 종가 위치'], ROC:['모멘텀','N봉 전 대비 변화율'], MOM:['모멘텀','N봉 전 대비 가격 차'], AO:['모멘텀','5·34 중간값 이동평균 차'], TRIX:['모멘텀','3중 EMA 변화율'],
+  BB:['변동성','평균 ± 표준편차 띠'], KC:['변동성','EMA ± ATR 띠'], DC:['변동성','기간 최고·최저 띠'], ENV:['변동성','이동평균 ± 고정 %'], ATR:['변동성','평균 실제 변동폭'], BBW:['변동성','볼린저 밴드 폭 %'], BBP:['변동성','밴드 안 가격 위치'], HV:['변동성','연율로 본 변동성'], CHOP:['변동성','추세장인지 횡보장인지'],
+  CVD:['우호 전용','체결 기반 누적 매수−매도'], DELTA:['우호 전용','봉별 체결 매수−매도'],
+  OI:['선물 데이터','미결제약정 금액'], LSR:['선물 데이터','전체 계정 롱/숏 비율'], TOPLSR:['선물 데이터','상위 트레이더 포지션 롱/숏'], TAKER:['선물 데이터','시장가 매수/매도 비율'], FUND:['선물 데이터','8시간 펀딩비 기록']
+};
+Object.entries(META).forEach(([k, [cat, desc]]) => { if(DEFS[k]){ DEFS[k].cat = cat; DEFS[k].desc = desc } });
+LC.IND = { DEFS, META, PARAM_LABEL, sma, ema, smaN, rsiCalc };
 })();
 
 </script>
@@ -526,7 +648,11 @@ class IndFill {
       if(F.kind === 'between'){
         const A = ind.data[F.a] || [], B = ind.data[F.b] || []; if(!A.length || A.length !== B.length) return;
         const up = [], dn = []; for(let i = 0; i < A.length; i++){ const x = X(A[i].time); if(x == null || x < -50 || x > W + 50) continue; up.push([x, Y(A[i].value)]); dn.push([x, Y(B[i].value)]) }
-        if(up.length < 2) return; ctx.beginPath(); up.forEach(([x,y], i) => i ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); for(let i = dn.length-1; i >= 0; i--) ctx.lineTo(dn[i][0], dn[i][1]);
+        if(up.length < 2) return;
+        if(st.color2){ /* 위·아래가 뒤바뀌면 다른 색 (일목 구름) */
+          for(let i = 1; i < up.length; i++){ ctx.beginPath(); ctx.moveTo(up[i-1][0], up[i-1][1]); ctx.lineTo(up[i][0], up[i][1]); ctx.lineTo(dn[i][0], dn[i][1]); ctx.lineTo(dn[i-1][0], dn[i-1][1]); ctx.closePath();
+            ctx.fillStyle = up[i][1] <= dn[i][1] ? st.color : st.color2; ctx.fill() } return }
+        ctx.beginPath(); up.forEach(([x,y], i) => i ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); for(let i = dn.length-1; i >= 0; i--) ctx.lineTo(dn[i][0], dn[i][1]);
         ctx.closePath(); ctx.fillStyle = st.color; ctx.fill(); return;
       }
       if(F.kind === 'band'){
@@ -1054,7 +1180,7 @@ class ChartView {
       let se;
       if(s.type === 'hist') se = this.chart.addSeries(L.HistogramSeries, {...base, priceScaleId: s.scale || 'right', priceFormat:{type: key==='VOL' ? 'volume' : 'price', precision:4, minMove:0.0001}, lastValueVisible:false}, pane);
       else if(s.type === 'area') se = this.chart.addSeries(L.AreaSeries, {...base, priceFormat:{type:'volume'}}, pane);
-      else se = this.chart.addSeries(L.LineSeries, {...base, crosshairMarkerVisible:!def.overlay,
+      else se = this.chart.addSeries(L.LineSeries, {...base, crosshairMarkerVisible:!def.overlay, ...(s.type === 'dots' ? {lineVisible:false, pointMarkersVisible:true, pointMarkersRadius:1.6} : s.type === 'step' ? {lineType:1} : {}),
                  priceFormat: def.overlay ? {type:'price', precision:this.prec, minMove:1/10**this.prec} : {type:'price', precision:2, minMove:0.01}}, pane);
       if(s.scale) se.priceScale().applyOptions({ scaleMargins:{top: s.scale === 'vol' ? 0.82 : 0.6, bottom:0} });
       ind.series.push(se);
@@ -2268,12 +2394,44 @@ const app = LC.app = {
   },
 
   /* 지표 고르기 */
+  /* 지표 찾기 창: 검색, 분류, 즐겨찾기, 지금 차트에 있는 지표 */
   indModal(){
     const v = this.v; if(!v) return;
-    const D = LC.IND.DEFS;
-    const html = `<p class="muted">누르면 지금 선택된 차트에 추가돼요. 같은 지표를 여러 번 넣을 수 있어요. 설정은 차트 왼쪽 위 범례의 ⚙ 버튼으로 바꿔요.</p>
-      <div class="ind-grid">${Object.entries(D).map(([k,d]) => `<button class="ind-add" data-k="${k}"><b>${esc(d.label)}</b><small>${d.overlay ? '차트 위' : '아래 칸'}${d.futuresOnly ? ' · 선물 전용' : ''}</small></button>`).join('')}</div>`;
-    LC.modal('지표', html, (mb, close) => { mb.onclick = e => { const b = e.target.closest('.ind-add'); if(!b) return; v.addInd(b.dataset.k); LC.toast(`${D[b.dataset.k].label} 추가됨`); close() } });
+    const D = LC.IND.DEFS, CATS = ['전체','즐겨찾기','지금 차트','추세','모멘텀','변동성','거래량','선물 데이터','우호 전용'];
+    let cat = store.get('indCat', '전체'), favs = store.get('indFav', []);
+    const html = `<div class="ix"><div class="ix-cats">${CATS.map(c => `<button data-c="${c}">${c}</button>`).join('')}</div>
+      <div class="ix-main"><input class="sr-in" id="ixQ" placeholder="지표 이름으로 찾기 (예: RSI, 일목, 볼린저, 펀딩)" autocomplete="off"><div class="ix-list" id="ixL"></div></div></div>
+      <p class="muted" style="margin:10px 0 0">누르면 바로 차트에 들어가고 창은 열려 있어요. 들어간 지표는 범례에서 이름을 두 번 누르거나 ⚙를 눌러 모양을 바꿔요.</p>`;
+    LC.modal('지표', html, (mb) => {
+      const q = mb.querySelector('#ixQ'), L = mb.querySelector('#ixL'); let sel = 0, rows = [];
+      const count = k => v.inds.filter(i => i.key === k).length;
+      const draw = () => {
+        mb.querySelectorAll('.ix-cats button').forEach(b => b.classList.toggle('on', b.dataset.c === cat));
+        if(cat === '지금 차트' && !q.value.trim()){
+          L.innerHTML = v.inds.length ? v.inds.map(i => `<div class="ix-row cur" data-id="${i.id}"><span class="dotc" style="background:${LC.color.parseColor(i.color||'#888888').hex}"></span><b>${esc(i.def.title ? i.def.title(i.params) : i.def.label)}</b><span class="dim">${esc(i.def.cat||'')}</span>
+            <span class="ix-act"><button data-a="eye" title="보이기/숨기기">${i.hidden ? '◌' : '◉'}</button><button data-a="set" title="설정">⚙</button><button data-a="del" title="지우기">✕</button></span></div>`).join('') : '<div class="empty">아직 넣은 지표가 없어요</div>';
+          rows = []; return }
+        const k = q.value.trim().toLowerCase();
+        rows = Object.keys(D).filter(key => { const d = D[key];
+          if(k) return (d.label + ' ' + key + ' ' + (d.desc||'') + ' ' + (d.cat||'')).toLowerCase().includes(k);
+          return cat === '전체' || (cat === '즐겨찾기' ? favs.includes(key) : d.cat === cat) });
+        sel = Math.max(0, Math.min(sel, rows.length - 1));
+        L.innerHTML = rows.map((key, i) => { const d = D[key], n = count(key);
+          return `<div class="ix-row ${i === sel ? 'on' : ''}" data-k="${key}"><button class="fav ${favs.includes(key) ? 'on' : ''}" data-fav="${key}" title="즐겨찾기">★</button>
+            <b>${esc(d.label)}</b><span class="dim ix-desc">${esc(d.desc||'')}</span><span class="tag">${d.overlay ? '차트 위' : '아래 칸'}${d.futuresOnly ? ' · 선물' : ''}</span>${n ? `<span class="tag on">${n}개 있음</span>` : ''}</div>` }).join('')
+          || '<div class="empty">' + (cat === '즐겨찾기' ? '★를 눌러 자주 쓰는 지표를 모아 두세요' : '찾는 지표가 없어요') + '</div>';
+      };
+      const add = key => { if(D[key].futuresOnly && v.market !== 'futures') return LC.toast('선물 차트에서만 쓸 수 있는 지표예요'); v.addInd(key); LC.toast(`${D[key].label} 넣었어요`); draw() };
+      mb.querySelector('.ix-cats').onclick = e => { const b = e.target.closest('button'); if(!b) return; cat = b.dataset.c; store.set('indCat', cat); q.value = ''; sel = 0; draw() };
+      q.oninput = () => { sel = 0; draw() };
+      q.onkeydown = e => { if(e.key === 'ArrowDown'){ sel = Math.min(sel + 1, rows.length - 1); draw(); e.preventDefault() } else if(e.key === 'ArrowUp'){ sel = Math.max(sel - 1, 0); draw(); e.preventDefault() } else if(e.key === 'Enter' && rows[sel]) add(rows[sel]) };
+      L.onclick = e => {
+        const f = e.target.closest('[data-fav]'); if(f){ const k = f.dataset.fav; favs = favs.includes(k) ? favs.filter(x => x !== k) : [...favs, k]; store.set('indFav', favs); draw(); return }
+        const cur = e.target.closest('.ix-row.cur'); if(cur){ const ind = v.inds.find(i => i.id === cur.dataset.id); const a = e.target.closest('[data-a]'); if(!ind || !a) return;
+          if(a.dataset.a === 'set') return v.editInd(ind); v.onLegendClick({ target:v.q(`.lgr[data-id="${ind.id}"] [data-a="${a.dataset.a}"]`) }); draw(); return }
+        const r = e.target.closest('[data-k]'); if(r) add(r.dataset.k) };
+      draw(); q.focus();
+    }, true);
   },
 
   /* 오른쪽 창 */
