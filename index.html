@@ -4,14 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>wuho.com · 우호</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 :root{--bg:#0d1117;--panel:#131922;--panel2:#18202b;--line:#232d3b;--ink:#d7dee8;--dim:#7d8a9c;--up:#16c784;--down:#ea3943;--accent:#f0b90b;--blue:#4aa3ff}
 *{box-sizing:border-box;min-width:0}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 "IBM Plex Sans KR",system-ui,sans-serif;overflow:hidden}
-.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Pretendard Variable",Pretendard,-apple-system,system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;overflow:hidden}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:0}
 .up{color:var(--up)}.down{color:var(--down)}.muted{color:var(--dim);font-size:13px;margin:0 0 12px}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
@@ -26,7 +25,7 @@ select{font:inherit;font-size:13px;color:var(--ink);background:var(--panel2);bor
 #ctabAdd{color:var(--dim);padding:2px 8px;font-size:16px;flex:none}#ctabAdd:hover{color:var(--accent)}
 .topbar .right{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none}
 #clock{font-size:12px;color:var(--dim)}
-header{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:0 10px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:thin}
+header{grid-column:1/-1;display:flex;align-items:center;gap:7px;padding:0 10px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:thin}
 .symbtn{display:flex;align-items:baseline;gap:8px;padding:4px 8px;border-radius:6px;border:1px solid var(--line)}.symbtn:hover{border-color:var(--accent)}
 .symbtn .caret{color:var(--dim);font-size:10px}
 header .right{margin-left:auto;display:flex;align-items:center;gap:6px}
@@ -43,8 +42,20 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:6px}
 #asideHead{padding:8px 12px;font-weight:600;border-bottom:1px solid var(--line);flex:none;display:flex;justify-content:space-between;align-items:center}
 .sr-list{max-height:60vh;overflow:auto;margin-top:8px}.sr-row{display:grid;grid-template-columns:minmax(0,1fr) 110px 70px 90px;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;font-size:13px}.sr-row:hover,.sr-row.on{background:var(--panel2)}
 .sr-in{width:100%;padding:9px 10px;font-size:14px}
+.cpick{display:inline-flex;align-items:center;gap:6px}.cpick input[type=color]{width:30px;height:24px;padding:0;border:1px solid var(--line);border-radius:5px;background:none;cursor:pointer}
+.cpick input[type=color]::-webkit-color-swatch-wrapper{padding:2px}.cpick input[type=color]::-webkit-color-swatch{border:0;border-radius:3px}
+.cpick input[type=range]{width:64px;accent-color:var(--accent)}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 2px;font-size:13px;border-bottom:1px solid var(--line)}
+.srow label{display:flex;align-items:center;gap:6px}.sctl{display:flex;align-items:center;gap:6px}.srow select{padding:3px 4px}
+.inp.sm{width:70px;padding:3px 6px}
+.st-pane{max-height:56vh;overflow:auto;padding-top:6px}.st-pane h6{margin:14px 0 2px;font-size:11px;color:var(--dim);font-weight:500}
+.st-tabs{padding:0 0 6px;border-bottom:1px solid var(--line)}
+.ctxm{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px;min-width:200px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.ctxm button{display:flex;justify-content:space-between;width:100%;padding:7px 10px;border-radius:5px;text-align:left;font-size:13px}.ctxm button:hover{background:var(--panel2)}
+.ctxm small{color:var(--dim)}.ctxm hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.cv.no-ohlc .lg-o{display:none}.cv.no-vals .lgr .vals{display:none}.cv.no-cd .cv-cd{display:none}
 .wh-head{padding:8px 10px 4px;font-size:12px}.wh-sum .imb-t{flex-wrap:wrap;gap:2px 10px}
-header select{width:auto;max-width:110px}.wh-sum .imb{padding:4px 10px 8px}
+header select{width:auto;max-width:84px}header .seg button{padding:5px 6px}.wh-sum .imb{padding:4px 10px 8px}
 .frow.wh{grid-template-columns:minmax(0,1.4fr) 1fr 62px;cursor:pointer}.frow.wh .wh-2{grid-column:1/-1;margin-top:-2px}.frow.wh a{text-decoration:none}.frow.wh:hover{background:var(--panel2)}
 .wh-feed{flex:1;overflow:auto}.pn[data-p=whale]{display:flex;flex-direction:column;height:100%}.pn[data-p=whale][hidden]{display:none}
 header>*{flex:none}
@@ -257,6 +268,7 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
     <div class="right">
       <select id="laySel" aria-label="차트 분할"></select>
       <button class="hb" id="btnShot" title="차트 그림 저장">📷</button>
+      <button class="hb" id="btnSet" title="차트 설정 (색, 배경, 격자, 십자선…) · 차트에서 오른쪽 클릭해도 돼요">⚙</button>
       <button class="hb" id="btnTheme" title="밝은/어두운 화면">◐</button>
       <button class="hb" id="btnFull" title="전체 화면">⛶</button>
     </div>
@@ -286,6 +298,7 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
 <script>
 /* 공용 도구: 저장소, 포맷, 거래소 주소, 웹소켓, 소리, 알림창 */
 window.LC = window.LC || {};
+LC.FONT = "'Pretendard Variable', Pretendard, -apple-system, 'Malgun Gothic', sans-serif";
 LC.panels = LC.panels || [];
 (() => {
 const $ = id => document.getElementById(id);
@@ -351,10 +364,10 @@ function notify(title, body){
   try{ if('Notification' in window && Notification.permission === 'granted') new Notification(title, {body}) }catch(e){}
 }
 /* 공용 모달 */
-function modal(title, html, onMount, wide){
+function modal(title, html, onMount, wide, onClose){
   const bg = document.createElement('div'); bg.className = 'modal-bg';
   bg.innerHTML = `<div class="modal ${wide?'wide':''}" role="dialog" aria-label="${esc(title)}"><div class="mh"><b>${esc(title)}</b><button class="x" aria-label="닫기">✕</button></div><div class="mb">${html}</div></div>`;
-  const close = () => { bg.remove(); document.removeEventListener('keydown', onKey) };
+  let shut = false; const close = () => { if(shut) return; shut = true; bg.remove(); document.removeEventListener('keydown', onKey); onClose && onClose() };
   const onKey = e => { if(e.key === 'Escape') close() };
   bg.addEventListener('mousedown', e => { if(e.target === bg) close() });
   bg.querySelector('.x').onclick = close;
@@ -400,7 +413,7 @@ const DEFS = {
     title:p => `${p.type} ${p.period}`,
     calc:(c,p) => { const v = src(c,p.source); return { m: toSeries(c, p.type==='EMA' ? ema(v,+p.period) : sma(v,+p.period)) } } },
   BB:{ label:'볼린저 밴드', overlay:true, params:{period:20, mult:2}, colors:['#4aa3ff','#8aa0b8','#4aa3ff'],
-    series:[{key:'u',type:'line'},{key:'m',type:'line',dash:true},{key:'l',type:'line'}], title:p=>`BB ${p.period} ${p.mult}`,
+    series:[{key:'u',type:'line',name:'위 밴드'},{key:'m',type:'line',dash:true,name:'중심선'},{key:'l',type:'line',name:'아래 밴드'}], fill:{kind:'between', a:'u', b:'l', color:'rgba(74,163,255,0.08)'}, title:p=>`BB ${p.period} ${p.mult}`,
     calc:(c,p) => { const v = src(c,'close'), m = sma(v,+p.period), sd = stdev(v,+p.period,m);
       return { m:toSeries(c,m), u:toSeries(c,m.map((x,i)=>x==null?null:x+p.mult*sd[i])), l:toSeries(c,m.map((x,i)=>x==null?null:x-p.mult*sd[i])) } } },
   VWAP:{ label:'VWAP (일간)', overlay:true, params:{}, colors:['#e05bd6'], series:[{key:'v',type:'line'}], title:()=>'VWAP',
@@ -415,17 +428,29 @@ const DEFS = {
         if(trend===1 && b.close < (up ?? nu)) trend = -1; else if(trend===-1 && b.close > (dn ?? nd)) trend = 1;
         up = nu; dn = nd; out.push({time:b.time, value: trend===1 ? up : dn, color: trend===1 ? '#16c784' : '#ea3943'}) });
       return { s: out } } },
-  RSI:{ label:'RSI', overlay:false, params:{period:14}, colors:['#b38cff'], series:[{key:'r',type:'line'}], levels:[70,30], title:p=>`RSI ${p.period}`,
-    calc:(c,p) => ({ r: toSeries(c, rsiCalc(src(c,'close'), +p.period)) }) },
+  RSI:{ label:'RSI', overlay:false, params:{period:14, ma:14}, colors:['#b38cff','#f0b90b'], series:[{key:'r',type:'line',name:'RSI'},{key:'m',type:'line',name:'RSI 이동평균'}], levels:[70,50,30],
+    fill:{kind:'levels', a:0, b:2, color:'rgba(126,87,194,0.10)'}, title:p=>`RSI ${p.period}${+p.ma ? ' · MA ' + p.ma : ''}`,
+    calc:(c,p) => { const r = rsiCalc(src(c,'close'), +p.period); return { r: toSeries(c, r), m: +p.ma > 0 ? toSeries(c, smaN(r, +p.ma)) : [] } } },
+  VWT:{ label:'거래량 가중 추세 띠', overlay:true, params:{period:30, mult:1.2}, colors:['#16c784'], series:[{key:'m',type:'line',name:'중심선'}],
+    fill:{kind:'band', key:'_band', color:'rgba(22,199,132,0.5)', color2:'rgba(234,57,67,0.5)'}, width:2, title:p=>`추세 띠 ${p.period} ${p.mult}`,
+    /* 거래량 가중 평균을 중심으로 ATR 폭의 띠를 두르고, 종가가 띠 위로 벗어나면 상승, 아래로 벗어나면 하락으로 색을 바꿔요 */
+    calc:(c,p,st) => { const n = +p.period, atr = rma(trueRange(c), n), up = (st && st.fill.color) || 'rgba(22,199,132,0.5)', dn = (st && st.fill.color2) || 'rgba(234,57,67,0.5)';
+      const solid = x => x.replace(/rgba\(([^,]+),([^,]+),([^,]+),[^)]+\)/, 'rgb($1,$2,$3)');
+      let pv = 0, vv = 0, tr = 1; const m = [], band = [];
+      c.forEach((b, i) => { pv += b.close*b.volume; vv += b.volume; if(i >= n){ pv -= c[i-n].close*c[i-n].volume; vv -= c[i-n].volume }
+        if(i < n-1 || atr[i] == null) return; const w = vv ? pv/vv : b.close, hi = w + p.mult*atr[i], lo = w - p.mult*atr[i];
+        if(b.close > hi) tr = 1; else if(b.close < lo) tr = -1;
+        m.push({time:b.time, value:w, color: solid(tr > 0 ? up : dn)}); band.push({time:b.time, up:hi, lo, t:tr}) });
+      return { m, _band:band } } },
   MACD:{ label:'MACD', overlay:false, params:{fast:12, slow:26, signal:9}, colors:['#4aa3ff','#f0a33b','#888'],
-    series:[{key:'m',type:'line'},{key:'s',type:'line'},{key:'h',type:'hist'}], levels:[0], title:p=>`MACD ${p.fast} ${p.slow} ${p.signal}`,
+    series:[{key:'m',type:'line',name:'MACD'},{key:'s',type:'line',name:'시그널'},{key:'h',type:'hist',name:'히스토그램'}], levels:[0], title:p=>`MACD ${p.fast} ${p.slow} ${p.signal}`,
     calc:(c,p) => { const v = src(c,'close'), f = ema(v,+p.fast), s = ema(v,+p.slow);
       const m = f.map((x,i) => x==null || s[i]==null ? null : x - s[i]);
       const sig = ema(m, +p.signal);
       const h = m.map((x,i) => x==null || sig[i]==null ? null : x - sig[i]);
       return { m:toSeries(c,m), s:toSeries(c,sig), h: toSeries(c,h).map((d,i,a) => ({...d, color: d.value>=0 ? (i && a[i-1].value>d.value ? 'rgba(22,199,132,.45)' : '#16c784') : (i && a[i-1].value<d.value ? 'rgba(234,57,67,.45)' : '#ea3943')})) } } },
   STOCHRSI:{ label:'스토캐스틱 RSI', overlay:false, params:{rsi:14, stoch:14, k:3, d:3}, colors:['#4aa3ff','#f0a33b'],
-    series:[{key:'k',type:'line'},{key:'d',type:'line'}], levels:[80,20], title:p=>`StochRSI ${p.rsi} ${p.stoch}`,
+    series:[{key:'k',type:'line',name:'%K'},{key:'d',type:'line',name:'%D'}], levels:[80,20], fill:{kind:'levels', a:0, b:1, color:'rgba(74,163,255,0.07)'}, title:p=>`StochRSI ${p.rsi} ${p.stoch}`,
     calc:(c,p) => { const r = rsiCalc(src(c,'close'), +p.rsi);
       const st = r.map((x,i) => { if(x==null || i < +p.stoch-1) return null; const w = r.slice(i-p.stoch+1, i+1); if(w.some(v=>v==null)) return null;
         const lo = Math.min(...w), hi = Math.max(...w); return hi===lo ? 0 : (x-lo)/(hi-lo)*100 });
@@ -435,7 +460,7 @@ const DEFS = {
     calc:(c,p) => ({ a: toSeries(c, rma(trueRange(c), +p.period)) }) },
   OBV:{ label:'OBV', overlay:false, params:{}, colors:['#2ec4b6'], series:[{key:'o',type:'line'}], title:()=>'OBV',
     calc:c => { let o = 0; return { o: c.map((b,i) => { if(i){ if(b.close>c[i-1].close) o += b.volume; else if(b.close<c[i-1].close) o -= b.volume } return {time:b.time, value:o} }) } } },
-  CVD:{ label:'CVD (체결 매수−매도 누적)', overlay:false, params:{reset:'없음'}, colors:['#2ec4b6'], series:[{key:'c',type:'line'},{key:'d',type:'hist',scale:'cvdd'}], levels:[0],
+  CVD:{ label:'CVD (체결 매수−매도 누적)', overlay:false, params:{reset:'없음'}, colors:['#2ec4b6'], series:[{key:'c',type:'line',name:'누적 CVD'},{key:'d',type:'hist',scale:'cvdd',name:'봉별 델타'}], levels:[0],
     title:p => `CVD${p.reset === '일간' ? ' (일간)' : ''}`,
     /* 봉마다 '시장가 매수 체결량 − 시장가 매도 체결량'(델타)을 막대로, 그 누적을 선으로 보여 줘요 */
     calc:(c,p) => { let cum = 0, day = -1; const cv = [], dv = [];
@@ -452,8 +477,160 @@ const DEFS = {
       const rows = await LC.getJSON(`${LC.EP.futures.data}/globalLongShortAccountRatio?symbol=${ctx.sym}&period=${per}&limit=500`);
       return { r: rows.map(r => ({time: Math.floor(r.timestamp/1000), value: +r.longShortRatio})) } } }
 };
-const PARAM_LABEL = {period:'기간', type:'종류', source:'기준값', mult:'배수', fast:'빠른선', slow:'느린선', signal:'시그널', rsi:'RSI 기간', stoch:'스토캐스틱 기간', k:'%K', d:'%D', reset:'누적 초기화'};
+const PARAM_LABEL = {ma:'이동평균 기간 (0이면 끔)', period:'기간', type:'종류', source:'기준값', mult:'배수', fast:'빠른선', slow:'느린선', signal:'시그널', rsi:'RSI 기간', stoch:'스토캐스틱 기간', k:'%K', d:'%D', reset:'누적 초기화'};
 LC.IND = { DEFS, PARAM_LABEL, sma, ema, smaN, rsiCalc };
+})();
+
+</script>
+<script>
+/* 차트 모양: 색 고르기 도구, 지표 띠 채우기, 차트 설정 창, 오른쪽 클릭 메뉴 */
+(() => {
+const { esc, store } = LC;
+const L = LightweightCharts;
+
+/* 색: '#rrggbb' 또는 'rgba(...)'를 {hex, a}로, 다시 문자열로 */
+const parseColor = c => {
+  c = (c || '#888888').trim(); let m;
+  if((m = c.match(/^#([0-9a-f]{6})([0-9a-f]{2})?$/i))) return { hex:'#' + m[1], a: m[2] ? parseInt(m[2], 16)/255 : 1 };
+  if((m = c.match(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/i))) return { hex:'#' + m[1]+m[1]+m[2]+m[2]+m[3]+m[3], a:1 };
+  if((m = c.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)$/i)))
+    return { hex:'#' + [m[1],m[2],m[3]].map(x => (+x).toString(16).padStart(2,'0')).join(''), a: m[4] == null ? 1 : +m[4] };
+  return { hex:'#888888', a:1 };
+};
+const mkColor = (hex, a) => { if(a >= 0.999) return hex; const n = parseInt(hex.slice(1), 16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${(+a).toFixed(2)})` };
+/* 색 + 투명도 입력 한 묶음 */
+const colorField = (key, val) => { const c = parseColor(val);
+  return `<span class="cpick" data-ck="${esc(key)}"><input type="color" value="${c.hex}"><input type="range" min="0" max="100" value="${Math.round(c.a*100)}" title="불투명도"></span>` };
+const readColor = el => mkColor(el.querySelector('[type=color]').value, el.querySelector('[type=range]').value/100);
+LC.color = { parseColor, mkColor, colorField, readColor };
+const DASH = [['0','실선'],['1','점선'],['2','파선'],['3','긴 파선']];
+LC.DASH = DASH;
+
+/* 지표 띠 채우기 (차트 안쪽, 봉 뒤에 그려요) */
+class IndFill {
+  constructor(v, ind){ this.v = v; this.ind = ind; const self = this;
+    this.view = { zOrder(){ return 'bottom' }, renderer(){ return { draw(t){ try{ self.draw(t) }catch(e){} } } } } }
+  attached(p){ this.p = p } detached(){ this.p = null }
+  updateAllViews(){} paneViews(){ return [this.view] }
+  draw(target){
+    const ind = this.ind, F = ind.def.fill, st = ind.style.fill; if(!F || !st || !st.show || ind.hidden || !this.p) return;
+    const se = this.p.series, ts = this.v.chart.timeScale();
+    target.useBitmapCoordinateSpace(sc => {
+      const ctx = sc.context, hr = sc.horizontalPixelRatio, vr = sc.verticalPixelRatio, W = sc.bitmapSize.width;
+      const X = t => { const x = ts.timeToCoordinate(t); return x == null ? null : x * hr }, Y = p => { const y = se.priceToCoordinate(p); return y == null ? null : y * vr };
+      if(F.kind === 'levels'){
+        const lv = ind.style.levels, a = lv[F.a], b = lv[F.b]; if(!a || !b) return;
+        const ya = Y(+a.v), yb = Y(+b.v); if(ya == null || yb == null) return;
+        ctx.fillStyle = st.color; ctx.fillRect(0, Math.min(ya, yb), W, Math.abs(yb - ya)); return;
+      }
+      if(F.kind === 'between'){
+        const A = ind.data[F.a] || [], B = ind.data[F.b] || []; if(!A.length || A.length !== B.length) return;
+        const up = [], dn = []; for(let i = 0; i < A.length; i++){ const x = X(A[i].time); if(x == null || x < -50 || x > W + 50) continue; up.push([x, Y(A[i].value)]); dn.push([x, Y(B[i].value)]) }
+        if(up.length < 2) return; ctx.beginPath(); up.forEach(([x,y], i) => i ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); for(let i = dn.length-1; i >= 0; i--) ctx.lineTo(dn[i][0], dn[i][1]);
+        ctx.closePath(); ctx.fillStyle = st.color; ctx.fill(); return;
+      }
+      if(F.kind === 'band'){
+        const D = ind.data[F.key] || []; const pts = [];
+        for(const d of D){ const x = X(d.time); if(x == null || x < -50 || x > W + 50) continue; pts.push({ x, u:Y(d.up), l:Y(d.lo), t:d.t }) }
+        if(pts.length < 2) return;
+        /* 같은 방향이 이어지는 구간마다 바깥 → 안쪽으로 겹겹이 칠해서 은은하게 빛나 보이게 */
+        const layers = [[1, .35], [.66, .55], [.33, .8]];
+        let i0 = 0;
+        const run = (s, e) => { const col = parseColor(pts[s].t > 0 ? st.color : st.color2 || st.color);
+          layers.forEach(([k, a]) => { ctx.beginPath();
+            for(let i = s; i <= e; i++){ const p = pts[i], m = (p.u + p.l)/2, h = (p.l - p.u)/2*k; i === s ? ctx.moveTo(p.x, m - h) : ctx.lineTo(p.x, m - h) }
+            for(let i = e; i >= s; i--){ const p = pts[i], m = (p.u + p.l)/2, h = (p.l - p.u)/2*k; ctx.lineTo(p.x, m + h) }
+            ctx.closePath(); ctx.fillStyle = mkColor(col.hex, col.a * a); ctx.fill() }) };
+        for(let i = 1; i <= pts.length; i++) if(i === pts.length || pts[i].t !== pts[i0].t){ run(i0, Math.min(i, pts.length - 1)); i0 = i }
+      }
+    });
+  }
+}
+LC.IndFill = IndFill;
+
+/* 차트 전체 설정 (모든 칸에 같이 적용, 바꾼 값만 저장) */
+const DEF = theme => { const light = theme === 'light';
+  return { upColor:'#16c784', downColor:'#ea3943', borderVisible:false, borderUp:'#16c784', borderDown:'#ea3943', wickVisible:true, wickUp:'#16c784', wickDown:'#ea3943',
+    lineColor:'#4aa3ff', lineWidth:2,
+    bgType:'solid', bg1: light ? '#ffffff' : '#0b0f15', bg2: light ? '#eef2f7' : '#121a26',
+    vGrid:true, vGridColor: light ? 'rgba(0,0,0,0.06)' : 'rgba(35,45,59,0.6)', hGrid:true, hGridColor: light ? 'rgba(0,0,0,0.06)' : 'rgba(35,45,59,0.6)',
+    crossMode:'0', crossColor: light ? '#7a8699' : '#5d6b80', crossStyle:'3',
+    textColor: light ? '#4a5566' : '#8b97a8', fontSize:11, lastLine:true, lastLabel:true,
+    watermark:false, legendOHLC:true, legendVals:true, countdown:true } };
+const CS = LC.chartStyle = {
+  user: store.get('chartStyle', {}),
+  get(){ return { ...DEF(LC.app && LC.app.theme), ...this.user } },
+  set(k, v){ this.user[k] = v; store.set('chartStyle', this.user); this.applyAll() },
+  reset(){ this.user = {}; store.set('chartStyle', {}); this.applyAll() },
+  applyAll(){ (LC.app ? LC.app.views : []).forEach(v => this.apply(v)) },
+  mainOpts(type){ const S = this.get(), o = { priceLineVisible:S.lastLine, lastValueVisible:S.lastLabel };
+    if(type === 'candle' || type === 'ha') Object.assign(o, { upColor:S.upColor, downColor:S.downColor, borderVisible:S.borderVisible, borderUpColor:S.borderUp, borderDownColor:S.borderDown,
+      wickVisible:S.wickVisible, wickUpColor:S.wickUp, wickDownColor:S.wickDown });
+    if(type === 'hollow') Object.assign(o, { upColor:'rgba(0,0,0,0)', downColor:S.downColor, borderVisible:true, borderUpColor:S.upColor, borderDownColor:S.downColor, wickVisible:S.wickVisible, wickUpColor:S.wickUp, wickDownColor:S.wickDown });
+    if(type === 'bar') Object.assign(o, { upColor:S.upColor, downColor:S.downColor, thinBars:false });
+    if(type === 'line') Object.assign(o, { color:S.lineColor, lineWidth:+S.lineWidth });
+    if(type === 'area'){ const c = parseColor(S.lineColor); Object.assign(o, { lineColor:S.lineColor, lineWidth:+S.lineWidth, topColor:mkColor(c.hex, .35), bottomColor:mkColor(c.hex, 0) }) }
+    return o },
+  apply(v){
+    const S = this.get(), light = LC.app && LC.app.theme === 'light', border = light ? '#d6dce4' : '#232d3b';
+    const line = (c) => ({ color:c, style:+S.crossStyle, width:1, labelBackgroundColor: light ? '#5b6678' : '#2b3647' });
+    v.chart.applyOptions({
+      layout:{ background: S.bgType === 'gradient' ? { type:L.ColorType.VerticalGradient, topColor:S.bg1, bottomColor:S.bg2 } : { type:L.ColorType.Solid, color:S.bg1 },
+        textColor:S.textColor, fontSize:+S.fontSize, fontFamily:LC.FONT, panes:{ separatorColor:border, separatorHoverColor: light ? '#b8c2cf' : '#3b4a5e' } },
+      grid:{ vertLines:{ visible:S.vGrid, color:S.vGridColor }, horzLines:{ visible:S.hGrid, color:S.hGridColor } },
+      crosshair:{ mode:+S.crossMode, vertLine:line(S.crossColor), horzLine:line(S.crossColor) },
+      rightPriceScale:{ borderColor:border }, timeScale:{ borderColor:border } });
+    v.series.applyOptions(this.mainOpts(v.type));
+    v.box.classList.toggle('no-ohlc', !S.legendOHLC); v.box.classList.toggle('no-vals', !S.legendVals); v.box.classList.toggle('no-cd', !S.countdown);
+    try{
+      if(S.watermark && L.createTextWatermark){ const lines = [{ text:v.sym.replace(/USDT$/, '') + (v.market === 'futures' ? ' · 무기한' : ''), color: light ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)', fontSize:64, fontFamily:LC.FONT, fontStyle:'700' }];
+        if(v.wm) v.wm.applyOptions({ lines }); else v.wm = L.createTextWatermark(v.chart.panes()[0], { horzAlign:'center', vertAlign:'center', lines }) }
+      else if(v.wm){ v.wm.detach(); v.wm = null }
+    }catch(e){}
+  },
+  modal(){
+    const S = this.get();
+    const chk = (k, t) => `<label class="srow"><span>${t}</span><input type="checkbox" data-sk="${k}" ${S[k] ? 'checked' : ''}></label>`;
+    const col = (k, t, ck) => `<label class="srow"><span>${ck ? `<input type="checkbox" data-sk="${ck}" ${S[ck] ? 'checked' : ''}> ` : ''}${t}</span>${colorField(k, S[k])}</label>`;
+    const sel = (k, t, opts) => `<label class="srow"><span>${t}</span><select data-sk="${k}">${opts.map(([v, n]) => `<option value="${v}" ${String(S[k]) === v ? 'selected' : ''}>${n}</option>`).join('')}</select></label>`;
+    const tabs = {
+      '캔들':[ '<h6>몸통</h6>', col('upColor','상승'), col('downColor','하락'), '<h6>테두리</h6>', chk('borderVisible','테두리 보이기'), col('borderUp','상승'), col('borderDown','하락'),
+        '<h6>꼬리</h6>', chk('wickVisible','꼬리 보이기'), col('wickUp','상승'), col('wickDown','하락'), '<h6>라인·영역 차트</h6>', col('lineColor','선 색'), sel('lineWidth','선 굵기', [['1','1'],['2','2'],['3','3'],['4','4']]) ],
+      '배경·격자':[ sel('bgType','배경', [['solid','단색'],['gradient','위→아래 그라데이션']]), col('bg1','배경 색 (위)'), col('bg2','그라데이션 아래 색'),
+        '<h6>격자</h6>', col('vGridColor','세로 격자', 'vGrid'), col('hGridColor','가로 격자', 'hGrid'), chk('watermark','차트 가운데 종목 이름 (워터마크)') ],
+      '눈금·십자선':[ col('textColor','눈금 글자 색'), sel('fontSize','눈금 글자 크기', [['10','10'],['11','11'],['12','12'],['13','13'],['14','14']]),
+        chk('lastLine','현재가 가로선'), chk('lastLabel','현재가 눈금 표시'), chk('countdown','봉 마감까지 남은 시간'),
+        '<h6>십자선</h6>', sel('crossMode','움직임', [['0','자유롭게'],['1','봉 종가에 붙기']]), col('crossColor','색'), sel('crossStyle','선 모양', DASH) ],
+      '범례':[ chk('legendOHLC','시가·고가·저가·종가 보이기'), chk('legendVals','지표 값 보이기') ]
+    };
+    const names = Object.keys(tabs);
+    const html = `<div class="sub-tabs st-tabs">${names.map((n, i) => `<button data-t="${i}" class="${i ? '' : 'on'}">${n}</button>`).join('')}</div>
+      ${names.map((n, i) => `<div class="st-pane" data-t="${i}" ${i ? 'hidden' : ''}>${tabs[n].join('')}</div>`).join('')}
+      <div class="row-end"><button class="btn" id="stReset">기본값으로</button><button class="btn pri" id="stOk">닫기</button></div>`;
+    LC.modal('차트 설정', html, (mb, close) => {
+      const sync = () => { const s = this.get(); mb.querySelectorAll('[data-sk]').forEach(el => { if(el.type === 'checkbox') el.checked = !!s[el.dataset.sk]; else el.value = String(s[el.dataset.sk]) });
+        mb.querySelectorAll('[data-ck]').forEach(el => { const c = parseColor(s[el.dataset.ck]); el.querySelector('[type=color]').value = c.hex; el.querySelector('[type=range]').value = Math.round(c.a*100) }) };
+      mb.querySelector('.st-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return;
+        mb.querySelectorAll('.st-tabs button').forEach(x => x.classList.toggle('on', x === b)); mb.querySelectorAll('.st-pane').forEach(p => p.hidden = p.dataset.t !== b.dataset.t) };
+      mb.addEventListener('input', e => { const ck = e.target.closest('[data-ck]'); if(ck) return this.set(ck.dataset.ck, readColor(ck));
+        const k = e.target.dataset.sk; if(k) this.set(k, e.target.type === 'checkbox' ? e.target.checked : e.target.value) });
+      mb.querySelector('#stReset').onclick = () => { this.reset(); sync() };
+      mb.querySelector('#stOk').onclick = close;
+    });
+  }
+};
+
+/* 오른쪽 클릭 메뉴 */
+LC.ctxMenu = (x, y, items) => {
+  document.querySelectorAll('.ctxm').forEach(m => m.remove());
+  const m = document.createElement('div'); m.className = 'ctxm';
+  m.innerHTML = items.map((it, i) => it === '-' ? '<hr>' : `<button data-i="${i}">${esc(it[0])}${it[2] ? `<small>${esc(it[2])}</small>` : ''}</button>`).join('');
+  document.body.appendChild(m);
+  const r = m.getBoundingClientRect(); m.style.left = Math.min(x, innerWidth - r.width - 6) + 'px'; m.style.top = Math.min(y, innerHeight - r.height - 6) + 'px';
+  const off = e => { if(!m.contains(e.target)){ m.remove(); document.removeEventListener('mousedown', off, true) } };
+  setTimeout(() => document.addEventListener('mousedown', off, true));
+  m.onclick = e => { const b = e.target.closest('button'); if(!b) return; m.remove(); document.removeEventListener('mousedown', off, true); items[+b.dataset.i][1]() };
+};
 })();
 
 </script>
@@ -639,7 +816,7 @@ class Drawings {
         case 'rect': { const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x), t = Math.min(a.y,b.y), bo = Math.max(a.y,b.y); hit = x>=l-TOL && x<=r+TOL && y>=t-TOL && y<=bo+TOL; break }
         case 'fib': { const l = Math.min(a.x,b.x); hit = x >= l-TOL && FIB.some(f => Math.abs(y - this.pToY(it.pts[1].p + (it.pts[0].p-it.pts[1].p)*f)) < TOL); break }
         case 'pos': { const c = P[2]; const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x); const ys = [a.y,b.y,c.y]; hit = x>=l && x<=r && y>=Math.min(...ys)-TOL && y<=Math.max(...ys)+TOL; break }
-        case 'text': { this.ctx.font = '13px "IBM Plex Sans KR", sans-serif'; const w = this.ctx.measureText(it.text||'').width; hit = x>=a.x-4 && x<=a.x+w+8 && y>=a.y-18 && y<=a.y+6; break }
+        case 'text': { this.ctx.font = '13px "Pretendard Variable", Pretendard, sans-serif'; const w = this.ctx.measureText(it.text||'').width; hit = x>=a.x-4 && x<=a.x+w+8 && y>=a.y-18 && y<=a.y+6; break }
       }
       if(hit) return {item:it, handle:null};
     }
@@ -669,7 +846,7 @@ class Drawings {
     }
   }
   label(ctx, txt, x, y, bg, fg = '#0d1117', align = 'left'){
-    ctx.font = '11px "IBM Plex Mono", monospace'; const w = ctx.measureText(txt).width + 8;
+    ctx.font = '11px "Pretendard Variable", Pretendard, sans-serif'; const w = ctx.measureText(txt).width + 8;
     const lx = align === 'right' ? x - w : align === 'center' ? x - w/2 : x;
     ctx.fillStyle = bg; ctx.fillRect(lx, y-9, w, 18); ctx.fillStyle = fg; ctx.textBaseline = 'middle'; ctx.fillText(txt, lx+4, y);
   }
@@ -693,7 +870,7 @@ class Drawings {
       case 'fib': { const l = Math.min(a.x,b.x); const p0 = it.pts[0].p, p1 = it.pts[1].p;
         ctx.setLineDash([4,3]); ctx.strokeStyle = '#5b6676'; ctx.lineWidth = 1; line(a.x,a.y,b.x,b.y); ctx.setLineDash([]);
         FIB.forEach((f,i) => { const pr = p1 + (p0-p1)*f; const y = this.pToY(pr); if(y == null) return;
-          ctx.strokeStyle = FIB_COL[i]; line(l,y,A.w,y); ctx.font = '11px "IBM Plex Mono", monospace'; ctx.fillStyle = FIB_COL[i]; ctx.textBaseline = 'bottom';
+          ctx.strokeStyle = FIB_COL[i]; line(l,y,A.w,y); ctx.font = '11px "Pretendard Variable", Pretendard, sans-serif'; ctx.fillStyle = FIB_COL[i]; ctx.textBaseline = 'bottom';
           ctx.fillText(`${f} (${LC.fmtN(pr, prec)})`, l+4, y-2) }); break }
       case 'pos': { const e = it.pts[0].p, s = it.pts[1].p, t = it.pts[2] ? it.pts[2].p : e + 2*(e - s); const long = t > e;
         const c = {x:b.x, y:this.pToY(t)}; if(c.y == null) break; const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x), w = Math.max(r-l, 30);
@@ -713,7 +890,7 @@ class Drawings {
         const secs = Math.abs(it.pts[1].t - it.pts[0].t);
         const dur = secs >= 86400 ? (secs/86400).toFixed(1)+'일' : secs >= 3600 ? (secs/3600).toFixed(1)+'시간' : Math.round(secs/60)+'분';
         this.label(ctx, `${LC.fmtN(p1-p0, prec)} (${LC.fmtPct((p1-p0)/p0*100)}) · ${bars}봉 · ${dur}`, (a.x+b.x)/2, b.y + (up?-14:14), up ? '#4aa3ff' : '#ea3943', '#fff', 'center'); break }
-      case 'text': { ctx.font = '13px "IBM Plex Sans KR", sans-serif'; ctx.textBaseline = 'alphabetic'; const w = ctx.measureText(it.text||'').width;
+      case 'text': { ctx.font = '13px "Pretendard Variable", Pretendard, sans-serif'; ctx.textBaseline = 'alphabetic'; const w = ctx.measureText(it.text||'').width;
         ctx.globalAlpha = 0.85; ctx.fillStyle = '#131922'; ctx.fillRect(a.x-4, a.y-17, w+8, 22); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillText(it.text||'', a.x, a.y); break }
     }
   }
@@ -746,7 +923,7 @@ class ChartView {
     this.q = s => box.querySelector(s);
     this.chart = L.createChart(this.q('.cv-chart'), {
       autoSize:true,
-      layout:{ background:{color:'transparent'}, textColor:'#8b97a8', fontFamily:'IBM Plex Mono, monospace', fontSize:11, panes:{separatorColor:'#232d3b', separatorHoverColor:'#3b4a5e'} },
+      layout:{ background:{color:'transparent'}, textColor:'#8b97a8', fontFamily:LC.FONT, fontSize:11, panes:{separatorColor:'#232d3b', separatorHoverColor:'#3b4a5e'} },
       grid:{ vertLines:{color:'rgba(35,45,59,.6)'}, horzLines:{color:'rgba(35,45,59,.6)'} },
       crosshair:{ mode:L.CrosshairMode.Normal },
       rightPriceScale:{ borderColor:'#232d3b', scaleMargins:{top:0.1, bottom:0.2} },
@@ -764,21 +941,22 @@ class ChartView {
       ({play:() => this.replayToggle(), step:() => this.replayStep(), exit:() => this.replayExit()})[b.dataset.r]() });
     this.q('.cv-replay select').onchange = e => { if(this.replay){ this.replay.speed = +e.target.value; if(this.replay.timer){ this.replayToggle(); this.replayToggle() } } };
     this.q('.lg-i').addEventListener('click', e => this.onLegendClick(e));
+    this.q('.lg-i').addEventListener('dblclick', e => { const row = e.target.closest('.lgr'); const ind = row && this.inds.find(i => i.id === row.dataset.id); if(ind) this.editInd(ind) });
+    box.addEventListener('contextmenu', e => { if(e.target.closest('.lg,.cv-replay')) return; e.preventDefault(); this.app.setActive(this);
+      LC.ctxMenu(e.clientX, e.clientY, [['차트 설정…', () => LC.chartStyle.modal(), '모양·색'], ['지표 추가…', () => this.app.indModal()], '-',
+        ['차트 그림 저장', () => this.screenshot()], ['리플레이', () => this.replayBegin()], ['오른쪽 끝으로', () => this.chart.timeScale().scrollToRealTime()], ['가격 눈금 자동 맞춤', () => this.chart.priceScale('right').applyOptions({autoScale:true})], '-',
+        ['이 종목 작도 모두 지우기', () => this.drawings.clear()]]) });
     (cfg.inds || [{key:'VOL'}, {key:'MA', params:{period:7, type:'SMA', source:'close'}, color:'#f0b90b'}, {key:'MA', params:{period:25, type:'SMA', source:'close'}, color:'#e05bd6'}, {key:'MA', params:{period:99, type:'SMA', source:'close'}, color:'#4aa3ff'}])
-      .forEach(c => this.addInd(c.key, c.params, c.color, c.hidden, true));
+      .forEach(c => this.addInd(c.key, c.params, c.color, c.hidden, true, c.style));
+    LC.chartStyle.apply(this);
     this.load();
   }
-  cfg(){ return { sym:this.sym, market:this.market, tf:this.tf, type:this.type, inds:this.inds.map(i => ({key:i.key, params:i.params, color:i.color, hidden:i.hidden})) } }
+  cfg(){ return { sym:this.sym, market:this.market, tf:this.tf, type:this.type, inds:this.inds.map(i => ({key:i.key, params:i.params, color:i.color, hidden:i.hidden, style:i.style})) } }
   destroy(){ this.closeStreams(); this.replayExit(true); this.drawings.destroy(); this.chart.remove(); this.box.remove() }
 
   makeMain(){
     if(this.series) this.chart.removeSeries(this.series);
-    const t = this.type, opts = { priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec} };
-    if(t === 'candle' || t === 'ha') Object.assign(opts, { upColor:UP, downColor:DN, borderVisible:false, wickUpColor:UP, wickDownColor:DN });
-    if(t === 'hollow') Object.assign(opts, { upColor:'rgba(0,0,0,0)', downColor:DN, borderUpColor:UP, borderDownColor:DN, wickUpColor:UP, wickDownColor:DN });
-    if(t === 'bar') Object.assign(opts, { upColor:UP, downColor:DN, thinBars:false });
-    if(t === 'line') Object.assign(opts, { color:'#4aa3ff', lineWidth:2 });
-    if(t === 'area') Object.assign(opts, { lineColor:'#4aa3ff', topColor:'rgba(74,163,255,.35)', bottomColor:'rgba(74,163,255,0)', lineWidth:2 });
+    const t = this.type, opts = { priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec}, ...LC.chartStyle.mainOpts(t) };
     this.series = this.chart.addSeries(SERIES_BY_TYPE[t], opts, 0);
     if(this.drawings) this.drawings.v = this;
   }
@@ -806,7 +984,7 @@ class ChartView {
     this.closeStreams(); this.replayExit(true); this.noMore = false;
     const ld = this.q('.cv-load'); ld.hidden = false; ld.textContent = '차트 불러오는 중…';
     this.q('.lg-t').textContent = `${this.sym}${this.market==='futures'?'.P':''} · ${(LC.TF.find(x=>x[0]===this.tf)||[,''])[1]} · BINANCE`;
-    this.drawings.load(); if(this.bubbles) this.bubbles.items = [];
+    this.drawings.load(); if(this.bubbles) this.bubbles.items = []; if(this.wm) LC.chartStyle.apply(this);
     try{
       const rows = await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000`);
       if(tok !== this.tok) return;
@@ -857,31 +1035,52 @@ class ChartView {
   }
 
   /* 지표 */
-  addInd(key, params, color, hidden, silent){
+  /* 지표 모양 기본값: 선마다 색·굵기·모양·보이기, 기준선, 띠 채우기 */
+  defStyle(def, color){
+    return { plots: def.series.map((s, i) => ({ color: (i === 0 && color) || (def.colors||[])[i] || '#888888', width: s.type === 'hist' ? 1 : def.width || (def.overlay ? 1 : 1.5), dash: s.dash ? 2 : 0, visible:true })),
+      levels: (def.levels||[]).map(v => ({ v, color:'rgba(120,134,156,0.6)', dash:2, show:true })),
+      fill: def.fill ? { show:true, color:def.fill.color, color2:def.fill.color2 } : null };
+  }
+  addInd(key, params, color, hidden, silent, style){
     const def = LC.IND.DEFS[key]; if(!def) return;
-    const ind = { id:Math.random().toString(36).slice(2,8), key, def, params:{...def.params, ...(params||{})}, color: color || (def.colors||[])[0], hidden:!!hidden, series:[], data:{} };
+    const ds = this.defStyle(def, color);
+    if(style){ ds.plots.forEach((p, i) => style.plots && style.plots[i] && Object.assign(p, style.plots[i]));
+      if(style.levels && style.levels.length === ds.levels.length) ds.levels = style.levels; if(style.fill && ds.fill) Object.assign(ds.fill, style.fill) }
+    const ind = { id:Math.random().toString(36).slice(2,8), key, def, params:{...def.params, ...(params||{})}, hidden:!!hidden, series:[], data:{}, style:ds, lines:[] };
+    ind.color = ds.plots[0].color;
     const pane = def.overlay ? 0 : this.chart.panes().length;
     def.series.forEach((s, i) => {
-      const col = i === 0 && ind.color ? ind.color : (def.colors||[])[i] || '#888';
-      const base = { priceLineVisible:false, lastValueVisible:!def.overlay, visible:!ind.hidden };
+      const base = { priceLineVisible:false, lastValueVisible:!def.overlay };
       let se;
-      if(s.type === 'hist') se = this.chart.addSeries(L.HistogramSeries, {...base, color:col, priceScaleId: s.scale || 'right', priceFormat:{type: key==='VOL' ? 'volume' : 'price', precision:4, minMove:0.0001}, lastValueVisible:false}, pane);
-      else if(s.type === 'area') se = this.chart.addSeries(L.AreaSeries, {...base, lineColor:col, topColor:col+'55', bottomColor:col+'05', lineWidth:2, priceFormat:{type:'volume'}}, pane);
-      else se = this.chart.addSeries(L.LineSeries, {...base, color:col, lineWidth: def.overlay ? 1 : 1.5, lineStyle: s.dash ? 2 : 0, crosshairMarkerVisible:!def.overlay,
+      if(s.type === 'hist') se = this.chart.addSeries(L.HistogramSeries, {...base, priceScaleId: s.scale || 'right', priceFormat:{type: key==='VOL' ? 'volume' : 'price', precision:4, minMove:0.0001}, lastValueVisible:false}, pane);
+      else if(s.type === 'area') se = this.chart.addSeries(L.AreaSeries, {...base, priceFormat:{type:'volume'}}, pane);
+      else se = this.chart.addSeries(L.LineSeries, {...base, crosshairMarkerVisible:!def.overlay,
                  priceFormat: def.overlay ? {type:'price', precision:this.prec, minMove:1/10**this.prec} : {type:'price', precision:2, minMove:0.01}}, pane);
       if(s.scale) se.priceScale().applyOptions({ scaleMargins:{top: s.scale === 'vol' ? 0.82 : 0.6, bottom:0} });
       ind.series.push(se);
     });
-    (def.levels||[]).forEach(l => ind.series[0].createPriceLine({price:l, color:'#4a5568', lineWidth:1, lineStyle:2, axisLabelVisible:false}));
+    if(def.fill){ ind.fillP = new LC.IndFill(this, ind); ind.series[0].attachPrimitive(ind.fillP) }
+    this.applyIndStyle(ind);
     this.inds.push(ind); this.layoutPanes();
     if(!silent){ this.computeInd(ind, true); if(def.async) this.fetchAsync(ind); this.renderLegendInds(); this.app.save() }
     return ind;
+  }
+  applyIndStyle(ind){
+    const st = ind.style; ind.color = st.plots[0].color;
+    ind.def.series.forEach((s, i) => { const p = st.plots[i], se = ind.series[i], vis = !ind.hidden && p.visible;
+      if(s.type === 'hist') se.applyOptions({ color:p.color, visible:vis });
+      else if(s.type === 'area'){ const c = LC.color.parseColor(p.color); se.applyOptions({ lineColor:p.color, topColor:LC.color.mkColor(c.hex, .3), bottomColor:LC.color.mkColor(c.hex, .02), lineWidth:+p.width, lineStyle:+p.dash, visible:vis }) }
+      else se.applyOptions({ color:p.color, lineWidth:+p.width, lineStyle:+p.dash, visible:vis }) });
+    ind.lines.forEach(l => { try{ ind.series[0].removePriceLine(l) }catch(e){} });
+    ind.lines = st.levels.filter(l => l.show).map(l => ind.series[0].createPriceLine({ price:+l.v, color:l.color, lineWidth:1, lineStyle:+l.dash, axisLabelVisible:false }));
+    if(this.chart) this.chart.applyOptions({});
   }
   removeInd(ind){ ind.series.forEach(s => this.chart.removeSeries(s)); this.inds = this.inds.filter(i => i !== ind); this.layoutPanes(); this.renderLegendInds(); this.app.save() }
   layoutPanes(){ try{ this.chart.panes().forEach((p, i) => p.setStretchFactor(i === 0 ? 4 : 1)) }catch(e){} }
   computeInd(ind, full){
     if(ind.def.async || !this.shown.length) return;
-    const r = ind.def.calc(this.shown, ind.params);
+    const r = ind.def.calc(this.shown, ind.params, ind.style);
+    Object.keys(r).forEach(k => { if(k[0] === '_') ind.data[k] = r[k] });
     ind.def.series.forEach((s, i) => { const arr = r[s.key] || []; ind.data[s.key] = arr;
       if(ind.hidden) return;
       if(full) ind.series[i].setData(arr); else if(arr.length) ind.series[i].update(arr[arr.length-1]) });
@@ -897,31 +1096,52 @@ class ChartView {
       ind.def.series.forEach((s, i) => { r[s.key] = r[s.key].filter(d => d.time >= t0); ind.data[s.key] = r[s.key]; if(!ind.hidden) ind.series[i].setData(r[s.key]) }) }catch(e){}
   }
   renderLegendInds(){
-    this.q('.lg-i').innerHTML = this.inds.map(i => `<div class="lgr ${i.hidden?'off':''}" data-id="${i.id}"><span class="nm" style="color:${i.color||'#ccc'}">${LC.esc(i.def.title ? i.def.title(i.params) : i.def.label)}</span><span class="vals num"></span>
+    this.q('.lg-i').innerHTML = this.inds.map(i => `<div class="lgr ${i.hidden?'off':''}" data-id="${i.id}"><span class="nm" style="color:${LC.color.parseColor(i.color||'#cccccc').hex}">${LC.esc(i.def.title ? i.def.title(i.params) : i.def.label)}</span><span class="vals num"></span>
       <span class="act"><button data-a="eye" title="보이기/숨기기">${i.hidden?'◌':'◉'}</button><button data-a="set" title="설정">⚙</button><button data-a="del" title="지우기">✕</button></span></div>`).join('');
     this.setLegend(this.hoverBar || this.shown[this.shown.length-1]);
   }
   onLegendClick(e){
     const b = e.target.closest('button'); if(!b) return; const row = b.closest('.lgr'); const ind = this.inds.find(i => i.id === row.dataset.id); if(!ind) return;
     if(b.dataset.a === 'del') this.removeInd(ind);
-    if(b.dataset.a === 'eye'){ ind.hidden = !ind.hidden; ind.series.forEach(s => s.applyOptions({visible:!ind.hidden})); if(!ind.hidden){ ind.def.async ? this.fetchAsync(ind) : this.computeInd(ind, true) } this.renderLegendInds(); this.app.save() }
+    if(b.dataset.a === 'eye'){ ind.hidden = !ind.hidden; this.applyIndStyle(ind); if(!ind.hidden){ ind.def.async ? this.fetchAsync(ind) : this.computeInd(ind, true) } this.renderLegendInds(); this.app.save() }
     if(b.dataset.a === 'set') this.editInd(ind);
   }
+  /* 지표 설정 창: 입력값 / 모양 (바꾸면 바로 차트에 보여요) */
   editInd(ind){
-    const P = ind.params, keys = Object.keys(P);
+    const P = ind.params, keys = Object.keys(P), st = ind.style, C = LC.color, D = ind.def;
+    const old = { params:{...P}, style:JSON.parse(JSON.stringify(st)) };
     const field = k => k === 'type' ? `<select class="inp" data-k="type"><option ${P.type==='SMA'?'selected':''}>SMA</option><option ${P.type==='EMA'?'selected':''}>EMA</option></select>`
       : k === 'reset' ? `<select class="inp" data-k="reset">${['없음','일간'].map(s => `<option ${P.reset===s?'selected':''}>${s}</option>`).join('')}</select>`
       : k === 'source' ? `<select class="inp" data-k="source">${['close','open','high','low','hl2','hlc3'].map(s => `<option ${P.source===s?'selected':''}>${s}</option>`).join('')}</select>`
-      : `<input class="inp" type="number" step="any" data-k="${k}" value="${LC.esc(P[k])}">`;
-    LC.modal(ind.def.label + ' 설정', `<div class="form">${keys.map(k => `<label>${LC.IND.PARAM_LABEL[k]||k}${field(k)}</label>`).join('')}
-      <label>색<input class="inp" type="color" data-k="__color" value="${ind.color||'#f0b90b'}"></label></div><div class="row-end"><button class="btn pri" id="indOk">적용</button></div>`, (mb, close) => {
-      mb.querySelector('#indOk').onclick = () => {
-        const np = {...P}; let color = ind.color;
-        mb.querySelectorAll('[data-k]').forEach(el => { if(el.dataset.k === '__color') color = el.value; else np[el.dataset.k] = el.type === 'number' ? Math.max(1, +el.value || P[el.dataset.k]) : el.value });
-        const idx = this.inds.indexOf(ind); this.removeInd(ind);
-        const n = this.addInd(ind.key, np, color, ind.hidden); this.inds.splice(this.inds.indexOf(n), 1); this.inds.splice(idx, 0, n); this.renderLegendInds(); this.app.save(); close();
-      };
-    });
+      : `<input class="inp" type="number" step="any" min="0" data-k="${k}" value="${LC.esc(P[k])}">`;
+    const dashSel = (attr, v) => `<select ${attr} title="선 모양">${LC.DASH.map(([k, n]) => `<option value="${k}" ${String(v) === k ? 'selected' : ''}>${n}</option>`).join('')}</select>`;
+    const plots = D.series.map((s, i) => { const p = st.plots[i];
+      return `<div class="srow"><label><input type="checkbox" data-pv="${i}" ${p.visible ? 'checked' : ''}> ${LC.esc(s.name || (D.series.length > 1 ? '선 ' + (i+1) : D.label))}</label><span class="sctl">${C.colorField('p' + i, p.color)}
+        ${s.type === 'hist' ? '' : `<select data-pw="${i}" title="굵기">${[1,1.5,2,3,4].map(w => `<option ${+p.width === w ? 'selected' : ''}>${w}</option>`).join('')}</select>${dashSel(`data-pd="${i}"`, p.dash)}`}</span></div>` }).join('');
+    const levels = st.levels.map((l, i) => `<div class="srow"><label><input type="checkbox" data-lv="${i}" ${l.show ? 'checked' : ''}> 기준선 <input class="inp sm" type="number" step="any" data-lval="${i}" value="${l.v}"></label><span class="sctl">${C.colorField('l' + i, l.color)}${dashSel(`data-ld="${i}"`, l.dash)}</span></div>`).join('');
+    const fill = st.fill ? `<div class="srow"><label><input type="checkbox" data-fill ${st.fill.show ? 'checked' : ''}> ${D.fill.kind === 'band' ? '띠 (상승 / 하락)' : '사이 채우기'}</label><span class="sctl">${C.colorField('f1', st.fill.color)}${D.fill.color2 ? C.colorField('f2', st.fill.color2) : ''}</span></div>` : '';
+    const html = `<div class="sub-tabs st-tabs"><button data-t="0" class="on">입력값</button><button data-t="1">모양</button></div>
+      <div class="st-pane" data-t="0"><div class="form">${keys.length ? keys.map(k => `<label>${LC.IND.PARAM_LABEL[k]||k}${field(k)}</label>`).join('') : '<p class="muted">바꿀 입력값이 없는 지표예요. 모양 탭에서 색과 선을 바꿀 수 있어요.</p>'}</div></div>
+      <div class="st-pane" data-t="1" hidden>${plots}${levels ? '<h6>기준선</h6>' + levels : ''}${fill ? '<h6>채우기</h6>' + fill : ''}</div>
+      <div class="row-end"><button class="btn" id="indDef">기본값으로</button><button class="btn" id="indCancel">취소</button><button class="btn pri" id="indOk">확인</button></div>`;
+    let done = false;
+    const close = LC.modal(D.label + ' 설정', html, (mb, close) => {
+      mb.querySelector('.st-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return;
+        mb.querySelectorAll('.st-tabs button').forEach(x => x.classList.toggle('on', x === b)); mb.querySelectorAll('.st-pane').forEach(p => p.hidden = p.dataset.t !== b.dataset.t) };
+      const read = () => {
+        mb.querySelectorAll('[data-k]').forEach(el => { const k = el.dataset.k; P[k] = el.type === 'number' ? (el.value === '' ? old.params[k] : Math.max(k === 'ma' ? 0 : 1, +el.value)) : el.value });
+        D.series.forEach((s, i) => { const p = st.plots[i]; p.visible = mb.querySelector(`[data-pv="${i}"]`).checked; p.color = C.readColor(mb.querySelector(`[data-ck="p${i}"]`));
+          const w = mb.querySelector(`[data-pw="${i}"]`); if(w){ p.width = +w.value; p.dash = +mb.querySelector(`[data-pd="${i}"]`).value } });
+        st.levels.forEach((l, i) => { l.show = mb.querySelector(`[data-lv="${i}"]`).checked; const v = mb.querySelector(`[data-lval="${i}"]`).value; if(v !== '') l.v = +v;
+          l.color = C.readColor(mb.querySelector(`[data-ck="l${i}"]`)); l.dash = +mb.querySelector(`[data-ld="${i}"]`).value });
+        if(st.fill){ st.fill.show = mb.querySelector('[data-fill]').checked; st.fill.color = C.readColor(mb.querySelector('[data-ck="f1"]')); const f2 = mb.querySelector('[data-ck="f2"]'); if(f2) st.fill.color2 = C.readColor(f2) }
+        this.applyIndStyle(ind); ind.def.async ? this.fetchAsync(ind) : this.computeInd(ind, true); this.renderLegendInds() };
+      mb.addEventListener('input', read); mb.addEventListener('change', read);
+      mb.querySelector('#indDef').onclick = () => { Object.assign(P, D.params); Object.assign(st, this.defStyle(D)); this.applyIndStyle(ind); this.computeInd(ind, true); this.renderLegendInds(); done = true; close(); this.editInd(ind) };
+      mb.querySelector('#indCancel').onclick = () => close();
+      mb.querySelector('#indOk').onclick = () => { done = true; this.app.save(); close() };
+    }, false, () => { if(done) return; Object.keys(P).forEach(k => delete P[k]); Object.assign(P, old.params); Object.assign(st, old.style);
+      this.applyIndStyle(ind); ind.def.async ? this.fetchAsync(ind) : this.computeInd(ind, true); this.renderLegendInds() });
   }
 
   /* 범례 */
@@ -987,7 +1207,7 @@ class ChartView {
   screenshot(){
     const c = this.chart.takeScreenshot(); const ctx = c.getContext('2d');
     ctx.drawImage(this.drawings.cv, 0, 0, this.drawings.cv.width, this.drawings.cv.height, 0, 0, c.width, c.height);
-    ctx.font = '600 14px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = '#d7dee8'; ctx.fillText(this.q('.lg-t').textContent, 12, 22);
+    ctx.font = '600 14px "Pretendard Variable", Pretendard, sans-serif'; ctx.fillStyle = '#d7dee8'; ctx.fillText(this.q('.lg-t').textContent, 12, 22);
     const d = new Date(); LC.download(`${this.sym}_${this.tf}_${d.getFullYear()}${LC.pad(d.getMonth()+1)}${LC.pad(d.getDate())}_${LC.pad(d.getHours())}${LC.pad(d.getMinutes())}.png`, c.toDataURL('image/png'));
   }
 }
@@ -1093,7 +1313,7 @@ class Bubbles {
       ctx.beginPath(); ctx.arc(x, y, r, 0, 7);
       ctx.fillStyle = b.liq ? 'rgba(240,185,11,.35)' : b.buy ? 'rgba(22,199,132,.28)' : 'rgba(234,57,67,.28)'; ctx.fill();
       ctx.lineWidth = 1; ctx.strokeStyle = b.liq ? '#f0b90b' : b.buy ? '#16c784' : '#ea3943'; ctx.stroke();
-      if(r > 12){ ctx.font = '10px "IBM Plex Mono", monospace'; ctx.fillStyle = '#e8eef6'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(LC.fmtBig(b.usd), x, y); ctx.textAlign = 'left' }
+      if(r > 12){ ctx.font = '10px "Pretendard Variable", Pretendard, sans-serif'; ctx.fillStyle = '#e8eef6'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(LC.fmtBig(b.usd), x, y); ctx.textAlign = 'left' }
     }
   }
 }
@@ -1763,11 +1983,11 @@ const MAP = {
       const wl = b.l / max * W, ws = b.s / max * W;
       ctx.fillStyle = 'rgba(234,57,67,.55)'; ctx.fillRect(A.w - wl, y + 1, wl, h - 2);
       ctx.fillStyle = 'rgba(22,199,132,.55)'; ctx.fillRect(A.w - wl - ws, y + 1, ws, h - 2);
-      if(b.l + b.s >= max * 0.35){ ctx.font = '10px "IBM Plex Mono", monospace'; ctx.fillStyle = '#e8eef6'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      if(b.l + b.s >= max * 0.35){ ctx.font = '10px "Pretendard Variable", Pretendard, sans-serif'; ctx.fillStyle = '#e8eef6'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
         ctx.fillText('$' + LC.fmtBig(b.l + b.s), A.w - wl - ws - 4, y + h/2); ctx.textAlign = 'left' } });
     if(P.cfg.entries) list.slice(0, 12).forEach(p => { const y = dr.pToY(p.entry); if(y == null) return;
       ctx.strokeStyle = p.szi > 0 ? 'rgba(22,199,132,.8)' : 'rgba(234,57,67,.8)'; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(A.w - 220, y); ctx.lineTo(A.w, y); ctx.stroke(); ctx.setLineDash([]);
-      ctx.font = '10px "IBM Plex Mono", monospace'; ctx.fillStyle = ctx.strokeStyle; ctx.fillText(`${p.szi > 0 ? '롱' : '숏'} $${LC.fmtBig(p.val)}`, A.w - 218, y - 3) });
+      ctx.font = '10px "Pretendard Variable", Pretendard, sans-serif'; ctx.fillStyle = ctx.strokeStyle; ctx.fillText(`${p.szi > 0 ? '롱' : '숏'} $${LC.fmtBig(p.val)}`, A.w - 218, y - 3) });
   }
 };
 LC.overlays = LC.overlays || []; LC.overlays.push(MAP);
@@ -1942,6 +2162,7 @@ const app = LC.app = {
     $('btnLog').onclick = () => { if(!this.v) return; this.v.setLog(!this.v.log); $('btnLog').classList.toggle('on', this.v.log); $('btnPct').classList.remove('on') };
     $('btnPct').onclick = () => { if(!this.v) return; const on = !$('btnPct').classList.contains('on'); this.v.setPercent(on); this.v.log = false; $('btnPct').classList.toggle('on', on); $('btnLog').classList.remove('on') };
     $('btnShot').onclick = () => this.v && this.v.screenshot();
+    $('btnSet').onclick = () => LC.chartStyle.modal();
     $('btnMarket').onclick = () => LC.market.open();
     $('hTemp').onclick = () => LC.market.open('temp');
     $('btnTheme').onclick = () => this.setTheme(this.theme === 'light' ? 'dark' : 'light');
@@ -1988,8 +2209,7 @@ const app = LC.app = {
   setTheme(t){
     this.theme = t; store.set('theme', t); document.documentElement.dataset.theme = t;
     const light = t === 'light', grid = light ? 'rgba(0,0,0,.06)' : 'rgba(35,45,59,.6)', border = light ? '#d6dce4' : '#232d3b';
-    this.views.forEach(v => v.chart.applyOptions({ layout:{ textColor: light ? '#4a5566' : '#8b97a8', panes:{separatorColor:border} }, grid:{ vertLines:{color:grid}, horzLines:{color:grid} },
-      rightPriceScale:{borderColor:border}, timeScale:{borderColor:border} }));
+    LC.chartStyle.applyAll();
   },
   syncHeader(){
     const v = this.v; if(!v) return;
