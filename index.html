@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>wuho.com · 우호</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
 :root{--bg:#0d1117;--panel:#131922;--panel2:#18202b;--line:#232d3b;--ink:#d7dee8;--dim:#7d8a9c;--up:#16c784;--down:#ea3943;--accent:#f0b90b;--blue:#4aa3ff}
 *{box-sizing:border-box;min-width:0}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Pretendard Variable",Pretendard,-apple-system,system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;overflow:hidden}
-.num{font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,"Noto Sans KR","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+.num{font-family:"DM Mono",-apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,"Noto Sans KR","Malgun Gothic",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
 .up{color:var(--up)}.down{color:var(--down)}.muted{color:var(--dim);font-size:13px;margin:0 0 12px}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
@@ -308,7 +309,7 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
 <script>
 /* 공용 도구: 저장소, 포맷, 거래소 주소, 웹소켓, 소리, 알림창 */
 window.LC = window.LC || {};
-LC.FONT = "'Pretendard Variable', Pretendard, -apple-system, 'Malgun Gothic', sans-serif";
+LC.FONT = "'DM Mono', -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, 'Noto Sans KR', 'Malgun Gothic', sans-serif";
 LC.panels = LC.panels || [];
 (() => {
 const $ = id => document.getElementById(id);
@@ -727,7 +728,7 @@ const CS = LC.chartStyle = {
       '눈금·십자선':[ col('textColor','눈금 글자 색'), sel('fontSize','눈금 글자 크기', [['10','10'],['11','11'],['12','12'],['13','13'],['14','14']]),
         chk('lastLine','현재가 가로선'), chk('lastLabel','현재가 눈금 표시'), chk('countdown','봉 마감까지 남은 시간'),
         '<h6>십자선</h6>', sel('crossMode','움직임', [['0','자유롭게'],['1','봉 종가에 붙기']]), col('crossColor','색'), sel('crossStyle','선 모양', DASH) ],
-      '범례':[ chk('legendOHLC','시가·고가·저가·종가 보이기'), chk('legendVals','지표 값 보이기') ]
+      '범례·표시':[ chk('legendOHLC','시가·고가·저가·종가 보이기'), chk('legendVals','지표 값 보이기'), '<h6>차트 위 표시</h6>', '<label class="srow"><span>큰 체결·청산 동그라미</span><input type="checkbox" id="stBub"></label>' ]
     };
     const names = Object.keys(tabs);
     const html = `<div class="sub-tabs st-tabs">${names.map((n, i) => `<button data-t="${i}" class="${i ? '' : 'on'}">${n}</button>`).join('')}</div>
@@ -740,6 +741,8 @@ const CS = LC.chartStyle = {
         mb.querySelectorAll('.st-tabs button').forEach(x => x.classList.toggle('on', x === b)); mb.querySelectorAll('.st-pane').forEach(p => p.hidden = p.dataset.t !== b.dataset.t) };
       mb.addEventListener('input', e => { const ck = e.target.closest('[data-ck]'); if(ck) return this.set(ck.dataset.ck, readColor(ck));
         const k = e.target.dataset.sk; if(k) this.set(k, e.target.type === 'checkbox' ? e.target.checked : e.target.value) });
+      const F = LC.panels.find(p => p.id === 'flow'), bub = mb.querySelector('#stBub'); bub.checked = !!(F && F.cfg.bubbles);
+      bub.onchange = e => { e.stopPropagation(); if(!F) return; F.cfg.bubbles = bub.checked; store.set('flowCfg', F.cfg); const c = F.el && F.el.querySelector('[data-c=bubbles]'); if(c) c.checked = bub.checked };
       mb.querySelector('#stReset').onclick = () => { this.reset(); sync() };
       mb.querySelector('#stOk').onclick = close;
     });
@@ -942,7 +945,7 @@ class Drawings {
         case 'rect': { const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x), t = Math.min(a.y,b.y), bo = Math.max(a.y,b.y); hit = x>=l-TOL && x<=r+TOL && y>=t-TOL && y<=bo+TOL; break }
         case 'fib': { const l = Math.min(a.x,b.x); hit = x >= l-TOL && FIB.some(f => Math.abs(y - this.pToY(it.pts[1].p + (it.pts[0].p-it.pts[1].p)*f)) < TOL); break }
         case 'pos': { const c = P[2]; const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x); const ys = [a.y,b.y,c.y]; hit = x>=l && x<=r && y>=Math.min(...ys)-TOL && y<=Math.max(...ys)+TOL; break }
-        case 'text': { this.ctx.font = '13px "Pretendard Variable", Pretendard, sans-serif'; const w = this.ctx.measureText(it.text||'').width; hit = x>=a.x-4 && x<=a.x+w+8 && y>=a.y-18 && y<=a.y+6; break }
+        case 'text': { this.ctx.font = '13px "DM Mono", "Noto Sans KR", sans-serif'; const w = this.ctx.measureText(it.text||'').width; hit = x>=a.x-4 && x<=a.x+w+8 && y>=a.y-18 && y<=a.y+6; break }
       }
       if(hit) return {item:it, handle:null};
     }
@@ -972,7 +975,7 @@ class Drawings {
     }
   }
   label(ctx, txt, x, y, bg, fg = '#0d1117', align = 'left'){
-    ctx.font = '11px "Pretendard Variable", Pretendard, sans-serif'; const w = ctx.measureText(txt).width + 8;
+    ctx.font = '11px "DM Mono", "Noto Sans KR", sans-serif'; const w = ctx.measureText(txt).width + 8;
     const lx = align === 'right' ? x - w : align === 'center' ? x - w/2 : x;
     ctx.fillStyle = bg; ctx.fillRect(lx, y-9, w, 18); ctx.fillStyle = fg; ctx.textBaseline = 'middle'; ctx.fillText(txt, lx+4, y);
   }
@@ -996,7 +999,7 @@ class Drawings {
       case 'fib': { const l = Math.min(a.x,b.x); const p0 = it.pts[0].p, p1 = it.pts[1].p;
         ctx.setLineDash([4,3]); ctx.strokeStyle = '#5b6676'; ctx.lineWidth = 1; line(a.x,a.y,b.x,b.y); ctx.setLineDash([]);
         FIB.forEach((f,i) => { const pr = p1 + (p0-p1)*f; const y = this.pToY(pr); if(y == null) return;
-          ctx.strokeStyle = FIB_COL[i]; line(l,y,A.w,y); ctx.font = '11px "Pretendard Variable", Pretendard, sans-serif'; ctx.fillStyle = FIB_COL[i]; ctx.textBaseline = 'bottom';
+          ctx.strokeStyle = FIB_COL[i]; line(l,y,A.w,y); ctx.font = '11px "DM Mono", "Noto Sans KR", sans-serif'; ctx.fillStyle = FIB_COL[i]; ctx.textBaseline = 'bottom';
           ctx.fillText(`${f} (${LC.fmtN(pr, prec)})`, l+4, y-2) }); break }
       case 'pos': { const e = it.pts[0].p, s = it.pts[1].p, t = it.pts[2] ? it.pts[2].p : e + 2*(e - s); const long = t > e;
         const c = {x:b.x, y:this.pToY(t)}; if(c.y == null) break; const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x), w = Math.max(r-l, 30);
@@ -1016,7 +1019,7 @@ class Drawings {
         const secs = Math.abs(it.pts[1].t - it.pts[0].t);
         const dur = secs >= 86400 ? (secs/86400).toFixed(1)+'일' : secs >= 3600 ? (secs/3600).toFixed(1)+'시간' : Math.round(secs/60)+'분';
         this.label(ctx, `${LC.fmtN(p1-p0, prec)} (${LC.fmtPct((p1-p0)/p0*100)}) · ${bars}봉 · ${dur}`, (a.x+b.x)/2, b.y + (up?-14:14), up ? '#4aa3ff' : '#ea3943', '#fff', 'center'); break }
-      case 'text': { ctx.font = '13px "Pretendard Variable", Pretendard, sans-serif'; ctx.textBaseline = 'alphabetic'; const w = ctx.measureText(it.text||'').width;
+      case 'text': { ctx.font = '13px "DM Mono", "Noto Sans KR", sans-serif'; ctx.textBaseline = 'alphabetic'; const w = ctx.measureText(it.text||'').width;
         ctx.globalAlpha = 0.85; ctx.fillStyle = '#131922'; ctx.fillRect(a.x-4, a.y-17, w+8, 22); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillText(it.text||'', a.x, a.y); break }
     }
   }
@@ -1333,7 +1336,7 @@ class ChartView {
   screenshot(){
     const c = this.chart.takeScreenshot(); const ctx = c.getContext('2d');
     ctx.drawImage(this.drawings.cv, 0, 0, this.drawings.cv.width, this.drawings.cv.height, 0, 0, c.width, c.height);
-    ctx.font = '600 14px "Pretendard Variable", Pretendard, sans-serif'; ctx.fillStyle = '#d7dee8'; ctx.fillText(this.q('.lg-t').textContent, 12, 22);
+    ctx.font = '600 14px "DM Mono", "Noto Sans KR", sans-serif'; ctx.fillStyle = '#d7dee8'; ctx.fillText(this.q('.lg-t').textContent, 12, 22);
     const d = new Date(); LC.download(`${this.sym}_${this.tf}_${d.getFullYear()}${LC.pad(d.getMonth()+1)}${LC.pad(d.getDate())}_${LC.pad(d.getHours())}${LC.pad(d.getMinutes())}.png`, c.toDataURL('image/png'));
   }
 }
@@ -1439,7 +1442,7 @@ class Bubbles {
       ctx.beginPath(); ctx.arc(x, y, r, 0, 7);
       ctx.fillStyle = b.liq ? 'rgba(240,185,11,.35)' : b.buy ? 'rgba(22,199,132,.28)' : 'rgba(234,57,67,.28)'; ctx.fill();
       ctx.lineWidth = 1; ctx.strokeStyle = b.liq ? '#f0b90b' : b.buy ? '#16c784' : '#ea3943'; ctx.stroke();
-      if(r > 12){ ctx.font = '10px "Pretendard Variable", Pretendard, sans-serif'; ctx.fillStyle = '#e8eef6'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(LC.fmtBig(b.usd), x, y); ctx.textAlign = 'left' }
+      if(r > 12){ ctx.font = '10px "DM Mono", "Noto Sans KR", sans-serif'; ctx.fillStyle = '#e8eef6'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(LC.fmtBig(b.usd), x, y); ctx.textAlign = 'left' }
     }
   }
 }
@@ -1447,7 +1450,7 @@ class Bubbles {
 /* 체결·청산 */
 const FLOW = {
   id:'flow', label:'체결·청산', tab:'trades',
-  cfg: Object.assign({ tradeMin:1e4, liqMin:0, liqAll:true, sound:false, bubbles:true, bubbleMin:5e4 }, store.get('flowCfg', {})),
+  cfg: Object.assign({ tradeMin:1e4, liqMin:0, liqAll:true, sound:false, bubbles:false, bubbleMin:5e4 }, store.get('flowCfg', {}), store.get('bubOff1', false) ? {} : (store.set('bubOff1', true), { bubbles:false })),
   trades:[], liqs:[], liqMin:{},
   mount(el, app){
     this.el = el; this.app = app;
@@ -2109,11 +2112,11 @@ const MAP = {
       const wl = b.l / max * W, ws = b.s / max * W;
       ctx.fillStyle = 'rgba(234,57,67,.55)'; ctx.fillRect(A.w - wl, y + 1, wl, h - 2);
       ctx.fillStyle = 'rgba(22,199,132,.55)'; ctx.fillRect(A.w - wl - ws, y + 1, ws, h - 2);
-      if(b.l + b.s >= max * 0.35){ ctx.font = '10px "Pretendard Variable", Pretendard, sans-serif'; ctx.fillStyle = '#e8eef6'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      if(b.l + b.s >= max * 0.35){ ctx.font = '10px "DM Mono", "Noto Sans KR", sans-serif'; ctx.fillStyle = '#e8eef6'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
         ctx.fillText('$' + LC.fmtBig(b.l + b.s), A.w - wl - ws - 4, y + h/2); ctx.textAlign = 'left' } });
     if(P.cfg.entries) list.slice(0, 12).forEach(p => { const y = dr.pToY(p.entry); if(y == null) return;
       ctx.strokeStyle = p.szi > 0 ? 'rgba(22,199,132,.8)' : 'rgba(234,57,67,.8)'; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(A.w - 220, y); ctx.lineTo(A.w, y); ctx.stroke(); ctx.setLineDash([]);
-      ctx.font = '10px "Pretendard Variable", Pretendard, sans-serif'; ctx.fillStyle = ctx.strokeStyle; ctx.fillText(`${p.szi > 0 ? '롱' : '숏'} $${LC.fmtBig(p.val)}`, A.w - 218, y - 3) });
+      ctx.font = '10px "DM Mono", "Noto Sans KR", sans-serif'; ctx.fillStyle = ctx.strokeStyle; ctx.fillText(`${p.szi > 0 ? '롱' : '숏'} $${LC.fmtBig(p.val)}`, A.w - 218, y - 3) });
   }
 };
 LC.overlays = LC.overlays || []; LC.overlays.push(MAP);
