@@ -87,6 +87,7 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:6px}
 .d-p{display:flex;align-items:baseline;gap:6px;margin-top:10px;flex-wrap:wrap}.d-p .big{font-size:28px;font-weight:600}.d-p .dim{font-size:11px}
 .d-live{font-size:12px;color:var(--up);margin-top:2px;display:flex;align-items:center;gap:5px}.dotl{width:6px;height:6px;border-radius:50%;background:var(--up)}
 .d-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:12px}.dk{display:flex;flex-direction:column;font-size:11px;color:var(--dim)}.dk b{font-size:13px;color:var(--ink);font-weight:500}
+.pnav{display:flex;gap:2px;flex:none}.pnav a{padding:4px 9px;border-radius:5px;color:var(--dim);font-size:13px;text-decoration:none}.pnav a:hover{background:var(--panel2);color:var(--ink)}.pnav a.on{color:var(--accent);background:var(--panel2)}
 .cpick{display:inline-flex;align-items:center;gap:6px}.cpick input[type=color]{width:30px;height:24px;padding:0;border:1px solid var(--line);border-radius:5px;background:none;cursor:pointer}
 .cpick input[type=color]::-webkit-color-swatch-wrapper{padding:2px}.cpick input[type=color]::-webkit-color-swatch{border:0;border-radius:3px}
 .cpick input[type=range]{width:64px;accent-color:var(--accent)}
@@ -295,6 +296,7 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
 <div class="app">
   <div class="topbar">
     <span class="brand">우호 <small>wuho.com</small></span>
+    <nav class="pnav"><a href="./" class="on">차트</a><a href="scalp.html">스캘핑</a></nav>
     <div id="ctabs"></div><button id="ctabAdd" title="차트 탭 추가">+</button>
     <div class="right"><span class="hchip" id="hTemp" title="BTC 최근 3분 ÷ 앞 1시간 평소">시장 온도 -</span><span id="clock" class="num">-</span></div>
   </div>
@@ -2338,6 +2340,7 @@ const app = LC.app = {
     document.documentElement.dataset.theme = this.theme = store.get('theme', 'dark');
     const saved = store.get('views', null);
     const cfgs = saved && saved.length ? saved : [{ sym:store.get('sym','BTCUSDT'), market:store.get('market','futures'), tf:store.get('tf','1m') }];
+    const qs = new URLSearchParams(location.search).get('s'); if(qs && /^[A-Z0-9]{2,20}USDT$/.test(qs)){ cfgs[0] = { ...cfgs[0], sym:qs, market:'futures' }; history.replaceState(null, '', location.pathname) }
     this.applyLayout(this.layout, cfgs);
     this.buildAside();
     this.loadInfo('futures'); this.loadInfo('spot');
