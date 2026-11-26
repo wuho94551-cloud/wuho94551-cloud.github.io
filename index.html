@@ -3008,7 +3008,7 @@ const app = LC.app = {
   /* 거래소 종목 정보 (가격 소수점) */
   async loadInfo(m){
     try{ const d = await LC.getJSON(`${LC.EP[m].rest}/exchangeInfo`); const map = {};
-      d.symbols.forEach(s => { if(m === 'futures' && (s.contractType !== 'PERPETUAL' || s.status !== 'TRADING')) return; if(m === 'spot' && s.status !== 'TRADING') return;
+      d.symbols.forEach(s => { if(m === 'futures' && (!/PERPETUAL$/.test(s.contractType) || s.status !== 'TRADING')) return; if(m === 'spot' && s.status !== 'TRADING') return;
         const f = (s.filters||[]).find(x => x.filterType === 'PRICE_FILTER'); const ts = f ? f.tickSize : '0.01';
         map[s.symbol] = { prec: Math.max(0, (ts.replace(/0+$/,'').split('.')[1]||'').length), base:s.baseAsset, ut:s.underlyingType || 'COIN' } });
       if(LC.bus) LC.bus.emit('info', m);
