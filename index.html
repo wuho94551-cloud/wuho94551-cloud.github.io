@@ -355,6 +355,7 @@ input[type=range]{accent-color:var(--accent);width:100%}
 .wrow .nm small{display:block;color:var(--dim);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wrow .px{text-align:right;font-size:13px;font-weight:500;color:var(--ink)}.wrow .pc{text-align:right;font-size:12.5px}.wrow .mc{text-align:right;font-size:12px;color:var(--dim)}
 .wrow .star{position:absolute;left:1px;top:50%;transform:translateY(-50%);width:15px;height:22px;padding:0;font-size:11px;color:#4a5668;opacity:0}.wrow:hover .star,.wrow .star.on{opacity:1}.star.on{color:var(--accent)}.star:hover{color:var(--accent)}
+.ls-more{display:block;width:100%;padding:12px;color:var(--dim);font-size:12px;text-align:center}.ls-more:hover{color:var(--accent)}.ls-note{padding:6px 12px;font-size:11px;color:var(--dim)}
 .aicw{position:relative;display:inline-block;flex:none;border-radius:50%;overflow:hidden}.aicw img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;border-radius:50%;background:var(--panel)}
 .aic{display:inline-grid;place-items:center;border-radius:50%;color:#fff;font-weight:700;flex:none;line-height:1}.aic.bk{position:absolute;inset:0}
 .d-h{display:flex;align-items:center;gap:8px}.d-h b{font-size:15px}
@@ -471,6 +472,7 @@ const TFMS = {'1m':6e4,'3m':18e4,'5m':3e5,'15m':9e5,'30m':18e5,'1h':36e5,'2h':72
 const EP = {
   futures:{ rest:'https://fapi.binance.com/fapi/v1', data:'https://fapi.binance.com/futures/data',
             ws:'wss://fstream.binance.com/market/ws', wsPub:'wss://fstream.binance.com/public/ws' },
+  hl:{ rest:'', ws:'', wsPub:'' },
   spot:{ rest:'https://api.binance.com/api/v3', ws:'wss://stream.binance.com:9443/ws', wsPub:'wss://stream.binance.com:9443/ws' }
 };
 const autoPrec = v => { v = Math.abs(v); return v>=1000?1 : v>=100?2 : v>=1?3 : v>=0.01?5 : 7 };
@@ -487,6 +489,7 @@ async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error(r
 
 /* 자동 재연결 웹소켓. onOpen(ws)에서 구독 메시지를 보낼 수 있어요 */
 function openWS(url, onMsg, onState, onOpen){
+  if(!/^wss?:\/\/[a-z]/i.test(url)) return { close(){}, send(){}, keepAlive(){} };   /* 하이퍼리퀴드 종목처럼 바이낸스 주소가 없는 경우 */
   let ws, closed = false, retry = 0, ping;
   const go = () => {
     ws = new WebSocket(url);
@@ -1381,21 +1384,23 @@ class ChartView {
   get rest(){ return LC.EP[this.market].rest }
   async load(){
     const tok = this.tok = Math.random();
-    this.closeStreams(); this.replayExit(true); this.noMore = false;
+    this.closeStreams(); this.replayExit(true); this.noMore = false; this.loadedSym = null;
     const ld = this.q('.cv-load'); ld.hidden = false; ld.textContent = '차트 불러오는 중…';
-    this.q('.lg-t').textContent = `${this.sym}${this.market==='futures'?'.P':''} · ${(LC.TF.find(x=>x[0]===this.tf)||[,''])[1]} · BINANCE`;
+    this.q('.lg-t').textContent = this.market === 'hl' ? `${this.sym.split(':')[1] || this.sym} · ${(LC.TF.find(x=>x[0]===this.tf)||[,''])[1]} · HYPERLIQUID ${(this.sym.split(':')[0] || '').toUpperCase()}` : `${this.sym}${this.market==='futures'?'.P':''} · ${(LC.TF.find(x=>x[0]===this.tf)||[,''])[1]} · BINANCE`;
     this.drawings.load(); if(this.bubbles) this.bubbles.items = []; if(this.wm) LC.chartStyle.apply(this);
     try{
-      const rows = await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000`);
-      if(tok !== this.tok) return;
-      this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5], tbv:+k[9]}));
+      if(this.market === 'hl'){ const r = await LC.hlm.klines(this.sym, this.tf); if(tok !== this.tok) return; this.candles = r }
+      else { const rows = await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000`);
+        if(tok !== this.tok) return;
+        this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5], tbv:+k[9]})) }
       this.autoPrec = null; this.prec = this.app.precOf(this.sym, this.market) ?? LC.autoPrec(this.candles.length ? this.candles[this.candles.length-1].close : 1);
       this.series.applyOptions({ priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec} }); LC.chartStyle.apply(this);
-      this.shown = this.candles; this.renderAll(); this.chart.timeScale().scrollToRealTime();
+      this.shown = this.candles; this.renderAll(); this.chart.timeScale().scrollToRealTime(); this.loadedSym = this.sym;
       ld.hidden = true;
     }catch(e){ ld.textContent = '데이터를 못 불러왔어요. 종목이나 인터넷 연결을 확인해 주세요.'; return }
     this.prevPrice = this.last && this.last.close;
-    this.kws = LC.openWS(`${LC.EP[this.market].ws}/${this.sym.toLowerCase()}@kline_${this.tf}`, m => {
+    if(this.market === 'hl') this.kws = LC.hlm.stream(this.sym, this.tf, b => { if(tok === this.tok) this.onBar(b) }, ok => this.app.setConn(this, ok));
+    else this.kws = LC.openWS(`${LC.EP[this.market].ws}/${this.sym.toLowerCase()}@kline_${this.tf}`, m => {
       if(tok !== this.tok || !m.k) return; const k = m.k;
       this.onBar({time:Math.floor(k.t/1000), open:+k.o, high:+k.h, low:+k.l, close:+k.c, volume:+k.v, tbv:+k.V});
     }, ok => this.app.setConn(this, ok));
@@ -1408,9 +1413,11 @@ class ChartView {
     if(this.loadingMore || this.noMore || !this.candles.length) return;
     this.loadingMore = true; const tok = this.tok;
     try{
-      const rows = await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000&endTime=${this.candles[0].time*1000-1}`);
-      if(tok !== this.tok) return; if(!rows.length){ this.noMore = true; return }
-      this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5], tbv:+k[9]})).concat(this.candles);
+      const end = this.candles[0].time*1000 - 1;
+      const more = this.market === 'hl' ? await LC.hlm.klines(this.sym, this.tf, end)
+        : (await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000&endTime=${end}`)).map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5], tbv:+k[9]}));
+      if(tok !== this.tok) return; const old = more.filter(b => b.time < this.candles[0].time); if(!old.length){ this.noMore = true; return }
+      this.candles = old.concat(this.candles);
       this.shown = this.candles; this.renderAll();
     }catch(e){} finally{ this.loadingMore = false }
   }
@@ -1651,15 +1658,32 @@ const CMD = { XAU:['금','#d4a72c'], XAG:['은','#aeb6c2'], XPT:['백금','#9fb3
 const US = { SPY:'S&P 500 ETF', QQQ:'나스닥 100 ETF', IWM:'러셀 2000 ETF', EWY:'한국 ETF', EWJ:'일본 ETF', EWT:'대만 ETF', EWZ:'브라질 ETF', SOXL:'반도체 3배', SOXS:'반도체 -3배', TQQQ:'나스닥 3배', SQQQ:'나스닥 -3배',
   TSLA:'Tesla', NVDA:'NVIDIA', AAPL:'Apple', MSFT:'Microsoft', AMZN:'Amazon', GOOGL:'Alphabet', META:'Meta', AMD:'AMD', INTC:'Intel', MSTR:'Strategy', COIN:'Coinbase', HOOD:'Robinhood', PLTR:'Palantir',
   TSM:'TSMC', MU:'Micron', AVGO:'Broadcom', NFLX:'Netflix', ORCL:'Oracle', CRCL:'Circle', BABA:'Alibaba', QCOM:'Qualcomm', ASML:'ASML', ARM:'Arm', UBER:'Uber', DIS:'Disney', JPM:'JPMorgan', WMT:'Walmart', LLY:'Eli Lilly' };
+/* 하이퍼리퀴드 이름 → 바이낸스 쪽 이름 (같은 종목 묶기) */
+const ALIAS = { GOLD:'XAU', SILVER:'XAG', PLATINUM:'XPT', PALLADIUM:'XPD', WTI:'CL', OIL:'CL', USOIL:'CL', BRENTOIL:'BZ', GAS:'NATGAS', SMSN:'SAMSUNG', SKHX:'SKHYNIX', XIAOMI:'HK1810',
+  USA500:'SP500', US500:'SP500', USA100:'XYZ100', USTECH:'XYZ100', JPN225:'JP225' };
+const HL_CMD = new Set(['XAU','XAG','XPT','XPD','COPPER','CL','BZ','NATGAS','URANIUM','ALUMINIUM','CORN','WHEAT','SOY','TTF','HO','GOLDJM','SILVERJM','USENERGY','GLDMINE']);
+const HL_FX = new Set(['JPY','EUR','GBP','KRW','DXY','USDBRL']);
+const HL_IDX = new Set(['XYZ100','SP500','SMALL2000','JP225','NIFTY','IBOV','VIX','VOL','MAG7','SEMIS','SEMI','TOTAL2','OTHERS','BTCD','USBOND','10Y','2Y','30Y','ROBOT','INFOTECH','NUCLEAR','DEFENSE','ENERGY','BIOTECH']);
+const HL_KR = new Set(['SAMSUNG','SKHYNIX','HYUNDAI','KR200']);
+const HL_ASIA = new Set(['HK1810','TENCENT','CATL','CXMT','UNITREE','MINIMAX','ZHIPU','GIGADEV','CAMBRICON','INNOLIGHT','AMEC','YMTC','SOFTBANK','KIOXIA','IBIDEN','RELIANCE','JIO','SHEIN','UMC']);
+CMD.GOLD = CMD.XAU; Object.assign(CMD, { URANIUM:['우라늄','#7bb661'], ALUMINIUM:['알루미늄','#9aa4b2'], CORN:['옥수수','#e3b23c'], WHEAT:['밀','#d9a85b'], SOY:['대두','#b59a5a'], TTF:['유럽 가스','#3f8fd6'], HO:['난방유','#6b7280'],
+  JPY:['엔/달러','#ea3943'], EUR:['유로/달러','#4aa3ff'], GBP:['파운드/달러','#c38bff'], KRW:['원/달러','#16c784'], DXY:['달러 인덱스','#2f9e6b'] });
+Object.assign(US, { SP500:'S&P 500 지수', XYZ100:'나스닥 100 지수', SMALL2000:'러셀 2000', JP225:'닛케이 225', NIFTY:'인도 니프티 50', IBOV:'브라질 보베스파', VIX:'VIX 변동성', KR200:'코스피 200' });
+KR.KR200 = ['코스피 200','']; HK.SOFTBANK = ['소프트뱅크','9984.T']; HK.KIOXIA = ['키옥시아','285A.T']; HK.CATL = ['CATL','300750.SZ']; HK.RELIANCE = ['릴라이언스','RELIANCE.NS'];
 const COL = ['#f0b90b','#4aa3ff','#16c784','#e05bd6','#ff9f43','#2ec4b6','#c38bff','#ea3943'];
 const hash = s => { let h = 0; for(const ch of s) h = (h*31 + ch.charCodeAt(0)) | 0; return Math.abs(h) };
 
 const A = LC.assets = {
   cg: store.get('cgMeta', null),
-  base(sym){ return sym.replace(/USDT$|USDC$|USD1$/, '') },
+  base(sym){ return sym.includes(':') ? sym.split(':')[1] : sym.replace(/USDT$|USDC$|USD1$/, '') },
+  /* 같은 종목끼리 묶는 열쇠 */
+  key(sym){ const b = this.base(sym); return ALIAS[b] || b },
   coinBase(sym){ return this.base(sym).replace(/^1000000|^1000|^1M/, '') },
   kind(sym, market){ const i = LC.app && LC.app.info[market || 'futures'] && LC.app.info[market || 'futures'][sym]; return i && i.ut ? i.ut : 'COIN' },
-  group(sym, market){ const k = market === 'spot' ? 'COIN' : this.kind(sym, 'futures');
+  group(sym, market){
+    if(market === 'hl'){ const k = this.key(sym); return HL_CMD.has(k) ? 'cmd' : HL_FX.has(k) ? 'fx' : HL_IDX.has(k) ? 'idx' : HL_KR.has(k) ? 'kr' : HL_ASIA.has(k) || HK[k] ? 'hk' : 'us' }
+    const k = market === 'spot' ? 'COIN' : this.kind(sym, 'futures');
+    if(k === 'EQUITY' && /^(SPY|QQQ|IWM|DIA)$/.test(this.base(sym))) return 'idx';
     return k === 'EQUITY' || k === 'PREMARKET' ? 'us' : k === 'KR_EQUITY' ? 'kr' : (k === 'HK_EQUITY' || k === 'CN_EQUITY') ? 'hk' : k === 'COMMODITY' ? 'cmd' : k === 'FX' ? 'fx' : 'coin' },
   async load(){
     if(this.cg && Date.now() - this.cg.at < 12*36e5) return;
@@ -1668,18 +1692,18 @@ const A = LC.assets = {
       this.cg = { at:Date.now(), m }; store.set('cgMeta', this.cg); LC.bus && LC.bus.emit('assets') }catch(e){}
   },
   /* [이름, 시총] */
-  info(sym, market){ const g = this.group(sym, market), b = this.base(sym);
+  info(sym, market){ const g = this.group(sym, market), b = this.key(sym);
     if(g === 'kr') return [(KR[b] || [b])[0], null]; if(g === 'hk') return [(HK[b] || [b])[0] || b, null];
-    if(g === 'cmd' || g === 'fx') return [(CMD[b] || [b])[0], null]; if(g === 'us') return [US[b] || b, null];
+    if(g === 'cmd' || g === 'fx') return [(CMD[b] || [b])[0], null]; if(g === 'us' || g === 'idx') return [US[b] || b, null];
     const c = this.cg && this.cg.m[this.coinBase(sym)]; return c ? [c[0], c[2]] : [this.coinBase(sym), null] },
-  icon(sym, market, size){ const g = this.group(sym, market), b = this.base(sym), cb = this.coinBase(sym), sz = size || 24;
+  icon(sym, market, size){ const g = this.group(sym, market), b = this.key(sym), cb = this.coinBase(sym), sz = size || 24;
     const letter = (t, col) => `<span class="aic" style="width:${sz}px;height:${sz}px;background:${col || COL[hash(b) % COL.length]};font-size:${Math.round(sz*.42)}px">${esc(t)}</span>`;
     let srcs = [];
     if(g === 'coin'){ const c = this.cg && this.cg.m[cb]; if(c && c[1]) srcs.push(c[1]); srcs.push(`https://static.okx.com/cdn/oksupport/asset/currency/icon/${cb.toLowerCase()}.png`) }
-    else if(g === 'us') srcs.push(`https://financialmodelingprep.com/image-stock/${b === 'BRKB' ? 'BRK-B' : b}.png`);
+    else if(g === 'us' && !/^(XYZ100|SP500)$/.test(b)) srcs.push(`https://financialmodelingprep.com/image-stock/${b === 'BRKB' ? 'BRK-B' : b}.png`);
     else if(g === 'kr' && KR[b]) srcs.push(`https://financialmodelingprep.com/image-stock/${KR[b][1]}.png`);
     else if(g === 'hk' && HK[b] && HK[b][1]) srcs.push(`https://financialmodelingprep.com/image-stock/${HK[b][1]}.png`);
-    const fb = g === 'cmd' || g === 'fx' ? letter((CMD[b] || [b])[0].slice(0, 1), (CMD[b] || [])[1]) : letter((g === 'kr' ? (KR[b] || [b])[0] : cb).slice(0, 1));
+    const fb = g === 'cmd' || g === 'fx' ? letter((CMD[b] || [b])[0].slice(0, 1), (CMD[b] || [])[1]) : g === 'idx' ? letter('지', '#5b6b82') : letter((g === 'kr' ? (KR[b] || [b])[0] : b).slice(0, 1));
     if(!srcs.length) return fb;
     return `<span class="aicw" style="width:${sz}px;height:${sz}px"><img class="aimg" src="${esc(srcs[0])}" data-alt="${esc(srcs.slice(1).join('|'))}" decoding="async" alt="" width="${sz}" height="${sz}">${fb.replace('class="aic"', 'class="aic bk"')}</span>` }
 };
@@ -1720,19 +1744,22 @@ const P = {
     el.querySelector('.lhead').onclick = e => { const d = e.target.closest('[data-s]'); if(!d) return;
       if(this.sortKey === d.dataset.s) this.sortDir *= -1; else { this.sortKey = d.dataset.s; this.sortDir = d.dataset.s === 's' ? 1 : -1 } store.set('lsSort2', { sortKey:this.sortKey, sortDir:this.sortDir }); this.render() };
     this.list.onclick = e => {
-      const st = e.target.closest('[data-star]'); const m = this.market;
-      if(st){ const s = st.dataset.star, f = this.favs(); store.set('favs_'+m, f.includes(s) ? f.filter(x => x !== s) : [...f, s]); this.render(); return }
-      const r = e.target.closest('.wrow'); if(r) app.openSymbol(r.dataset.s, m);
+      if(e.target.closest('.ls-more')){ this.showThin = !this.showThin; this.render(); return }
+      const st = e.target.closest('[data-star]');
+      if(st){ const r = st.closest('.wrow'), m = r.dataset.m, sy = r.dataset.s, f = this.favs(m); store.set('favs_'+m, f.includes(sy) ? f.filter(x => x !== sy) : [...f, sy]); this.render(); return }
+      const r = e.target.closest('.wrow'); if(r) app.openSymbol(r.dataset.s, r.dataset.m);
     };
     this.list.onscroll = () => { this.scrolled = Date.now() };
     LC.bus.on('assets', () => this.render()); LC.bus.on('info', () => this.render());
+    LC.bus.on('hlTick', () => { if(!this.el.hidden && (this.top === 'fav' || this.cat !== 'coin') && (!this.scrolled || Date.now() - this.scrolled > 1500)) this.render() });
   },
-  CATS: [['coin','코인',[['futures','선물'],['spot','현물']]], ['stock','주식',[['us','미국'],['kr','한국'],['hk','홍콩·중국']]], ['cmd','원자재·외환',[['cmd','원자재'],['fx','외환']]]],
+  CATS: [['coin','코인',[['futures','선물'],['spot','현물']]], ['stock','주식',[['us','미국'],['kr','한국'],['hk','아시아'],['idx','지수·ETF']]], ['cmd','원자재·외환',[['cmd','원자재'],['fx','외환']]]],
+  THIN: 3e5,   /* 하루 거래대금이 이보다 적으면 접어 둬요 */
   subOf(c){ const C = this.CATS.find(x => x[0] === c); return this.sub[c] || C[2][0][0] },
   /* 주식·원자재는 바이낸스 선물에만 있어요 */
-  fixMarket(){ if(this.top !== 'all') return; const want = this.cat === 'coin' ? this.subOf('coin') : 'futures'; if(want !== this.market) this.onMarket(want) },
-  favs(){ return store.get('favs_' + this.market, ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT','DOGEUSDT','BNBUSDT']) },
-  onSymbol(v){ if(v.market !== this.market) this.onMarket(v.market); else this.markSel(); this.oi = null; this.loadOI(); this.detail() },
+  fixMarket(){ if(this.top !== 'fav' && this.cat !== 'coin') LC.hlm.start(); if(this.top !== 'all') return; const want = this.cat === 'coin' ? this.subOf('coin') : 'futures'; if(want !== this.market) this.onMarket(want) },
+  favs(m){ m = m || this.market; return store.get('favs_' + m, m === 'hl' ? [] : ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT','DOGEUSDT','BNBUSDT']) },
+  onSymbol(v){ if(v.market !== this.market && v.market !== 'hl') this.onMarket(v.market); else this.markSel(); if(v.market === 'hl') LC.hlm.start(); this.oi = null; this.loadOI(); this.detail() },
   async loadOI(){ const v = this.app.v; if(!v || v.market !== 'futures' || this.el.hidden) return;
     try{ const d = await LC.getJSON(`${LC.EP.futures.rest}/openInterest?symbol=${v.sym}`); if(v.sym === d.symbol) this.oi = { sym:v.sym, q:+d.openInterest } }catch(e){} },
   /* 아래쪽 종목 상세 */
@@ -1742,7 +1769,7 @@ const P = {
     const chg = last && t.P != null ? last - last/(1 + P/100) : null, f = this.app.fund && this.app.fund.sym === v.sym ? this.app.fund : null;
     const hl = LC.hl && LC.hl.ready ? LC.hl.positions(v.sym.replace(/USDT$/, '').replace(/^1000/, 'k')) : [], lv = hl.filter(p => p.szi > 0).reduce((s, p) => s + p.val, 0), sv = hl.filter(p => p.szi < 0).reduce((s, p) => s + p.val, 0);
     const kv = (k, val) => `<div class="dk"><span>${k}</span><b class="num">${val}</b></div>`;
-    el.innerHTML = `<div class="d-h">${LC.assets.icon(v.sym, v.market, 26)}<b>${esc(LC.assets.base(v.sym))}</b><span class="dim">${esc(LC.assets.info(v.sym, v.market)[0])}</span><span class="dim" style="margin-left:auto;font-size:11px">${v.market === 'futures' ? 'USDT 무기한 · 바이낸스' : 'USDT 현물 · 바이낸스'}</span></div>
+    el.innerHTML = `<div class="d-h">${LC.assets.icon(v.sym, v.market, 26)}<b>${esc(LC.assets.base(v.sym))}</b><span class="dim">${esc(LC.assets.info(v.sym, v.market)[0])}</span><span class="dim" style="margin-left:auto;font-size:11px">${v.market === 'hl' ? '무기한 · 하이퍼리퀴드 ' + esc((v.sym.split(':')[0] || '').toUpperCase()) : v.market === 'futures' ? 'USDT 무기한 · 바이낸스' : 'USDT 현물 · 바이낸스'}</span></div>
       <div class="d-p"><span class="num big ${cls}">${last ? LC.fmtN(last, pr) : '-'}</span><span class="dim">USDT</span><span class="num ${cls}">${chg != null ? (chg >= 0 ? '+' : '') + LC.fmtN(chg, pr) : ''}</span><span class="num ${cls}">${t.P != null ? LC.fmtPct(P) : ''}</span></div>
       <div class="d-live"><i class="dotl"></i>${v.kws ? '실시간' : '연결 중'}</div>
       <div class="d-grid">${kv('24h 고가', t.h ? LC.fmtN(t.h, pr) : '-')}${kv('24h 저가', t.l ? LC.fmtN(t.l, pr) : '-')}${kv('24h 거래대금', t.q ? LC.fmtBig(t.q) : '-')}
@@ -1751,7 +1778,7 @@ const P = {
         ${hl.length ? kv('HL 고래 롱', '<span class="up">$' + LC.fmtBig(lv) + '</span>') + kv('HL 고래 숏', '<span class="down">$' + LC.fmtBig(sv) + '</span>') : ''}</div>`;
   },
   async onMarket(m){
-    if(this.market === m) return; this.market = m; this.ws && this.ws.close();
+    if(this.market === m || m === 'hl') return; this.market = m; this.ws && this.ws.close();
     const T = this.app.tickers[m] = {};
     try{ const rows = await LC.getJSON(`${LC.EP[m].rest}/ticker/24hr`);
       rows.forEach(r => { if(r.symbol.endsWith('USDT') && +r.quoteVolume > 0) T[r.symbol] = { c:+r.lastPrice, P:+r.priceChangePercent, q:+r.quoteVolume, h:+r.highPrice, l:+r.lowPrice } }) }catch(e){}
@@ -1766,21 +1793,34 @@ const P = {
       this.patch(ch);
     });
   },
+  /* 보여 줄 줄: [종목, 시장] */
   syms(){
-    const T = this.app.tickers[this.market] || {}, q = (this.el.querySelector('#q').value || '').trim().toUpperCase(), A = LC.assets;
-    let s;
-    if(q) s = Object.keys(T).filter(k => k.includes(q) || (A.info(k, this.market)[0] || '').toUpperCase().includes(q));
-    else if(this.top === 'fav') s = this.favs();
-    else { const sub = this.subOf(this.cat), want = this.cat === 'coin' ? 'coin' : sub; s = Object.keys(T).filter(k => A.group(k, this.market) === want) }
-    if(this.top === 'all' || q){ const k = this.sortKey, d = this.sortDir, mc = x => A.info(x, this.market)[1] || 0;
-      s = s.sort((a, b) => k === 's' ? d*(a < b ? -1 : 1) : k === 'm' ? d*(mc(a) - mc(b)) : d*(((T[a]||{})[k] || 0) - ((T[b]||{})[k] || 0))) }
-    return s.slice(0, 400);
+    const A = LC.assets, TK = this.app.tickers, q = (this.el.querySelector('#q').value || '').trim().toUpperCase(), mk = this.market;
+    const T = TK[mk] || {}, H = TK.hl || {};
+    let L; this.thinN = 0;
+    if(this.top === 'fav' && !q){ L = this.favs().map(s => [s, mk]).concat(mk === 'futures' ? this.favs('hl').map(s => [s, 'hl']) : []); return L }
+    if(this.cat === 'coin' && !q) L = Object.keys(T).filter(k => A.group(k, mk) === 'coin').map(k => [k, mk]);
+    else {
+      /* 주식·원자재: 바이낸스 선물과 하이퍼리퀴드를 합치고, 같은 종목은 거래가 더 많은 곳 하나만 */
+      const want = this.subOf(this.cat), best = {};
+      const add = (k, m, t) => { if(!t || !t.c) return; const g = A.group(k, m); if(!q && g !== want) return; if(q && g === 'coin' && m === 'hl') return;
+        const id = g + ':' + A.key(k); if(!best[id] || (t.q || 0) > best[id][2]) best[id] = [k, m, t.q || 0] };
+      if(q){ Object.keys(T).forEach(k => { const nm = (A.info(k, mk)[0] || '').toUpperCase(); if(k.includes(q) || nm.includes(q)) add(k, mk, T[k]) }) }
+      else Object.keys(TK.futures || {}).forEach(k => add(k, 'futures', TK.futures[k]));
+      Object.keys(H).forEach(k => { if(q){ const nm = (A.info(k, 'hl')[0] || '').toUpperCase(); if(!k.toUpperCase().includes(q) && !nm.includes(q)) return } add(k, 'hl', H[k]) });
+      L = Object.values(best).map(x => [x[0], x[1]]);
+      if(!q && !this.showThin){ const n = L.length; L = L.filter(([k, m]) => ((TK[m][k] || {}).q || 0) >= this.THIN); this.thinN = n - L.length }
+      if(this.sortKey === 'm' && this.cat !== 'coin'){ this.sortKey = 'q' }
+    }
+    const k = this.sortKey, d = this.sortDir, mc = x => A.info(x[0], x[1])[1] || 0, tv = x => ((TK[x[1]] || {})[x[0]] || {});
+    L.sort((a, b) => k === 's' ? d*(A.base(a[0]) < A.base(b[0]) ? -1 : 1) : k === 'm' ? d*(mc(a) - mc(b)) : d*((tv(a)[k] || 0) - (tv(b)[k] || 0)));
+    return L.slice(0, 400);
   },
-  row(s){
-    const t = (this.app.tickers[this.market] || {})[s] || {}, fav = this.favs().includes(s), cls = (t.P||0) >= 0 ? 'up' : 'down', A = LC.assets, [nm, mc] = A.info(s, this.market);
-    const ex = this.market === 'futures' ? 'BINANCE' : 'BINANCE 현물', g = A.group(s, this.market), main = g === 'kr' || g === 'cmd' ? nm : A.base(s), sub2 = g === 'kr' || g === 'cmd' ? A.base(s) : nm;
-    return `<div class="wrow ${this.app.v && s === this.app.v.sym ? 'sel' : ''}" data-s="${esc(s)}"><button class="star ${fav?'on':''}" data-star="${esc(s)}" aria-label="즐겨찾기">${fav ? '★' : '☆'}</button>
-      ${A.icon(s, this.market, 24)}<div class="nm"><b>${esc(main)}</b><small>${esc(sub2)} · ${ex}</small></div>
+  row(s, m){
+    const t = (this.app.tickers[m] || {})[s] || {}, fav = this.favs(m).includes(s), cls = (t.P||0) >= 0 ? 'up' : 'down', A = LC.assets, [nm, mc] = A.info(s, m);
+    const ex = m === 'hl' ? LC.hlm.label(s) : m === 'futures' ? 'BINANCE' : 'BINANCE 현물', g = A.group(s, m), main = g === 'kr' || g === 'cmd' || g === 'fx' ? nm : A.base(s), sub2 = g === 'kr' || g === 'cmd' || g === 'fx' ? A.base(s) : nm;
+    return `<div class="wrow ${this.app.v && s === this.app.v.sym ? 'sel' : ''}" data-s="${esc(s)}" data-m="${m}"><button class="star ${fav?'on':''}" data-star="1" aria-label="즐겨찾기">${fav ? '★' : '☆'}</button>
+      ${A.icon(s, m, 24)}<div class="nm"><b>${esc(main)}</b><small>${esc(sub2)} · ${ex}</small></div>
       <div class="px num">${t.c != null ? LC.fmtPx(t.c) : '-'}</div><div class="pc num ${cls}">${t.P != null ? (t.P > 0 ? '+' : '') + LC.fmtPct(t.P).replace(/^\+/, '') : '-'}</div><div class="mc num">${mc ? cap(mc) : t.q ? cap(t.q) : '-'}</div></div>`;
   },
   render(){ if(!this.market) return;
@@ -1790,15 +1830,17 @@ const P = {
     if(all){ el.querySelector('.ls-cats').innerHTML = this.CATS.map(c => `<button data-cat="${c[0]}" class="${this.cat === c[0] ? 'on' : ''}">${c[1]}</button>`).join('');
       const C = this.CATS.find(x => x[0] === this.cat), cur = this.subOf(this.cat);
       el.querySelector('.ls-subs').innerHTML = C[2].map(([k, n]) => `<button data-sub="${k}" class="${cur === k ? 'on' : ''}">${n}</button>`).join('') }
-    const ar = k => this.sortKey === k ? (this.sortDir > 0 ? ' ▲' : ' ▼') : '';
-    const mcLabel = this.cat === 'coin' || !all ? '시총' : '거래대금';
-    el.querySelector('.lhead').innerHTML = `<div data-s="s" style="grid-column:1/3">종목${ar('s')}</div><div data-s="c">현재가${ar('c')}</div><div data-s="P">일봉${ar('P')}</div><div data-s="${mcLabel === '시총' ? 'm' : 'q'}">${mcLabel}${ar(mcLabel === '시총' ? 'm' : 'q')}</div>`;
-    const s = this.syms(); el.querySelector('.ls-n').textContent = s.length + '개';
-    this.list.innerHTML = s.length ? s.map(x => this.row(x)).join('') : `<div class="empty">${this.top === 'fav' ? '전체 종목에서 ☆을 눌러 내 목록에 담아 보세요' : '종목이 없어요'}</div>` },
-  markSel(){ this.list.querySelectorAll('.wrow').forEach(r => r.classList.toggle('sel', this.app.v && r.dataset.s === this.app.v.sym)) },
+    const s = this.syms(), ar = k => this.sortKey === k ? (this.sortDir > 0 ? ' ▲' : ' ▼') : '';
+    const isCap = !all || this.cat === 'coin', mk = isCap && this.sortKey !== 'q' ? 'm' : 'q';
+    el.querySelector('.lhead').innerHTML = `<div data-s="s" style="grid-column:1/3">종목${ar('s')}</div><div data-s="c">현재가${ar('c')}</div><div data-s="P">일봉${ar('P')}</div><div data-s="${isCap ? 'm' : 'q'}" title="${isCap ? '시가총액 (없으면 하루 거래대금)' : '하루 거래대금'}">${isCap ? '시총' : '거래대금'}${ar(isCap ? 'm' : 'q')}</div>`;
+    el.querySelector('.ls-n').textContent = s.length + '개';
+    const loading = all && this.cat !== 'coin' && !LC.hlm.ready ? '<div class="ls-note">하이퍼리퀴드 종목도 불러오는 중…</div>' : '';
+    const more = this.thinN || this.showThin ? `<button class="ls-more">${this.showThin ? '거래 적은 종목 접기' : `하루 거래대금 $300K 안 되는 ${this.thinN}개 더 보기`}</button>` : '';
+    this.list.innerHTML = loading + (s.length ? s.map(([x, m]) => this.row(x, m)).join('') : `<div class="empty">${this.top === 'fav' ? '전체 종목에서 ☆을 눌러 내 목록에 담아 보세요' : '종목이 없어요'}</div>`) + more },
+  markSel(){ this.list.querySelectorAll('.wrow').forEach(r => r.classList.toggle('sel', !!this.app.v && r.dataset.s === this.app.v.sym)) },
   patch(ch){
     if(this.el.hidden) return;
-    const map = {}; this.list.querySelectorAll('.wrow').forEach(r => map[r.dataset.s] = r);
+    const map = {}; this.list.querySelectorAll('.wrow').forEach(r => { if(r.dataset.m === this.market) map[r.dataset.s] = r });
     const T = this.app.tickers[this.market];
     ch.forEach(([s, dir]) => { const r = map[s]; if(!r) return; const t = T[s], cls = t.P >= 0 ? 'up' : 'down';
       const px = r.querySelector('.px'), pc = r.querySelector('.pc');
@@ -2566,6 +2608,43 @@ LC.panels.push(W);
 
 </script>
 <script>
+/* 하이퍼리퀴드 주식·원자재 시장(HIP-3: xyz, flx, km 등) 시세와 봉. 차트에서 market 'hl', 종목 이름은 'xyz:NVDA' 꼴 */
+(() => {
+const API = 'https://api.hyperliquid.xyz/info', WS = 'wss://api.hyperliquid.xyz/ws';
+const post = b => fetch(API, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(b) }).then(r => { if(!r.ok) throw new Error(r.status); return r.json() });
+const SKIP_DEX = new Set(['hyna']);   /* 코인만 있는 거래소 */
+const H = LC.hlm = {
+  dexes: {}, ready: false, at: 0,
+  async load(){
+    if(this.busy) return; this.busy = true;
+    try{
+      if(!this.dexList){ const d = await post({ type:'perpDexs' }); this.dexList = d.filter(Boolean).filter(x => !SKIP_DEX.has(x.name)); this.dexList.forEach(x => this.dexes[x.name] = x.fullName || x.name) }
+      const T = LC.app.tickers.hl = LC.app.tickers.hl || {}, I = LC.app.info.hl = LC.app.info.hl || {};
+      const coinSet = new Set(Object.values(LC.app.info.futures || {}).filter(x => x.ut === 'COIN').map(x => x.base));
+      await Promise.all(this.dexList.map(async dx => { try{ const [m, c] = await post({ type:'metaAndAssetCtxs', dex:dx.name });
+        m.universe.forEach((u, i) => { const x = c[i]; if(!x || u.isDelisted) return; const name = u.name.split(':')[1] || u.name;
+          if(coinSet.has(name) || coinSet.has(name.replace(/^k/, ''))) return;
+          const px = +(x.midPx || x.markPx), prev = +x.prevDayPx; if(!px) return;
+          T[u.name] = { c:px, P: prev ? (px/prev - 1)*100 : 0, q:+x.dayNtlVlm || 0, h:null, l:null };
+          if(!I[u.name]) I[u.name] = { prec: Math.max(0, Math.min(6 - u.szDecimals, LC.autoPrec(px) + 1)), base:name, dex:dx.name } }) }catch(e){} }));
+      this.ready = true; this.at = Date.now(); LC.bus && LC.bus.emit('hlTick');
+    }catch(e){} finally{ this.busy = false }
+  },
+  start(){ if(this.timer) return; this.load(); this.timer = setInterval(() => this.load(), 15000) },
+  label(sym){ const d = sym.split(':')[0]; return 'HL·' + (d.length <= 4 ? d.toUpperCase() : d) },
+  async klines(sym, tf, endMs){ const ms = LC.TFMS[tf] || 6e4, end = endMs || Date.now();
+    const r = await post({ type:'candleSnapshot', req:{ coin:sym, interval:tf, startTime:end - 1000*ms, endTime:end } });
+    return r.map(k => ({ time:Math.floor(k.t/1000), open:+k.o, high:+k.h, low:+k.l, close:+k.c, volume:+k.v, tbv:0 })) },
+  stream(sym, tf, onBar, onState){
+    const ws = LC.openWS(WS, m => { if(m.channel !== 'candle' || !m.data || m.data.s !== sym || m.data.i !== tf) return; const k = m.data;
+      onBar({ time:Math.floor(k.t/1000), open:+k.o, high:+k.h, low:+k.l, close:+k.c, volume:+k.v, tbv:0 }) }, onState,
+      w => w.send(JSON.stringify({ method:'subscribe', subscription:{ type:'candle', coin:sym, interval:tf } })));
+    ws.keepAlive({ method:'ping' }, 45000); return ws }
+};
+})();
+
+</script>
+<script>
 /* 뉴스 모으기·분류: 공개 RSS(rss2json 경유) + 거래소 공지 API. 섹션, 중요도(★), 상태(속보·전개중·확인·정정)를 제목으로 판단해요 */
 (() => {
 const { getJSON } = LC;
@@ -2957,7 +3036,7 @@ const ORDER = ['list','ind','flow','book','move','arb','news','x','whale','paper
 const app = LC.app = {
   views: [], active: null, tool: 'cross',
   magnet: store.get('magnet', false), keepTool: false, drawHidden: false, drawLocked: false,
-  layout: store.get('layout', '1'), tickers: { futures:{}, spot:{} }, info: { futures:null, spot:null }, panels: LC.panels || [],
+  layout: store.get('layout', '1'), tickers: { futures:{}, spot:{}, hl:{} }, info: { futures:null, spot:null, hl:{} }, panels: LC.panels || [],
 
   init(){
     this.buildHeader(); this.buildTools();
@@ -3025,7 +3104,7 @@ const app = LC.app = {
     $('typeSel').onchange = e => this.v && this.v.setType(e.target.value);
     $('laySel').innerHTML = LAYOUTS.map(([k,n]) => `<option value="${k}">${n}</option>`).join('');
     $('laySel').onchange = e => this.applyLayout(e.target.value);
-    $('mkt').onclick = e => { const b = e.target.closest('button'); if(!b || !this.v || b.dataset.m === this.v.market) return;
+    $('mkt').onclick = e => { const b = e.target.closest('button'); if(!b || !this.v || b.dataset.m === this.v.market) return; if(this.v.market === 'hl') return LC.toast('하이퍼리퀴드 종목은 무기한 선물만 있어요');
       const m = b.dataset.m, sym = this.v.sym; this.v.market = m; this.v.set(sym, m); this.syncHeader(); this.panels.forEach(p => p.onMarket && p.onMarket(m)) };
     $('btnInd').onclick = () => this.indModal();
     $('btnWg').onclick = e => LC.widgets.menu(e.currentTarget);
@@ -3051,7 +3130,7 @@ const app = LC.app = {
   /* 위쪽 차트 탭: 종목·시장·봉 묶음을 저장해 두고 눌러서 바꿔요 */
   ctabs: store.get('ctabs', null) || [{ sym:'BTCUSDT', market:'futures', tf:'1m' }], ctabOn: store.get('ctabOn', 0),
   saveTabs(){ store.set('ctabs', this.ctabs); store.set('ctabOn', this.ctabOn); this.renderTabs() },
-  renderTabs(){ $('ctabs').innerHTML = this.ctabs.map((t, i) => `<div class="ctab ${i === this.ctabOn ? 'on' : ''}" data-i="${i}"><b>${esc(t.sym.replace(/USDT$/, ''))}</b><span class="dim">${t.market === 'futures' ? '선물' : '현물'} · ${esc(t.tf)}</span>${this.ctabs.length > 1 ? '<span class="x" title="탭 닫기">✕</span>' : ''}</div>`).join('') },
+  renderTabs(){ $('ctabs').innerHTML = this.ctabs.map((t, i) => `<div class="ctab ${i === this.ctabOn ? 'on' : ''}" data-i="${i}"><b>${esc(LC.assets.base(t.sym))}</b><span class="dim">${t.market === 'futures' ? '선물' : t.market === 'hl' ? 'HL' : '현물'} · ${esc(t.tf)}</span>${this.ctabs.length > 1 ? '<span class="x" title="탭 닫기">✕</span>' : ''}</div>`).join('') },
   goTab(i){ const t = this.ctabs[i], v = this.v; if(!t || !v) return; this.ctabOn = i; this.saveTabs();
     if(v.tf !== t.tf) v.tf = t.tf; this.openSymbol(t.sym, t.market) },
   tabSync(){ const t = this.ctabs[this.ctabOn], v = this.v; if(!t || !v) return; if(t.sym !== v.sym || t.market !== v.market || t.tf !== v.tf){ Object.assign(t, { sym:v.sym, market:v.market, tf:v.tf }); this.saveTabs() } },
@@ -3084,7 +3163,8 @@ const app = LC.app = {
   },
   syncHeader(){
     const v = this.v; if(!v) return;
-    $('hSym').textContent = v.sym + (v.market === 'futures' ? '.P' : '');
+    $('hSym').textContent = v.market === 'hl' ? (v.sym.split(':')[1] || v.sym) + ' · ' + LC.hlm.label(v.sym) : v.sym + (v.market === 'futures' ? '.P' : '');
+    if(v.market === 'hl') LC.hlm.start();
     [...$('tfs').children].forEach(b => b.classList.toggle('on', b.dataset.tf === v.tf));
     [...$('ranges').children].forEach(b => b.classList.toggle('on', b.dataset.tf === v.tf));
     this.tabSync();
@@ -3095,8 +3175,9 @@ const app = LC.app = {
   },
   updateHeader(){
     const v = this.v; if(!v) return;
-    const t = this.tickers[v.market][v.sym], last = v.last, pr = v.prec;
+    const t = (this.tickers[v.market] || {})[v.sym], last = v.last, pr = v.prec;
     if(last){ $('hLast').textContent = LC.fmtN(last.close, pr); document.title = `${v.sym} ${LC.fmtN(last.close, pr)} · 우호` }
+    if(t && v.market === 'hl' && v.loadedSym === v.sym && last){ const d = v.candles.filter(b => b.time >= Date.now()/1000 - 86400); if(d.length){ t.h = Math.max(...d.map(b => b.high)); t.l = Math.min(...d.map(b => b.low)) } }
     if(t){ const cls = t.P >= 0 ? 'up' : 'down'; $('hLast').className = 'last num ' + cls; $('hChg').textContent = LC.fmtPct(t.P); $('hChg').className = 'chg num ' + cls;
       $('sHigh').textContent = LC.fmtN(t.h, pr); $('sLow').textContent = LC.fmtN(t.l, pr); $('sVol').textContent = LC.fmtBig(t.q) + ' USDT' }
   },
