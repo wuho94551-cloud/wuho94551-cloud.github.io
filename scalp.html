@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>우호 · 스캘핑</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%23f0b90b%22/%3E%3Cpath d=%22M5 16l4-5 3 3 5-7%22 stroke=%22%23111%22 stroke-width=%222.2%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%2217%22 cy=%227%22 r=%221.6%22 fill=%22%23111%22/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%235b9cf6%22/%3E%3Cpath d=%22M5 16l4-5 3 3 5-7%22 stroke=%22%23111%22 stroke-width=%222.2%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%2217%22 cy=%227%22 r=%221.6%22 fill=%22%23111%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
-:root{--bg:#0d1117;--panel:#131922;--panel2:#18202b;--line:#232d3b;--ink:#d7dee8;--dim:#7d8a9c;--up:#16c784;--down:#ea3943;--accent:#f0b90b;--blue:#4aa3ff}
-:root[data-theme=light]{--bg:#ffffff;--panel:#f4f6f9;--panel2:#e8ecf1;--line:#d6dce4;--ink:#18202c;--dim:#5d6878}
+:root{--bg:#0b0c0f;--panel:#111317;--panel2:#181a20;--hover:#1e2027;--line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.14);--ink:#e6e8ec;--dim:#8b8f98;--faint:#5d6069;--up:#5b9cf6;--down:#f0616d;--accent:#5b9cf6;--blue:#5b9cf6;--acc-rgb:91,156,246}
+:root[data-theme=light]{--bg:#ffffff;--panel:#f6f7f9;--panel2:#eceef2;--hover:#e4e7ec;--line:rgba(0,0,0,.08);--line2:rgba(0,0,0,.16);--ink:#16181d;--dim:#5f636b;--faint:#9a9ea6;--up:#2f6fe0;--down:#e0424f;--accent:#2f6fe0;--blue:#2f6fe0;--acc-rgb:47,111,224}
 *{box-sizing:border-box;min-width:0}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.45 -apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,"Noto Sans KR","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
-.num{font-family:"DM Mono",-apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,"Noto Sans KR","Malgun Gothic",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.num{font-family:-apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,"Noto Sans KR","Malgun Gothic",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
 .up{color:var(--up)}.down{color:var(--down)}.dim{color:var(--dim)}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 select{font:inherit;font-size:12px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:3px 6px}
@@ -67,12 +67,24 @@ a{color:inherit;text-decoration:none}
 .toast{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--blue);padding:9px 12px;border-radius:6px;font-size:13px;cursor:pointer}
 @media(max-width:900px){.main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) 34vh}#ranks{border-left:0;border-top:1px solid var(--line)}.stats .st:nth-child(n+7){display:none}}
 .brand{display:flex;align-items:center;flex:none;text-decoration:none}.brand svg{width:24px;height:24px;display:block}
+
+/* 디자인 정리 (공통 입력 모양) */
+select{background:var(--panel2);border:1px solid var(--line2);border-radius:6px;color:var(--ink);font-size:12.5px;padding:3px 24px 3px 8px;-webkit-appearance:none;appearance:none;
+select:hover{border-color:rgba(var(--acc-rgb),.5)}
+select:not([multiple]){background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238b8f98' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 7px center!important;background-size:9px 6px!important;padding-right:22px!important;-webkit-appearance:none!important;appearance:none!important}
+input[type=checkbox]{-webkit-appearance:none;appearance:none;width:15px;height:15px;margin:0 2px 0 0;border:1.5px solid var(--line2);border-radius:4px;background:transparent;vertical-align:-3px;cursor:pointer;flex:none;transition:background .12s,border-color .12s}
+input[type=checkbox]:hover{border-color:var(--accent)}
+input[type=checkbox]:checked{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.3 2.3L9.5 3.8' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/11px no-repeat;border-color:var(--accent)}
+.ctxm{background:var(--panel2);border:1px solid var(--line2);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.45)}.ctxm button{font-size:12.5px;border-radius:5px}.ctxm button:hover{background:var(--hover)}.ctxm small{color:var(--faint)}
+.modal{background:var(--panel);border:1px solid var(--line2);border-radius:12px}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.16)}::-webkit-scrollbar-track{background:transparent}
+:root[data-theme=light] ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12)}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <a class="brand" href="./" title="우호"><svg viewBox="0 0 24 24" aria-label="우호"><rect width="24" height="24" rx="6" fill="#f0b90b"/><path d="M5 16l4-5 3 3 5-7" stroke="#111" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="7" r="1.6" fill="#111"/></svg></a>
+    <a class="brand" href="./" title="우호"><svg viewBox="0 0 24 24" aria-label="우호"><rect width="24" height="24" rx="6" fill="#5b9cf6"/><path d="M5 16l4-5 3 3 5-7" stroke="#111" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="7" r="1.6" fill="#111"/></svg></a>
     <nav class="pnav"><a href="./">차트</a><a href="scalp.html" class="on">스캘핑</a><a href="news.html">뉴스</a></nav>
     <div class="right"><span id="clock" class="num">-</span><button class="hb" id="btnTheme" title="밝은/어두운 화면">◐</button><button class="hb" id="btnFull" title="전체 화면">⛶</button></div>
   </div>
@@ -102,7 +114,7 @@ a{color:inherit;text-decoration:none}
 <script>
 /* 공용 도구: 저장소, 포맷, 거래소 주소, 웹소켓, 소리, 알림창 */
 window.LC = window.LC || {};
-LC.FONT = "'DM Mono', -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, 'Noto Sans KR', 'Malgun Gothic', sans-serif";
+LC.FONT = "-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, 'Noto Sans KR', 'Malgun Gothic', sans-serif";
 LC.panels = LC.panels || [];
 (() => {
 const $ = id => document.getElementById(id);
@@ -341,7 +353,7 @@ class Pane {
   resize(){ const r = this.cv.parentElement.getBoundingClientRect(), dpr = devicePixelRatio || 1; this.W = r.width; this.H = r.height;
     this.cv.width = Math.max(1, r.width * dpr); this.cv.height = Math.max(1, r.height * dpr); this.cv.style.width = r.width + 'px'; this.cv.style.height = r.height + 'px'; this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); this.draw() }
   values(){ if(!this.D) return []; return Object.entries(this.D.map).map(([s, d]) => ({ s, v:(d.c[d.c.length-1]/d.o - 1)*100 })) }
-  color(v, m){ const k = Math.min(1, Math.abs(v) / Math.max(m || 1, 0.01)); return v >= 0 ? `rgba(22,199,132,${(0.25 + 0.75*k).toFixed(2)})` : `rgba(234,57,67,${(0.25 + 0.75*k).toFixed(2)})` }
+  color(v, m){ const k = Math.min(1, Math.abs(v) / Math.max(m || 1, 0.01)); return v >= 0 ? `rgba(91,156,246,${(0.25 + 0.75*k).toFixed(2)})` : `rgba(240,97,109,${(0.25 + 0.75*k).toFixed(2)})` }
   geom(){ return { x0:8, x1:this.W - 118, y0:14, y1:this.H - 22 } }
   draw(){
     const c = this.ctx, W = this.W, H = this.H; if(!W) return;
