@@ -14,7 +14,7 @@
  *  - Cron 트리거: * * * * *  (1분마다)
  */
 
-const VERSION = '1.0';
+const VERSION = '1.1';
 const DEFAULT_ORIGIN = 'https://wuho94551-cloud.github.io';
 const UA = { 'user-agent': 'Mozilla/5.0 (wuho-api)', accept: 'application/json,text/html' };
 
@@ -113,9 +113,8 @@ async function prices(need){
 const akey = a => a.sym + '|' + a.lv;
 const pkey = a => (a.m === 'hl' ? 'h:' : a.m === 'spot' ? 's:' : 'f:') + a.sym;
 
-async function cron(env){
-  if(!env.TG_TOKEN) return;
-  /* 1) 봇에게 온 "/start 코드" 메시지로 텔레그램 연결 */
+/* 봇에게 온 "/start 코드" 메시지로 텔레그램 연결 (cron과 연결 상태 확인 때 둘 다 불러요) */
+async function linkUpdates(env){
   const off = +(await env.WUHO.get('tg:off') || 0);
   const up = await tg(env, 'getUpdates', { offset: off + 1, timeout: 0, allowed_updates: ['message'] }).catch(() => null);
   if(up && up.ok && up.result.length){
@@ -129,6 +128,11 @@ async function cron(env){
     }
     await env.WUHO.put('tg:off', String(last));
   }
+}
+
+async function cron(env){
+  if(!env.TG_TOKEN) return;
+  await linkUpdates(env);
   /* 2) 알림 확인 */
   const idx = JSON.parse(await env.WUHO.get('al:index') || '[]'); if(!idx.length) return;
   const recs = (await Promise.all(idx.map(async c => [c, JSON.parse(await env.WUHO.get('al:' + c) || 'null')]))).filter(([, r]) => r && r.chat && r.list && r.list.length);
@@ -183,7 +187,9 @@ export default {
           const b = JSON.parse(raw); await env.WUHO.put(k, JSON.stringify({ at: Date.now(), data: b.data || {} })); return J({ ok: true, at: Date.now() }) }
       }
       m = p.match(/^\/tg\/status\/([A-Z2-9]{10})$/);
-      if(m){ const r = JSON.parse(await env.WUHO.get('al:' + m[1]) || '{}'); return J({ linked: !!r.chat, alerts: (r.list || []).length }) }
+      if(m){ let r = JSON.parse(await env.WUHO.get('al:' + m[1]) || '{}');
+        if(!r.chat && env.TG_TOKEN){ await memo('lk', 1500, () => linkUpdates(env)); r = JSON.parse(await env.WUHO.get('al:' + m[1]) || '{}') }
+        return J({ linked: !!r.chat, alerts: (r.list || []).length }) }
       m = p.match(/^\/alerts\/([A-Z2-9]{10})$/);
       if(m){ const k = 'al:' + m[1], r = JSON.parse(await env.WUHO.get(k) || '{}');
         if(req.method === 'GET') return J({ linked: !!r.chat, list: r.list || [] });
