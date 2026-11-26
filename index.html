@@ -151,6 +151,7 @@ header>*{flex:none}
 .lgr .hid{opacity:.7}
 .lg-tg{pointer-events:auto;display:inline-flex;align-items:center;gap:3px;height:20px;min-width:24px;padding:0 4px;margin-top:3px;border:1px solid var(--line);border-radius:4px;background:rgba(19,25,34,.85);color:var(--dim);font-size:11px}
 .lg-tg svg{width:14px;height:14px}.lg-tg:hover{color:var(--ink);border-color:var(--dim)}
+.mas-h,.mas-r{display:grid;grid-template-columns:14px 110px 1fr;gap:8px;align-items:center}.mas-h{font-size:11px;color:var(--dim);margin-top:6px}.mas-r{margin-top:6px}.mas-r i{width:12px;height:12px;border-radius:3px}.mas-r .inp{padding:6px 8px}
 .lg-p{position:absolute;inset:0;pointer-events:none;z-index:4}
 .lgp{position:absolute;left:8px;font-size:12px;line-height:1.55;max-width:calc(100% - 90px)}
 :root[data-theme=light] .lgr:hover,:root[data-theme=light] .lg-tg{background:rgba(255,255,255,.92)}
@@ -584,7 +585,7 @@ LC.DASH = DASH;
 /* 지표 띠 채우기 (차트 안쪽, 봉 뒤에 그려요) */
 class IndFill {
   constructor(v, ind){ this.v = v; this.ind = ind; const self = this;
-    this.view = { zOrder(){ return 'bottom' }, renderer(){ return { draw(t){ try{ self.draw(t) }catch(e){} } } } } }
+    this.view = { zOrder(){ return ind.def.fill && ind.def.fill.kind === 'ew' ? 'top' : 'bottom' }, renderer(){ return { draw(t){ try{ self.draw(t) }catch(e){} } } } } }
   attached(p){ this.p = p } detached(){ this.p = null }
   updateAllViews(){} paneViews(){ return [this.view] }
   draw(target){
@@ -607,6 +608,21 @@ class IndFill {
             ctx.fillStyle = up[i][1] <= dn[i][1] ? st.color : st.color2; ctx.fill() } return }
         ctx.beginPath(); up.forEach(([x,y], i) => i ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); for(let i = dn.length-1; i >= 0; i--) ctx.lineTo(dn[i][0], dn[i][1]);
         ctx.closePath(); ctx.fillStyle = st.color; ctx.fill(); return;
+      }
+      if(F.kind === 'ew'){
+        const E = ind.data[F.key]; if(!E) return; const up = parseColor(st.color), dn = parseColor(st.color2 || st.color), fs = Math.round(11 * vr);
+        ctx.font = `600 ${fs}px ${LC.FONT}`; ctx.textAlign = 'center';
+        const path = (pts, col, dash) => { ctx.beginPath(); let ok = false; pts.forEach(q => { const x = X(q.time), y = Y(q.price); if(x == null || y == null) return; ok ? ctx.lineTo(x, y) : ctx.moveTo(x, y); ok = true });
+          ctx.setLineDash(dash ? [4*hr, 4*hr] : []); ctx.strokeStyle = col; ctx.lineWidth = 1.6 * hr; ctx.stroke(); ctx.setLineDash([]) };
+        const label = (q, prev, col) => { const x = X(q.time), y = Y(q.price); if(x == null || y == null || !q.label) return; const above = prev ? q.price > prev.price : true;
+          ctx.fillStyle = col; ctx.textBaseline = above ? 'bottom' : 'top'; ctx.fillText(q.label, x, y + (above ? -5 : 5) * vr) };
+        E.waves.forEach(w => { const col = w.bull ? up : dn, solid = mkColor(col.hex, 1);
+          path(w.pts, mkColor(col.hex, .9)); w.pts.forEach((q, i) => label(q, w.pts[i-1], solid));
+          if(w.abc.length){ const all = [w.pts[5], ...w.abc]; path(all, mkColor(col.hex, .6), true); w.abc.forEach((q, i) => label(q, all[i], mkColor(col.hex, .8))) } });
+        if(E.fibs.length && E.from != null){ const x0 = X(E.from); if(x0 != null){ ctx.textAlign = 'left'; ctx.textBaseline = 'bottom'; ctx.font = `${Math.round(10 * vr)}px ${LC.FONT}`;
+          E.fibs.forEach(f => { const y = Y(f.p); if(y == null) return; ctx.beginPath(); ctx.setLineDash([2*hr, 3*hr]); ctx.moveTo(x0, y); ctx.lineTo(W, y); ctx.strokeStyle = 'rgba(160,170,185,.55)'; ctx.lineWidth = hr; ctx.stroke(); ctx.setLineDash([]);
+            ctx.fillStyle = 'rgba(160,170,185,.9)'; ctx.fillText(`${f.f} (${LC.fmtN ? LC.fmtN(f.p, ind.v ? ind.v.prec : 2) : f.p.toFixed(2)})`, x0 + 4*hr, y - 2*vr) }) } }
+        return;
       }
       if(F.kind === 'band'){
         const D = ind.data[F.key] || []; const pts = [];
@@ -779,6 +795,10 @@ const DEFS = {
   MA:{ label:'이동평균선', overlay:true, params:{period:20, type:'SMA', source:'close'}, colors:['#f0b90b'], series:[{key:'m', type:'line'}],
     title:p => `${p.type} ${p.period}`,
     calc:(c,p) => { const v = src(c,p.source); return { m: toSeries(c, maBy(p.type, v, +p.period)) } } },
+  MAS:{ label:'이동평균선 묶음', overlay:true, params:{source:'close', t1:'SMA', p1:7, t2:'SMA', p2:25, t3:'SMA', p3:99, t4:'EMA', p4:0, t5:'SMA', p5:0, t6:'SMA', p6:0, t7:'SMA', p7:0, t8:'SMA', p8:0}, colors:['#f0b90b', '#e05bd6', '#4aa3ff', '#ff9f43', '#2ec4b6', '#c38bff', '#ea3943', '#9aa4b2'], series:[{key:'m1',type:'line',name:'1번'},{key:'m2',type:'line',name:'2번'},{key:'m3',type:'line',name:'3번'},{key:'m4',type:'line',name:'4번'},{key:'m5',type:'line',name:'5번'},{key:'m6',type:'line',name:'6번'},{key:'m7',type:'line',name:'7번'},{key:'m8',type:'line',name:'8번'}],
+    /* 기간을 0으로 두면 그 줄은 꺼져요. 한 지표에 최대 8줄 */
+    title:p => 'MA ' + [1,2,3,4,5,6,7,8].filter(i => +p['p'+i] > 0).map(i => (p['t'+i] !== 'SMA' ? p['t'+i][0] : '') + p['p'+i]).join(' '),
+    calc:(c,p) => { const v = src(c,p.source), o = {}; for(let i = 1; i <= 8; i++) o['m'+i] = +p['p'+i] > 0 ? toSeries(c, maBy(p['t'+i], v, +p['p'+i])) : []; return o } },
   RIBBON:{ label:'이동평균 리본 (EMA 20·50·100·200)', overlay:true, params:{}, colors:['#f0b90b','#ff9f43','#e05bd6','#4aa3ff'],
     series:[{key:'a',type:'line',name:'EMA 20'},{key:'b',type:'line',name:'EMA 50'},{key:'c',type:'line',name:'EMA 100'},{key:'d',type:'line',name:'EMA 200'}], title:()=>'EMA 20 50 100 200',
     calc:c => { const v = src(c,'close'); return { a:toSeries(c,ema(v,20)), b:toSeries(c,ema(v,50)), c:toSeries(c,ema(v,100)), d:toSeries(c,ema(v,200)) } } },
@@ -847,6 +867,27 @@ const DEFS = {
         if(b.close > hi) tr = 1; else if(b.close < lo) tr = -1;
         m.push({time:b.time, value:w, color: solid(tr > 0 ? up : dn)}); band.push({time:b.time, up:hi, lo, t:tr}) });
       return { m, _band:band } } },
+  EW:{ label:'엘리어트 파동', overlay:true, params:{len:5, fib:1}, colors:['rgba(140,150,165,0.55)'], series:[{key:'zz',type:'line',name:'지그재그'}], width:1,
+    fill:{kind:'ew', key:'_ew', color:U(1), color2:D(1)}, title:p=>`엘리어트 파동 ${p.len}`,
+    /* 고점·저점(앞뒤 len봉 중 가장 높고 낮은 봉)을 이어 지그재그를 만들고, 그 안에서 규칙에 맞는 5파(1~5)와 뒤따르는 조정파(a·b·c)를 찾아요.
+       규칙: 2파는 1파 시작점 아래로 안 내려가고, 3파가 1·3·5파 중 가장 짧지 않고, 4파는 1파 끝과 겹치지 않아요 (하락 파동은 반대로) */
+    calc:(c,p) => { const n = Math.max(2, Math.round(+p.len)), P = [];
+      for(let i = n; i < c.length - n; i++){ let hi = true, lo = true;
+        for(let k = i - n; k <= i + n; k++){ if(k === i) continue; if(c[k].high > c[i].high) hi = false; if(c[k].low < c[i].low) lo = false }
+        const add = (t, price) => { const L = P[P.length - 1]; if(L && L.t === t){ if(t > 0 ? price > L.p : price < L.p){ L.p = price; L.i = i } return } P.push({ t, p:price, i }) };
+        if(hi) add(1, c[i].high); if(lo) add(-1, c[i].low) }
+      const zz = P.map(x => ({ time:c[x.i].time, value:x.p })), waves = [];
+      for(let k = 0; k + 5 < P.length; k++){ const q = P.slice(k, k + 6), s = q[0].t < 0 ? 1 : -1, v = q.map(x => x.p * s);
+        if(q[1].t !== s) continue;
+        const w1 = v[1] - v[0], w3 = v[3] - v[2], w5 = v[5] - v[4];
+        if(!(w1 > 0 && w3 > 0 && w5 > 0 && v[2] > v[0] && v[3] > v[1] && v[4] > v[1] && v[5] > v[3] && w3 >= Math.min(w1, w5))) continue;
+        const pts = q.map((x, j) => ({ time:c[x.i].time, price:x.p, label: j ? String(j) : '' }));
+        const r = P.slice(k + 6, k + 9), abc = [];
+        if(r.length && r[0].p * s < v[5]) r.forEach((x, j) => { if(j === 1 && x.p * s > v[5]) return; abc.push({ time:c[x.i].time, price:x.p, label:'abc'[j] }) });
+        waves.push({ bull: s > 0, pts, abc }); k += 4 + abc.length }
+      const last = waves[waves.length - 1], fibs = [];
+      if(last && +p.fib){ const a = last.pts[0].price, b = last.pts[5].price; [0.5, 0.618, 0.764, 0.854].forEach(f => fibs.push({ f, p: b - (b - a) * f })) }
+      return { zz, _ew:{ waves, fibs, from: last ? last.pts[5].time : null } } } },
   MACD:{ label:'MACD', overlay:false, params:{fast:12, slow:26, signal:9}, colors:['#4aa3ff','#f0a33b','#888'],
     series:[{key:'m',type:'line',name:'MACD'},{key:'s',type:'line',name:'시그널'},{key:'h',type:'hist',name:'히스토그램'}], levels:[0], title:p=>`MACD ${p.fast} ${p.slow} ${p.signal}`,
     calc:(c,p) => { const v = src(c,'close'), f = ema(v,+p.fast), s = ema(v,+p.slow);
@@ -939,11 +980,11 @@ const DEFS = {
       const rows = await LC.getJSON(`${LC.EP.futures.data}/globalLongShortAccountRatio?symbol=${ctx.sym}&period=${per}&limit=500`);
       return { r: rows.map(r => ({time: Math.floor(r.timestamp/1000), value: +r.longShortRatio})) } } }
 };
-const PARAM_LABEL = {pct:'폭 %', conv:'전환선', base:'기준선', span:'선행스팬 2', disp:'후행 이동', start:'시작', inc:'증가', max:'최대', smooth:'%K 평활',ma:'이동평균 기간 (0이면 끔)', period:'기간', type:'종류', source:'기준값', mult:'배수', fast:'빠른선', slow:'느린선', signal:'시그널', rsi:'RSI 기간', stoch:'스토캐스틱 기간', k:'%K', d:'%D', reset:'누적 초기화'};
+const PARAM_LABEL = {t1:'1번 종류',p1:'1번 기간 (0=끔)',t2:'2번 종류',p2:'2번 기간 (0=끔)',t3:'3번 종류',p3:'3번 기간 (0=끔)',t4:'4번 종류',p4:'4번 기간 (0=끔)',t5:'5번 종류',p5:'5번 기간 (0=끔)',t6:'6번 종류',p6:'6번 기간 (0=끔)',t7:'7번 종류',p7:'7번 기간 (0=끔)',t8:'8번 종류',p8:'8번 기간 (0=끔)',len:'고점·저점 판단 봉 수',fib:'피보나치 되돌림 (1=표시)',pct:'폭 %', conv:'전환선', base:'기준선', span:'선행스팬 2', disp:'후행 이동', start:'시작', inc:'증가', max:'최대', smooth:'%K 평활',ma:'이동평균 기간 (0이면 끔)', period:'기간', type:'종류', source:'기준값', mult:'배수', fast:'빠른선', slow:'느린선', signal:'시그널', rsi:'RSI 기간', stoch:'스토캐스틱 기간', k:'%K', d:'%D', reset:'누적 초기화'};
 /* 분류와 한 줄 설명 (지표 찾기 창) */
 const META = {
   VOL:['거래량','봉마다 거래량'], VOLMA:['거래량','거래량과 그 평균'], VWAP:['거래량','하루 동안의 거래량 가중 평균가'], OBV:['거래량','오르면 더하고 내리면 빼는 누적 거래량'], CMF:['거래량','매집·분산 강도'], MFI:['거래량','거래량을 넣은 RSI'],
-  MA:['추세','SMA·EMA·WMA·HMA·RMA'], RIBBON:['추세','EMA 20·50·100·200 한 번에'], ST:['추세','ATR 기반 추세 따라가기'], VWT:['추세','거래량 가중 평균 + ATR 띠'], ICHI:['추세','전환·기준선과 구름'], PSAR:['추세','추세 반전 점'], ADX:['추세','추세 세기와 방향'], AROON:['추세','최근 고점·저점이 얼마나 가까운지'], PIVOT:['추세','전날 고저종으로 만든 지지·저항'],
+  MAS:['추세','이동평균선 여러 개를 한 줄로 (최대 8개)'], MA:['추세','SMA·EMA·WMA·HMA·RMA'], RIBBON:['추세','EMA 20·50·100·200 한 번에'], ST:['추세','ATR 기반 추세 따라가기'], VWT:['추세','거래량 가중 평균 + ATR 띠'], ICHI:['추세','전환·기준선과 구름'], EW:['추세','고점·저점으로 1~5파와 a·b·c 조정파 자동 표시'], PSAR:['추세','추세 반전 점'], ADX:['추세','추세 세기와 방향'], AROON:['추세','최근 고점·저점이 얼마나 가까운지'], PIVOT:['추세','전날 고저종으로 만든 지지·저항'],
   RSI:['모멘텀','과매수·과매도 (이동평균 포함)'], STOCH:['모멘텀','기간 내 종가 위치'], STOCHRSI:['모멘텀','RSI의 스토캐스틱'], MACD:['모멘텀','두 EMA 차이와 시그널'], CCI:['모멘텀','평균에서 얼마나 벗어났는지'], WR:['모멘텀','기간 고가 대비 종가 위치'], ROC:['모멘텀','N봉 전 대비 변화율'], MOM:['모멘텀','N봉 전 대비 가격 차'], AO:['모멘텀','5·34 중간값 이동평균 차'], TRIX:['모멘텀','3중 EMA 변화율'],
   BB:['변동성','평균 ± 표준편차 띠'], KC:['변동성','EMA ± ATR 띠'], DC:['변동성','기간 최고·최저 띠'], ENV:['변동성','이동평균 ± 고정 %'], ATR:['변동성','평균 실제 변동폭'], BBW:['변동성','볼린저 밴드 폭 %'], BBP:['변동성','밴드 안 가격 위치'], HV:['변동성','연율로 본 변동성'], CHOP:['변동성','추세장인지 횡보장인지'],
   CVD:['우호 전용','체결 기반 누적 매수−매도'], DELTA:['우호 전용','봉별 체결 매수−매도'],
@@ -1270,7 +1311,12 @@ class ChartView {
       LC.ctxMenu(e.clientX, e.clientY, [['차트 설정…', () => LC.chartStyle.modal(), '모양·색'], ['지표 추가…', () => this.app.indModal()], '-',
         ['차트 그림 저장', () => this.screenshot()], ['리플레이', () => this.replayBegin()], ['오른쪽 끝으로', () => this.chart.timeScale().scrollToRealTime()], ['가격 눈금 자동 맞춤', () => this.chart.priceScale('right').applyOptions({autoScale:true})], '-',
         ['이 종목 작도 모두 지우기', () => this.drawings.clear()]]) });
-    (cfg.inds || [{key:'VOL'}, {key:'MA', params:{period:7, type:'SMA', source:'close'}, color:'#f0b90b'}, {key:'MA', params:{period:25, type:'SMA', source:'close'}, color:'#e05bd6'}, {key:'MA', params:{period:99, type:'SMA', source:'close'}, color:'#4aa3ff'}])
+    /* 예전에 따로 넣은 이동평균선 여러 개는 '이동평균선 묶음' 하나로 합쳐요 */
+    let inds = cfg.inds || [{key:'VOL'}, {key:'MAS'}]; const mas = inds.filter(x => x.key === 'MA');
+    if(mas.length >= 2){ const P = { ...LC.IND.DEFS.MAS.params }, plots = []; for(let i = 1; i <= 8; i++) P['p'+i] = 0;
+      mas.slice(0, 8).forEach((x, i) => { const q = x.params || {}; P['t'+(i+1)] = q.type || 'SMA'; P['p'+(i+1)] = +q.period || 20; plots[i] = (x.style && x.style.plots && x.style.plots[0]) || (x.color ? { color:x.color } : undefined) });
+      const at = inds.indexOf(mas[0]); inds = inds.filter(x => x.key !== 'MA'); inds.splice(Math.min(at, inds.length), 0, { key:'MAS', params:P, style:{ plots:plots.map(p => p || {}) } }) }
+    inds
       .forEach(c => this.addInd(c.key, c.params, c.color, c.hidden, true, c.style));
     LC.chartStyle.apply(this);
     this.load();
@@ -1467,7 +1513,7 @@ class ChartView {
   editInd(ind){
     const P = ind.params, keys = Object.keys(P), st = ind.style, C = LC.color, D = ind.def;
     const old = { params:{...P}, style:JSON.parse(JSON.stringify(st)) };
-    const field = k => k === 'type' ? `<select class="inp" data-k="type"><option ${P.type==='SMA'?'selected':''}>SMA</option><option ${P.type==='EMA'?'selected':''}>EMA</option></select>`
+    const field = k => (k === 'type' || /^t\d$/.test(k)) ? `<select class="inp" data-k="${k}">${['SMA','EMA','WMA','HMA','RMA'].map(t => `<option ${P[k]===t?'selected':''}>${t}</option>`).join('')}</select>`
       : k === 'reset' ? `<select class="inp" data-k="reset">${['없음','일간'].map(s => `<option ${P.reset===s?'selected':''}>${s}</option>`).join('')}</select>`
       : k === 'source' ? `<select class="inp" data-k="source">${['close','open','high','low','hl2','hlc3'].map(s => `<option ${P.source===s?'selected':''}>${s}</option>`).join('')}</select>`
       : `<input class="inp" type="number" step="any" min="0" data-k="${k}" value="${LC.esc(P[k])}">`;
@@ -1478,7 +1524,7 @@ class ChartView {
     const levels = st.levels.map((l, i) => `<div class="srow"><label><input type="checkbox" data-lv="${i}" ${l.show ? 'checked' : ''}> 기준선 <input class="inp sm" type="number" step="any" data-lval="${i}" value="${l.v}"></label><span class="sctl">${C.colorField('l' + i, l.color)}${dashSel(`data-ld="${i}"`, l.dash)}</span></div>`).join('');
     const fill = st.fill ? `<div class="srow"><label><input type="checkbox" data-fill ${st.fill.show ? 'checked' : ''}> ${D.fill.kind === 'band' ? '띠 (상승 / 하락)' : '사이 채우기'}</label><span class="sctl">${C.colorField('f1', st.fill.color)}${D.fill.color2 ? C.colorField('f2', st.fill.color2) : ''}</span></div>` : '';
     const html = `<div class="sub-tabs st-tabs"><button data-t="0" class="on">입력값</button><button data-t="1">모양</button></div>
-      <div class="st-pane" data-t="0"><div class="form">${keys.length ? keys.map(k => `<label>${LC.IND.PARAM_LABEL[k]||k}${field(k)}</label>`).join('') : '<p class="muted">바꿀 입력값이 없는 지표예요. 모양 탭에서 색과 선을 바꿀 수 있어요.</p>'}</div></div>
+      <div class="st-pane" data-t="0"><div class="form">${ind.key === 'MAS' ? `<label>기준값${field('source')}</label><div class="mas-h"><span></span><span>종류</span><span>기간 (0이면 끔)</span></div>${[1,2,3,4,5,6,7,8].map(i => `<div class="mas-r"><i style="background:${LC.color.parseColor(st.plots[i-1].color).hex}"></i>${field('t'+i)}${field('p'+i)}</div>`).join('')}` : keys.length ? keys.map(k => `<label>${LC.IND.PARAM_LABEL[k]||k}${field(k)}</label>`).join('') : '<p class="muted">바꿀 입력값이 없는 지표예요. 모양 탭에서 색과 선을 바꿀 수 있어요.</p>'}</div></div>
       <div class="st-pane" data-t="1" hidden>${plots}${levels ? '<h6>기준선</h6>' + levels : ''}${fill ? '<h6>채우기</h6>' + fill : ''}</div>
       <div class="row-end"><button class="btn" id="indDef">기본값으로</button><button class="btn" id="indCancel">취소</button><button class="btn pri" id="indOk">확인</button></div>`;
     let done = false;
@@ -1486,7 +1532,7 @@ class ChartView {
       mb.querySelector('.st-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return;
         mb.querySelectorAll('.st-tabs button').forEach(x => x.classList.toggle('on', x === b)); mb.querySelectorAll('.st-pane').forEach(p => p.hidden = p.dataset.t !== b.dataset.t) };
       const read = () => {
-        mb.querySelectorAll('[data-k]').forEach(el => { const k = el.dataset.k; P[k] = el.type === 'number' ? (el.value === '' ? old.params[k] : Math.max(k === 'ma' ? 0 : 1, +el.value)) : el.value });
+        mb.querySelectorAll('[data-k]').forEach(el => { const k = el.dataset.k; P[k] = el.type === 'number' ? (el.value === '' ? old.params[k] : Math.max(/^(ma|p\d|fib)$/.test(k) ? 0 : 1, +el.value)) : el.value });
         D.series.forEach((s, i) => { const p = st.plots[i]; p.visible = mb.querySelector(`[data-pv="${i}"]`).checked; p.color = C.readColor(mb.querySelector(`[data-ck="p${i}"]`));
           const w = mb.querySelector(`[data-pw="${i}"]`); if(w){ p.width = +w.value; p.dash = +mb.querySelector(`[data-pd="${i}"]`).value } });
         st.levels.forEach((l, i) => { l.show = mb.querySelector(`[data-lv="${i}"]`).checked; const v = mb.querySelector(`[data-lval="${i}"]`).value; if(v !== '') l.v = +v;
@@ -1512,7 +1558,7 @@ class ChartView {
     this.q('.lg-o').innerHTML = ['시','고','저','종'].map((k, i) => `<i>${k}</i><span class="num ${cls}">${LC.fmtN([b.open,b.high,b.low,b.close][i], pr)}</span>`).join('')
       + `<span class="num lg-chg ${cls}">${d>=0?'+':''}${LC.fmtN(d, pr)} (${LC.fmtPct(b.open ? d/b.open*100 : 0)})</span>`;
     this.box.querySelectorAll('.lgr').forEach(row => { const ind = this.inds.find(i => i.id === row.dataset.id); if(!ind) return;
-      const vals = ind.def.series.map((s, si) => { const p = ind.style.plots[si]; if(p && !p.visible) return ''; const arr = ind.data[s.key] || []; let v = null;
+      const vals = ind.def.series.map((s, si) => { const p = ind.style.plots[si]; if((p && !p.visible) || !(ind.data[s.key] || []).length || ind.key === 'EW') return ''; const arr = ind.data[s.key] || []; let v = null;
         for(let i = arr.length-1; i >= 0 && i >= arr.length-1500; i--) if(arr[i].time <= b.time){ if(arr[i].time === b.time || ind.def.async) v = arr[i].value; break }
         const t = v == null ? '-' : ['VOL','OBV','OI','CVD'].includes(ind.key) ? LC.fmtBig(v) : ind.def.overlay ? LC.fmtN(v, pr) : LC.fmtN(v, 2);
         return `<span style="color:${LC.color.parseColor(p ? p.color : ind.color || '#cccccc').hex}">${t}</span>` });
