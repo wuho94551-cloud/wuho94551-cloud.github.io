@@ -495,7 +495,7 @@ function openWS(url, onMsg, onState, onOpen){
     ws = new WebSocket(url);
     ws.onopen = () => { retry = 0; onState && onState(true); onOpen && onOpen(ws) };
     ws.onmessage = e => { try{ onMsg(JSON.parse(e.data)) }catch(x){ console.error(x) } };
-    ws.onclose = () => { onState && onState(false); if(!closed) setTimeout(go, Math.min(1e4, 1000 * 2 ** retry++)) };
+    ws.onclose = () => { if(closed) return; onState && onState(false); if(!closed) setTimeout(go, Math.min(1e4, 1000 * 2 ** retry++)) };
     ws.onerror = () => ws.close();
   };
   go();

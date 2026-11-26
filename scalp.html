@@ -116,6 +116,7 @@ const TFMS = {'1m':6e4,'3m':18e4,'5m':3e5,'15m':9e5,'30m':18e5,'1h':36e5,'2h':72
 const EP = {
   futures:{ rest:'https://fapi.binance.com/fapi/v1', data:'https://fapi.binance.com/futures/data',
             ws:'wss://fstream.binance.com/market/ws', wsPub:'wss://fstream.binance.com/public/ws' },
+  hl:{ rest:'', ws:'', wsPub:'' },
   spot:{ rest:'https://api.binance.com/api/v3', ws:'wss://stream.binance.com:9443/ws', wsPub:'wss://stream.binance.com:9443/ws' }
 };
 const autoPrec = v => { v = Math.abs(v); return v>=1000?1 : v>=100?2 : v>=1?3 : v>=0.01?5 : 7 };
@@ -132,12 +133,13 @@ async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error(r
 
 /* 자동 재연결 웹소켓. onOpen(ws)에서 구독 메시지를 보낼 수 있어요 */
 function openWS(url, onMsg, onState, onOpen){
+  if(!/^wss?:\/\/[a-z]/i.test(url)) return { close(){}, send(){}, keepAlive(){} };   /* 하이퍼리퀴드 종목처럼 바이낸스 주소가 없는 경우 */
   let ws, closed = false, retry = 0, ping;
   const go = () => {
     ws = new WebSocket(url);
     ws.onopen = () => { retry = 0; onState && onState(true); onOpen && onOpen(ws) };
     ws.onmessage = e => { try{ onMsg(JSON.parse(e.data)) }catch(x){ console.error(x) } };
-    ws.onclose = () => { onState && onState(false); if(!closed) setTimeout(go, Math.min(1e4, 1000 * 2 ** retry++)) };
+    ws.onclose = () => { if(closed) return; onState && onState(false); if(!closed) setTimeout(go, Math.min(1e4, 1000 * 2 ** retry++)) };
     ws.onerror = () => ws.close();
   };
   go();
@@ -182,6 +184,13 @@ function modal(title, html, onMount, wide, onClose){
 }
 function download(name, href){ const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove() }
 
+const ic = p => `<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+LC.LG_ICON = { eye: ic('<path d="M1.5 9S4.3 4 9 4s7.5 5 7.5 5-2.8 5-7.5 5S1.5 9 1.5 9z"/><circle cx="9" cy="9" r="2.2"/>'),
+  eyeOff: ic('<path d="M3 3l12 12M7.2 4.3A7 7 0 0 1 9 4c4.7 0 7.5 5 7.5 5a12 12 0 0 1-2 2.6M11 13.6a7 7 0 0 1-2 .4C4.3 14 1.5 9 1.5 9a12 12 0 0 1 2.6-3.1"/><path d="M7.5 7.6a2.2 2.2 0 0 0 3 3"/>'),
+  gear: ic('<circle cx="9" cy="9" r="2.3"/><path d="M9 1.8v2M9 14.2v2M1.8 9h2M14.2 9h2M3.9 3.9l1.4 1.4M12.7 12.7l1.4 1.4M3.9 14.1l1.4-1.4M12.7 5.3l1.4-1.4"/>'),
+  trash: ic('<path d="M3 5h12M7 5V3h4v2M4.5 5l.8 10h7.4l.8-10M7.5 8v4.5M10.5 8v4.5"/>'),
+  more: ic('<circle cx="4" cy="9" r=".9" fill="currentColor"/><circle cx="9" cy="9" r=".9" fill="currentColor"/><circle cx="14" cy="9" r=".9" fill="currentColor"/>'),
+  up: ic('<path d="M5 11l4-4 4 4"/>'), down: ic('<path d="M5 7l4 4 4-4"/>') };
 Object.assign(LC, { $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
 })();
 
