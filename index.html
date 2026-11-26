@@ -1681,7 +1681,7 @@ const A = LC.assets = {
     else if(g === 'hk' && HK[b] && HK[b][1]) srcs.push(`https://financialmodelingprep.com/image-stock/${HK[b][1]}.png`);
     const fb = g === 'cmd' || g === 'fx' ? letter((CMD[b] || [b])[0].slice(0, 1), (CMD[b] || [])[1]) : letter((g === 'kr' ? (KR[b] || [b])[0] : cb).slice(0, 1));
     if(!srcs.length) return fb;
-    return `<span class="aicw" style="width:${sz}px;height:${sz}px"><img class="aimg" src="${esc(srcs[0])}" data-alt="${esc(srcs.slice(1).join('|'))}" loading="lazy" alt="" width="${sz}" height="${sz}">${fb.replace('class="aic"', 'class="aic bk"')}</span>` }
+    return `<span class="aicw" style="width:${sz}px;height:${sz}px"><img class="aimg" src="${esc(srcs[0])}" data-alt="${esc(srcs.slice(1).join('|'))}" decoding="async" alt="" width="${sz}" height="${sz}">${fb.replace('class="aic"', 'class="aic bk"')}</span>` }
 };
 /* 그림이 안 열리면 다음 주소, 다 안 되면 뒤에 깔린 글자 동그라미가 보여요 */
 document.addEventListener('error', e => { const i = e.target; if(!i.classList || !i.classList.contains('aimg')) return; const alt = (i.dataset.alt || '').split('|').filter(Boolean);
