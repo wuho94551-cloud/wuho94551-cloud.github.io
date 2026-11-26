@@ -36,9 +36,10 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:6px}
 #bbar .right{margin-left:auto;display:flex;align-items:center;gap:9px;padding-left:10px}
 #bbar .stat{flex-direction:row;gap:5px;align-items:baseline}
 #rail{grid-row:3/5;grid-column:4;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:2px;overflow-y:auto;scrollbar-width:none}
-#rail button{width:36px;height:40px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--dim);font-size:9.5px;flex:none}
+#rail button{width:40px;height:44px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--dim);font-size:10.5px;flex:none}
 #rail button:hover{background:var(--panel2);color:var(--ink)}#rail button.on{background:var(--panel2);color:var(--accent)}
-#rail svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#rail svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#rail button span{white-space:nowrap;letter-spacing:-.3px}
 #rail .tsep{width:24px;height:1px;background:var(--line);margin:4px 0}
 #asideGrip{position:absolute;left:-3px;top:0;bottom:0;width:6px;cursor:col-resize;z-index:5}#asideGrip:hover,#asideGrip.on{background:var(--accent);opacity:.5}
 #asideHead{padding:8px 12px;font-weight:600;border-bottom:1px solid var(--line);flex:none;display:flex;justify-content:space-between;align-items:center}
@@ -428,9 +429,8 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
     <span class="sep"></span>
     <select id="typeSel" aria-label="차트 종류"></select>
     <button class="hb" id="btnInd">지표</button>
-    <button class="hb" id="btnWg" title="청산 차트·포지션 맵 등">위젯 ▾</button>
+    <button class="hb" id="btnWg" title="청산 차트·포지션 맵·히트맵·김치 프리미엄·시장 온도">위젯 ▾</button>
     <button class="hb" id="btnReplay" title="과거 봉부터 한 봉씩 다시 보기">리플레이</button>
-    <button class="hb mk" id="btnMarket" title="김치 프리미엄, 히트맵, 펀딩·OI, 시장 온도">시장 자료</button>
     <div class="right">
       <select id="laySel" aria-label="차트 분할"></select><button class="hb" id="btnSync" title="분할 화면 십자선·시간 범위 연동" hidden>연동</button>
       <button class="hb" id="btnShot" title="차트 그림 저장">📷</button>
@@ -2962,7 +2962,8 @@ const W = LC.widgets = {
     document.querySelectorAll('.ctxm').forEach(m => m.remove());
     const m = document.createElement('div'); m.className = 'ctxm wmenu';
     m.innerHTML = ITEMS.map(it => it === '-' ? '<hr>' : `<button data-w="${it[0]}">${it[3]}<span><b>${esc(it[1])}</b><small>${esc(it[2])}</small></span></button>`).join('');
-    document.body.appendChild(m); const r = btn.getBoundingClientRect(); m.style.left = r.left + 'px'; m.style.top = (r.bottom + 4) + 'px';
+    document.body.appendChild(m); const r = btn.getBoundingClientRect(), mw = m.offsetWidth, mh = m.offsetHeight;
+    m.style.left = Math.max(8, Math.min(r.left, innerWidth - mw - 8)) + 'px'; m.style.top = Math.max(8, Math.min(r.bottom + 4, innerHeight - mh - 8)) + 'px';
     const off = e => { if(!m.contains(e.target) && e.target !== btn){ m.remove(); document.removeEventListener('mousedown', off, true) } };
     setTimeout(() => document.addEventListener('mousedown', off, true));
     m.onclick = e => { const b = e.target.closest('[data-w]'); if(!b) return; m.remove(); document.removeEventListener('mousedown', off, true); this.open(b.dataset.w) };
@@ -3194,7 +3195,6 @@ const app = LC.app = {
     $('btnPct').onclick = () => { if(!this.v) return; const on = !$('btnPct').classList.contains('on'); this.v.setPercent(on); this.v.log = false; $('btnPct').classList.toggle('on', on); $('btnLog').classList.remove('on') };
     $('btnShot').onclick = () => this.v && this.v.screenshot();
     $('btnSet').onclick = () => LC.chartStyle.modal();
-    $('btnMarket').onclick = () => LC.market.open();
     $('hTemp').onclick = () => LC.market.open('temp');
     $('btnTheme').onclick = () => this.setTheme(this.theme === 'light' ? 'dark' : 'light');
     $('btnFull').onclick = () => { try{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() }catch(e){} };
@@ -3378,11 +3378,24 @@ const app = LC.app = {
   buildAside(){
     this.panels.sort((a, b) => { const i = ORDER.indexOf(a.id), j = ORDER.indexOf(b.id); return (i < 0 ? 99 : i) - (j < 0 ? 99 : j) });
     const body = $('asideBody'), rail = $('rail'), svg = p => `<svg viewBox="0 0 24 24">${p}</svg>`;
-    rail.innerHTML = this.panels.map(p => { const r = RAIL[p.id] || [p.label, null]; return `<button data-p="${p.id}" title="${esc(p.label)}">${svg(p.icon || r[1] || '<circle cx="12" cy="12" r="6"/>')}<span>${esc(r[0])}</span></button>` }).join('')
-      + '<span class="tsep"></span><button data-x="market" title="시장 자료">' + svg('<rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="5"/><rect x="13" y="10" width="8" height="11"/><rect x="3" y="13" width="8" height="8"/>') + '<span>시장</span></button>';
+    this.railHide = store.get('railHide', ['paper','pf']);
+    const GRP = { list:0, ind:0, flow:1, book:1, move:1, arb:2, news:2, x:2, whale:3, paper:3, pf:3 };
+    const btn = p => { const r = RAIL[p.id] || [p.label, null]; return `<button data-p="${p.id}" title="${esc(p.label)}">${svg(p.icon || r[1] || '<circle cx="12" cy="12" r="6"/>')}<span>${esc(r[0])}</span></button>` };
+    this.drawRail = () => { let g = -1, h = '';
+      this.panels.filter(p => !this.railHide.includes(p.id)).forEach(p => { const k = GRP[p.id] ?? 4; if(g >= 0 && k !== g) h += '<span class="tsep"></span>'; g = k; h += btn(p) });
+      rail.innerHTML = h + '<span class="tsep"></span><button data-x="more" title="더 보기 · 아이콘 고르기">' + svg('<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>') + '<span>더보기</span></button>'
+        + '<button data-x="market" title="위젯 · 시장 자료">' + svg('<rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="5"/><rect x="13" y="10" width="8" height="11"/><rect x="3" y="13" width="8" height="8"/>') + '<span>위젯</span></button>';
+      rail.querySelectorAll('[data-p]').forEach(b => b.classList.toggle('on', b.dataset.p === this.panelId && !this.asideHidden));
+      const mb = rail.querySelector('[data-x=more]'); mb.classList.toggle('on', this.railHide.includes(this.panelId) && !this.asideHidden) };
+    this.drawRail();
+    const pickIcons = () => LC.modal('오른쪽 아이콘 고르기', `<p class="muted">줄에 늘 보일 칸을 골라요. 뺀 칸은 "더보기"에서 열 수 있어요.</p>${this.panels.map(p => `<label class="srow"><span><input type="checkbox" data-rp="${p.id}" ${this.railHide.includes(p.id) ? '' : 'checked'}> ${esc(p.label)}</span></label>`).join('')}`, mb => {
+      mb.addEventListener('change', e => { const c = e.target.closest('[data-rp]'); if(!c) return; const id = c.dataset.rp;
+        this.railHide = c.checked ? this.railHide.filter(x => x !== id) : [...this.railHide, id]; store.set('railHide', this.railHide); this.drawRail() }) });
     body.innerHTML = this.panels.map(p => `<div class="pn" data-p="${p.id}" hidden></div>`).join('');
     this.panels.forEach(p => p.mount(body.querySelector(`.pn[data-p="${p.id}"]`), this));
-    rail.onclick = e => { const b = e.target.closest('button'); if(!b) return; if(b.dataset.x) return LC.market.open();
+    rail.onclick = e => { const b = e.target.closest('button'); if(!b) return; if(b.dataset.x === 'market') return LC.widgets.menu(b);
+      if(b.dataset.x === 'more'){ const r = b.getBoundingClientRect(), hid = this.panels.filter(p => this.railHide.includes(p.id));
+        return LC.ctxMenu(r.left - 210, r.top, [...hid.map(p => [p.label, () => { this.toggleAside(false); this.showPanel(p.id) }]), ...(hid.length ? ['-'] : []), ['아이콘 고르기…', pickIcons], [this.asideHidden ? '오른쪽 창 열기' : '오른쪽 창 닫기', () => this.toggleAside(!this.asideHidden)]]) }
       if(b.dataset.p === this.panelId && !this.asideHidden) return this.toggleAside(true); this.toggleAside(false); this.showPanel(b.dataset.p) };
     /* 왼쪽 가장자리를 끌어 너비 조절 */
     const app = document.querySelector('.app'), grip = $('asideGrip');
@@ -3399,14 +3412,14 @@ const app = LC.app = {
     this.renderTabs();
   },
   toggleAside(hide){ this.asideHidden = hide; store.set('asideHidden', hide); document.querySelector('aside').style.display = hide ? 'none' : '';
-    document.querySelector('.app').style.setProperty('--asideW', hide ? '0px' : store.get('asideW', 340) + 'px');
-    document.querySelectorAll('#rail [data-p]').forEach(b => b.classList.toggle('on', !hide && b.dataset.p === this.panelId)); window.dispatchEvent(new Event('resize')) },
+    document.querySelector('.app').style.setProperty('--asideW', hide ? '0px' : store.get('asideW', 380) + 'px');
+    this.drawRail && this.drawRail(); window.dispatchEvent(new Event('resize')) },
   showPanel(id){
     if(!this.panels.find(p => p.id === id)) id = this.panels[0].id;
     this.panelId = id; const P = this.panels.find(p => p.id === id);
     $('asideHead').innerHTML = `<span>${esc(P.label)}</span><button class="hb" title="창 접기" id="asideClose">›</button>`;
     $('asideClose').onclick = () => this.toggleAside(true);
-    document.querySelectorAll('#rail [data-p]').forEach(b => b.classList.toggle('on', !this.asideHidden && b.dataset.p === id));
+    this.drawRail && this.drawRail();
     document.querySelectorAll('#asideBody .pn').forEach(el => el.hidden = el.dataset.p !== id);
     this.panels.forEach(p => p.onShow && p.onShow(p.id === id)); store.set('panel', id);
   }
