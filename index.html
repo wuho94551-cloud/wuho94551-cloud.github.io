@@ -59,6 +59,14 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:6px}
 .srv section{padding:10px 0;border-bottom:1px solid var(--line)}.srv section:last-child{border:0}.srv h4{margin:0 0 4px;font-size:13px}.srv p{margin:0 0 8px;font-size:12px;line-height:1.5}
 .srv .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}.srv input[placeholder]{flex:1;min-width:200px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:7px 9px;font:inherit}
 .srv .btn{padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--ink);cursor:pointer;text-decoration:none;font-size:12px}.srv .btn:hover{border-color:#4aa3ff}.srv .btn.off{opacity:.45}
+.al-add{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px}.al-sym{display:flex;align-items:center;gap:8px;margin-bottom:8px}.al-hint{margin-left:auto;font-size:11px}
+.al-f{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px}.al select,.al input{background:var(--bg,#0b0e13);border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:5px 7px;font:inherit}.al #al-lv{width:130px}
+.al .btn{padding:5px 12px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--ink);cursor:pointer}.al .btn.pri{background:#2962ff;border-color:#2962ff;color:#fff}.al .btn:disabled{opacity:.4;cursor:default}
+.al .st{font-size:12px;color:#8a94a6;margin-top:6px;min-height:16px}.al .st.bad{color:#ea3943}
+.al-h{display:flex;align-items:baseline;gap:10px;margin:12px 0 4px;font-size:13px}.al-h .dim{font-size:11.5px}
+.al-r{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid var(--line);font-size:13px}.al-r b{min-width:62px}.al-r .kd{font-size:11px;padding:1px 6px;border-radius:3px;background:var(--panel2);color:#8a94a6}
+.al-r .ds{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.al-r .sv{font-size:11.5px;color:#8a94a6;white-space:nowrap}.al-r button{font-size:11.5px;padding:3px 7px;border-radius:4px;color:#8a94a6}.al-r button:hover{background:var(--panel2);color:var(--ink)}
+.al-r.fired .ds,.al-r.off .ds{color:#5b6676;text-decoration:line-through}.al .empty{padding:14px 4px;color:#8a94a6;font-size:12.5px}
 .srv #sv-code{font-size:15px;letter-spacing:1px;min-width:110px}.srv .st{font-size:12px;color:#8a94a6}.srv .st.bad{color:#ea3943}
 .sx{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;min-height:430px}
 .sx-nav{display:flex;flex-direction:column;gap:2px}.sx-nav button{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--ink);text-align:left;font-size:14px}
@@ -448,6 +456,7 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
     <span class="sep"></span>
     <select id="typeSel" aria-label="차트 종류"></select>
     <button class="hb" id="btnInd">지표</button>
+    <button class="hb" id="btnAl" title="가격·급등락·펀딩비·거래대금 알림 모아 보기">🔔 알림</button>
     <button class="hb" id="btnWg" title="청산 차트·포지션 맵·히트맵·김치 프리미엄·시장 온도">위젯 ▾</button>
     <button class="hb" id="btnReplay" title="과거 봉부터 한 봉씩 다시 보기">리플레이</button>
     <div class="right">
@@ -1157,7 +1166,7 @@ class Drawings {
     if(d.handle == null){
       const dt = pt.t - d.start.t, dp = pt.p - d.start.p;
       it.pts = d.orig.map(o => ({ t: ['hline','alert'].includes(it.type) ? o.t : o.t + dt, p: it.type === 'vline' ? o.p : o.p + dp }));
-      if(it.type === 'alert') it.fired = false;
+      if(it.type === 'alert'){ it.fired = false; it.id = null; delete it.dir }
     } else if(it.type === 'pos' && d.handle > 0){
       it.pts[d.handle] = { t: it.pts[d.handle].t, p: pt.p };
       if(d.handle === 1) it.pts[1].t = pt.t;
@@ -2768,24 +2777,101 @@ const S = LC.srv = {
   /* 동기화 */
   async newCode(){ const d = await this.api('/sync/new', { method: 'POST' }); store.set('srvCode', d.code); return d.code },
   snapshot(){ const o = {}; for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(k.startsWith('lc_') && !NOSYNC.test(k)) o[k] = localStorage.getItem(k) } return o },
-  async upload(){ if(!this.code) await this.newCode(); const data = this.snapshot(); const d = await this.api('/sync/' + this.code, { method: 'PUT', body: { data } }); store.set('srvSyncAt', d.at); return Object.keys(data).length },
+  async upload(){ if(!this.code) await this.newCode(); const data = this.snapshot(); const d = await this.api('/sync/' + this.code, { method: 'PUT', body: { data, dev: this.dev } }); store.set('srvSyncAt', d.at); return Object.keys(data).length },
   async download(code = this.code){
     const d = await this.api('/sync/' + code); const data = d.data || {}, n = Object.keys(data).length; if(!n) throw new Error('이 코드에는 아직 올린 설정이 없어요');
-    Object.keys(data).forEach(k => { if(k.startsWith('lc_') && !NOSYNC.test(k)) localStorage.setItem(k, data[k]) }); store.set('srvCode', code); return n;
+    Object.keys(data).forEach(k => { if(k.startsWith('lc_') && !NOSYNC.test(k)) localStorage.setItem(k, data[k]) }); store.set('srvCode', code); store.set('srvSyncAt', d.at || Date.now()); sessionStorage.srvPulled = 1; return n;
   },
 
-  /* 텔레그램 알림: 차트에 그은 가격 알림선을 모아 서버에 올려요 */
-  collectAlerts(){
-    const T = (LC.app && LC.app.tickers) || {}, out = [];
+  /* 텔레그램 알림: 차트에 그은 가격 알림선 + 알림 목록의 조건 알림을 모아 서버에 올려요 */
+  newId(){ return Math.random().toString(36).slice(2, 10) },
+  /* 바이낸스 주식·원자재는 하이퍼리퀴드 같은 종목을 대체 가격으로 붙여요 */
+  altOf(sym, m){ if(m !== 'futures' || !LC.assets) return ''; const A = LC.assets; if(A.group(sym, 'futures') === 'coin') return '';
+    const k = A.key(sym), hl = Object.keys(((LC.app && LC.app.tickers) || {}).hl || {}); return hl.find(h => A.key(h) === k) || '' },
+  lineAlerts(){ const T = (LC.app && LC.app.tickers) || {}, out = [];
     for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(!k.startsWith('lc_dr_')) continue; const sym = k.slice(6), m = sym.includes(':') ? 'hl' : 'futures';
-      let items = []; try{ items = JSON.parse(localStorage.getItem(k)) || [] }catch(e){}
+      let items = [], dirty = false; try{ items = JSON.parse(localStorage.getItem(k)) || [] }catch(e){}
       const px = ((T[m] || {})[sym] || (T.spot || {})[sym] || {}).c;
-      items.filter(it => it.type === 'alert' && !it.fired && it.pts && it.pts[0]).forEach(it => { const lv = +it.pts[0].p; if(!px) return;
-        out.push({ sym, m, lv, dir: px < lv ? 'up' : 'dn', name: LC.assets ? LC.assets.base(sym) : sym }) }) }
-    return out;
-  },
+      items.forEach(it => { if(it.type !== 'alert' || !it.pts || !it.pts[0]) return; if(!it.id){ it.id = this.newId(); dirty = true }
+        const lv = +it.pts[0].p; out.push({ id: it.id, sym, m, kind: 'price', lv, fired: !!it.fired, dir: it.dir || (px ? (px < lv ? 'up' : 'dn') : null), name: LC.assets ? LC.assets.base(sym) : sym, alt: this.altOf(sym, m), line: true }) });
+      if(dirty) localStorage.setItem(k, JSON.stringify(items)) }
+    return out },
+  get conds(){ return store.get('condAlerts', []) },
+  set conds(v){ store.set('condAlerts', v); this.pushAlerts() },
+  collectAlerts(){ return [...this.lineAlerts().filter(a => !a.fired && a.dir), ...this.conds.filter(c => c.on !== false)].map(({ fired, line, on, ...a }) => a) },
   pushAlerts(){ if(!this.on || !this.code || !store.get('srvTg', false)) return; clearTimeout(this._at);
-    this._at = setTimeout(() => this.api('/alerts/' + this.code, { method: 'PUT', body: { list: this.collectAlerts() } }).catch(e => console.warn('알림 올리기 실패', e)), 1500) },
+    this._at = setTimeout(() => this.api('/alerts/' + this.code, { method: 'PUT', body: { list: this.collectAlerts() } }).then(d => d.done && this.markFired(d.done)).catch(e => console.warn('알림 올리기 실패', e)), 1500) },
+  /* 서버에서 울린 가격 알림을 차트의 선에도 반영해요 */
+  markFired(ids){ if(!ids || !ids.length) return; const set = new Set(ids), syms = [];
+    for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(!k.startsWith('lc_dr_')) continue; let items; try{ items = JSON.parse(localStorage.getItem(k)) || [] }catch(e){ continue }
+      let ch = false; items.forEach(it => { if(it.type === 'alert' && it.id && set.has(it.id) && !it.fired){ it.fired = true; ch = true } }); if(ch){ localStorage.setItem(k, JSON.stringify(items)); syms.push(k.slice(6)) } }
+    if(syms.length && LC.app) LC.app.views.forEach(v => syms.includes(v.sym) && v.drawings.load()) },
+  async pull(){ if(!this.on || !this.code) return null; try{ const d = await this.api('/alerts/' + this.code); this.markFired(d.done); store.set('srvHist', d.hist || []); this.remote = d; return d }catch(e){ return null } },
+
+  /* 알림 목록 창 */
+  alerts(){
+    const A = LC.assets, app = LC.app, v = app && app.active;
+    const KIND = { price: '가격', move: '변동률', fund: '펀딩비', vol: '거래대금 급증' };
+    const desc = a => a.kind === 'move' ? `${a.win}분 ${a.dir === 'up' ? '+' : a.dir === 'dn' ? '-' : '±'}${a.pct}% 변동` : a.kind === 'fund' ? `펀딩비 ${a.dir === 'dn' ? '≤ -' : a.dir === 'up' ? '≥ ' : '절댓값 ≥ '}${a.lv}%` : a.kind === 'vol' ? `5분 거래대금 ${a.x}배 급증` : `${LC.fmtN(a.lv, app ? app.precOf(a.sym, a.m) : undefined)} ${a.dir === 'up' ? '위로 돌파' : a.dir === 'dn' ? '아래로 이탈' : ''}`;
+    const ago = t => { const s = (Date.now() - t) / 1000; return s < 3600 ? Math.max(1, Math.floor(s / 60)) + '분 전' : s < 86400 ? Math.floor(s / 3600) + '시간 전' : Math.floor(s / 86400) + '일 전' };
+    LC.modal('알림', `<div class="al">
+      <div class="al-add"><div class="al-sym">${v ? A.icon(v.sym, v.market, 22) : ''}<b>${v ? esc(A.base(v.sym)) : '-'}</b><span class="dim">${v ? esc(A.info(v.sym, v.market)[0]) : ''}</span><span class="dim al-hint">다른 종목은 차트에서 바꾼 뒤 추가해요</span></div>
+        <div class="al-f"><select id="al-k"><option value="price">가격 도달</option><option value="move">급등락 (변동률)</option><option value="fund">펀딩비</option><option value="vol">거래대금 급증</option></select>
+          <span id="al-ps"></span><button class="btn pri" id="al-go">추가</button></div><div class="st" id="al-st"></div></div>
+      <div class="al-h"><b>걸어 둔 알림</b><span class="dim" id="al-srv"></span></div><div id="al-list"></div>
+      <div class="al-h"><b>울린 기록</b></div><div id="al-hist"></div></div>`, (mb, close) => {
+      const $ = s => mb.querySelector(s), say = (t, bad) => { $('#al-st').textContent = t; $('#al-st').classList.toggle('bad', !!bad) };
+      const params = () => { const k = $('#al-k').value, px = v && v.last ? v.last.close : 0;
+        $('#al-ps').innerHTML = k === 'price' ? `<input id="al-lv" type="number" step="any" value="${px ? +px.toPrecision(6) : ''}"> <span class="dim">지금 ${px ? LC.fmtN(px, v.prec) : '-'}</span>`
+          : k === 'move' ? `<select id="al-w"><option>5</option><option selected>15</option><option>60</option><option>240</option></select>분 동안 <select id="al-d"><option value="both">위아래</option><option value="up">상승</option><option value="dn">하락</option></select> <input id="al-p" type="number" step="0.1" value="3" style="width:64px">% 이상`
+          : k === 'fund' ? `<select id="al-d"><option value="both">절댓값</option><option value="up">플러스</option><option value="dn">마이너스</option></select> <input id="al-p" type="number" step="0.01" value="0.1" style="width:72px">% 이상 <span class="dim">(8시간 기준)</span>`
+          : `최근 1시간 평균보다 <input id="al-p" type="number" step="0.5" value="3" style="width:60px">배 이상`;
+        const needSrv = k !== 'price' && !(this.on && this.code && store.get('srvTg', false));
+        $('#al-go').disabled = needSrv; say(needSrv ? '이 알림은 서버가 1분마다 확인해요. 더보기 → 내 서버에서 텔레그램을 먼저 연결해 주세요' : k === 'price' ? '차트에 알림선으로 그려지고, 서버가 연결돼 있으면 텔레그램으로도 와요' : '') };
+      const render = () => {
+        const rows = [...this.lineAlerts(), ...this.conds.map(c => ({ ...c, cond: true }))], srv = this.remote, onSrv = new Set(((srv && srv.list) || []).map(a => a.id));
+        $('#al-srv').textContent = !this.on ? '서버 없음: 사이트가 열려 있을 때만 울려요' : !store.get('srvTg', false) ? '텔레그램 보내기가 꺼져 있어요' : srv && srv.linked ? `텔레그램 연결됨 · 서버 ${onSrv.size}개` : '텔레그램 미연결';
+        $('#al-list').innerHTML = rows.length ? rows.map(a => `<div class="al-r ${a.fired ? 'fired' : ''} ${a.on === false ? 'off' : ''}" data-id="${esc(a.id)}" data-s="${esc(a.sym)}" data-m="${a.m}">
+            ${A.icon(a.sym, a.m, 20)}<b>${esc(A.base(a.sym))}</b><span class="kd">${KIND[a.kind]}</span><span class="ds">${esc(desc(a))}</span>
+            <span class="sv">${a.fired ? '울림' : a.on === false ? '꺼짐' : onSrv.has(a.id) ? '📨 서버' : a.line ? '화면' : '대기'}</span>
+            <button data-a="go" title="차트로">차트</button>${a.cond ? `<button data-a="tg" title="켜기/끄기">${a.on === false ? '켜기' : '끄기'}</button>` : a.fired ? '<button data-a="re" title="다시 걸기">다시</button>' : ''}<button data-a="del" title="지우기">✕</button></div>`).join('')
+          : '<div class="empty">아직 알림이 없어요. 위에서 추가하거나 차트에서 Alt+A로 선을 그어 보세요</div>';
+        const H = store.get('srvHist', []);
+        $('#al-hist').innerHTML = H.length ? H.map(h => `<div class="al-r" data-s="${esc(h.sym)}" data-m="${h.m}">${A.icon(h.sym, h.m, 20)}<b>${esc(h.name)}</b><span class="ds">${esc(h.text)} · ${esc(h.info || '')}</span><span class="sv">${ago(h.t)}</span><button data-a="go">차트</button></div>`).join('') : '<div class="empty">텔레그램으로 울린 알림이 여기에 쌓여요</div>';
+      };
+      const editLine = (sym, id, fn) => { const k = 'dr_' + sym, items = store.get(k, []); fn(items, items.findIndex(x => x.id === id)); store.set(k, items); app && app.views.forEach(o => o.sym === sym && o.drawings.load()) };
+      $('#al-k').onchange = params;
+      $('#al-go').onclick = () => { if(!v) return; const k = $('#al-k').value, num = s => +($(s) || {}).value;
+        if(k === 'price'){ const lv = num('#al-lv'); if(!(lv > 0)) return say('가격을 넣어 주세요', true); const px = v.last ? v.last.close : lv;
+          editLine(v.sym, null, items => items.push({ type: 'alert', id: this.newId(), dir: px < lv ? 'up' : 'dn', pts: [{ t: v.last ? v.last.time : Math.floor(Date.now() / 1000), p: lv }], color: '#ff9f1c' })); this.pushAlerts(); say('추가했어요') }
+        else { const p = num('#al-p'); if(!(p > 0)) return say('숫자를 넣어 주세요', true);
+          const c = { id: this.newId(), sym: v.sym, m: v.market, alt: this.altOf(v.sym, v.market), name: A.base(v.sym), kind: k, dir: ($('#al-d') || {}).value || 'both', win: +(($('#al-w') || {}).value || 15), pct: p, lv: p, x: p, on: true };
+          this.conds = [...this.conds, c]; say('추가했어요. 서버가 1분마다 확인해요') }
+        render() };
+      $('#al-list').onclick = $('#al-hist').onclick = e => { const b = e.target.closest('button'), r = e.target.closest('.al-r'); if(!b || !r) return; const { id, s: sym, m } = r.dataset, isCond = this.conds.some(c => c.id === id);
+        if(b.dataset.a === 'go'){ close(); app && app.openSymbol(sym, m); return }
+        if(b.dataset.a === 'del'){ if(isCond) this.conds = this.conds.filter(c => c.id !== id); else { editLine(sym, id, (items, i) => i >= 0 && items.splice(i, 1)); this.pushAlerts() } }
+        if(b.dataset.a === 'tg') this.conds = this.conds.map(c => c.id === id ? { ...c, on: c.on === false } : c);
+        if(b.dataset.a === 're'){ const px = (((app && app.tickers[m]) || {})[sym] || {}).c; editLine(sym, id, (items, i) => { if(i >= 0){ const it = items[i]; it.fired = false; it.id = this.newId(); if(px) it.dir = px < it.pts[0].p ? 'up' : 'dn' } }); this.pushAlerts() }
+        render() };
+      params(); render(); this.pull().then(render);
+    }, 'mid');
+  },
+
+  /* 자동 동기화: 바뀐 설정은 잠시 뒤 올리고, 열 때 다른 기기에서 바뀐 게 있으면 받아요 */
+  get dev(){ let d = store.get('srvDev', ''); if(!d){ d = this.newId(); store.set('srvDev', d) } return d },
+  autoQueue(k){ if(!this.on || !this.code || !this.ready || store.get('srvAuto', true) === false || NOSYNC.test('lc_' + k)) return;
+    clearTimeout(this._sy); const wait = Math.max(8000, 60000 - (Date.now() - (this._last || 0)));
+    this._sy = setTimeout(() => { this._last = Date.now(); this.upload().catch(() => {}) }, wait) },
+  async autoPull(){
+    if(!this.on || !this.code || store.get('srvAuto', true) === false){ this.ready = true; return }
+    try{ const d = await this.api('/sync/' + this.code);
+      if(d.dev && d.dev !== this.dev && d.at > store.get('srvSyncAt', 0) && Object.keys(d.data || {}).length && !sessionStorage.srvPulled){
+        sessionStorage.srvPulled = 1; Object.keys(d.data).forEach(k => { if(k.startsWith('lc_') && !NOSYNC.test(k)) localStorage.setItem(k, d.data[k]) }); store.set('srvSyncAt', d.at);
+        LC.toast('다른 기기에서 바꾼 설정을 받아 왔어요. 새로 고칠게요', '', 3000); setTimeout(() => location.reload(), 1200); return }
+    }catch(e){}
+    this.ready = true;
+  },
 
   /* 설정 창 */
   open(){
@@ -2794,9 +2880,11 @@ const S = LC.srv = {
         <div class="row"><input id="sv-url" placeholder="https://…workers.dev" value="${esc(this.url)}"><button class="btn" id="sv-chk">연결 확인</button></div><div id="sv-st" class="st"></div></section>
       <section><h4>설정 동기화</h4><p class="dim">이 코드를 다른 기기에 넣으면 즐겨찾기·지표·그림·레이아웃이 그대로 옮겨져요. 코드는 비밀번호처럼 남에게 보이지 마세요.</p>
         <div class="row"><b class="num" id="sv-code">${esc(this.code || '아직 없음')}</b><button class="btn" id="sv-up">이 기기 설정 올리기</button><button class="btn" id="sv-dn">서버에서 가져오기</button></div>
-        <div class="row"><input id="sv-in" placeholder="다른 기기의 코드 10자리" maxlength="10"><button class="btn" id="sv-use">이 코드로 가져오기</button></div><div id="sv-sy" class="st"></div></section>
+        <div class="row"><input id="sv-in" placeholder="다른 기기의 코드 10자리" maxlength="10"><button class="btn" id="sv-use">이 코드로 가져오기</button></div>
+        <div class="row"><label><input type="checkbox" id="sv-auto" ${store.get('srvAuto', true) ? 'checked' : ''}> 자동 동기화 (바꾸면 1분 안에 올리고, 열 때 다른 기기 설정을 받아요)</label></div><div id="sv-sy" class="st"></div></section>
       <section><h4>텔레그램 가격 알림</h4><p class="dim">차트에 그은 가격 알림선(Alt+A)이 서버로 올라가서, 사이트를 꺼 둬도 1분마다 확인하고 텔레그램으로 알려 줘요.</p>
         <div class="row"><label><input type="checkbox" id="sv-tg" ${store.get('srvTg', false) ? 'checked' : ''}> 알림선을 서버로 보내기</label></div>
+        <div class="row"><label><input type="checkbox" id="sv-up1"> 업비트 상장·유의 공지</label><label><input type="checkbox" id="sv-nw"> ★★★ 중요 뉴스</label><button class="btn" id="sv-al">알림 목록 열기</button></div>
         <div class="row"><a class="btn" id="sv-link" target="_blank" rel="noopener">텔레그램 연결하기 ↗</a><button class="btn" id="sv-test">시험 알림</button><span id="sv-tgst" class="st"></span></div></section>
       <section><h4>뉴스 번역</h4><div class="row"><label><input type="checkbox" id="sv-tr" ${store.get('srvTr', true) ? 'checked' : ''}> 영어 뉴스 제목을 한국어로 보기</label><span id="sv-trst" class="st"></span></div></section>
     </div>`, (mb) => {
@@ -2814,14 +2902,21 @@ const S = LC.srv = {
       $('#sv-use').onclick = run('#sv-sy', async () => { const c = $('#sv-in').value.trim().toUpperCase(); if(!/^[A-Z2-9]{10}$/.test(c)) throw new Error('코드는 10자리예요'); const n = await this.download(c); setTimeout(() => location.reload(), 900); return `설정 ${n}개를 가져왔어요. 새로 고칠게요` });
       $('#sv-tg').onchange = e => { store.set('srvTg', e.target.checked); if(e.target.checked) this.pushAlerts() };
       $('#sv-link').onclick = e => { if(!$('#sv-link').href){ e.preventDefault(); say('#sv-tgst', !this.code ? '먼저 “이 기기 설정 올리기”로 코드를 만들어 주세요' : '먼저 연결 확인을 눌러 주세요', true) } else { store.set('srvTg', true); $('#sv-tg').checked = true; this.pushAlerts(); let n = 0; const t = setInterval(async () => { if(!document.body.contains(mb) || ++n > 20) return clearInterval(t); await tgStatus(); if(/^연결됨/.test($('#sv-tgst').textContent)) clearInterval(t) }, 4000) } };
+      $('#sv-auto').onchange = e => store.set('srvAuto', e.target.checked);
+      $('#sv-al').onclick = () => { this.alerts() };
+      const opt = () => this.code && this.api('/opt/' + this.code, { method: 'PUT', body: { upbit: $('#sv-up1').checked, news: $('#sv-nw').checked } }).catch(e => say('#sv-tgst', e.message, true));
+      $('#sv-up1').onchange = $('#sv-nw').onchange = opt;
+      if(this.on && this.code) this.pull().then(d => { const o = (d && d.opt) || {}; $('#sv-up1').checked = o.upbit !== false; $('#sv-nw').checked = o.news !== false });
+      else { $('#sv-up1').checked = $('#sv-nw').checked = true }
       $('#sv-test').onclick = run('#sv-tgst', async () => { await this.api('/tg/test', { method: 'POST', body: { code: this.code } }); return '보냈어요. 텔레그램을 확인해 보세요' });
       $('#sv-tr').onchange = e => { store.set('srvTr', e.target.checked); LC.news && LC.news.items.length && (e.target.checked ? this.translate(LC.news.items, () => LC.bus && LC.bus.emit && LC.bus.emit('newsTr')) : (LC.news.items.forEach(x => delete x.ko), LC.bus && LC.bus.emit && LC.bus.emit('newsTr'))) };
       paint(); if(this.on) this.check().then(paint, () => say('#sv-st', '서버에 닿지 않아요. 주소를 확인해 주세요', true)).then(tgStatus);
     }, 'mid');
   }
 };
-if(LC.Drawings){ const o = LC.Drawings.prototype.save; LC.Drawings.prototype.save = function(){ o.call(this); if(this.items.some(x => x.type === 'alert') || this._hadAlert) S.pushAlerts(); this._hadAlert = this.items.some(x => x.type === 'alert') } }
-if(S.on) S.check().catch(() => {});
+if(LC.Drawings){ const o = LC.Drawings.prototype.save; LC.Drawings.prototype.save = function(){ this.items.forEach(x => { if(x.type === 'alert' && !x.id) x.id = S.newId() }); o.call(this); if(this.items.some(x => x.type === 'alert') || this._hadAlert) S.pushAlerts(); this._hadAlert = this.items.some(x => x.type === 'alert') } }
+{ const set0 = store.set.bind(store); store.set = (k, v) => { set0(k, v); if(!/^(srv|newsSeen|cgMeta|trCache)/.test(k)) S.autoQueue(k) } }
+if(S.on){ S.check().catch(() => {}); S.autoPull(); if(LC.Drawings){ setTimeout(() => S.pull(), 4000); setInterval(() => S.pull(), 60000) } } else S.ready = true;
 })();
 
 </script>
@@ -3229,7 +3324,9 @@ const app = LC.app = {
     document.documentElement.dataset.theme = this.theme = store.get('theme', 'dark');
     const saved = store.get('views', null);
     const cfgs = saved && saved.length ? saved : [{ sym:store.get('sym','BTCUSDT'), market:store.get('market','futures'), tf:store.get('tf','1m') }];
-    const qs = new URLSearchParams(location.search).get('s'); if(qs && /^[A-Z0-9]{2,20}USDT$/.test(qs)){ cfgs[0] = { ...cfgs[0], sym:qs, market:'futures' }; history.replaceState(null, '', location.pathname) }
+    /* 주소로 차트 열기: ?s=BTCUSDT&m=futures · ?s=xyz:TSLA&m=hl (텔레그램 알림의 "차트 열기") */
+    const Q = new URLSearchParams(location.search), qs = Q.get('s'), qm = ['futures','spot','hl'].includes(Q.get('m')) ? Q.get('m') : (qs && qs.includes(':') ? 'hl' : 'futures');
+    if(qs && /^[A-Za-z0-9]{1,12}:?[A-Za-z0-9]{1,24}$/.test(qs)){ cfgs[0] = { ...cfgs[0], sym:qs, market:qm }; history.replaceState(null, '', location.pathname) }
     this.applyLayout(this.layout, cfgs);
     this.buildAside();
     this.loadInfo('futures'); this.loadInfo('spot');
@@ -3310,6 +3407,7 @@ const app = LC.app = {
     setInterval(() => { this.v && ($('hMk').innerHTML = LC.session.badge(this.v.sym, this.v.market)); this.views.forEach(v => { const e = v.q('.lg-mk'); if(e) e.innerHTML = LC.session.badge(v.sym, v.market) }) }, 30000);
     $('btnInd').onclick = () => this.indModal();
     $('btnWg').onclick = e => LC.widgets.menu(e.currentTarget);
+    $('btnAl').onclick = () => LC.srv.alerts();
     $('btnReplay').onclick = () => this.v && (this.v.replay ? this.v.replayExit() : this.v.replayBegin());
     $('btnLog').onclick = () => { if(!this.v) return; this.v.setLog(!this.v.log); $('btnLog').classList.toggle('on', this.v.log); $('btnPct').classList.remove('on') };
     $('btnPct').onclick = () => { if(!this.v) return; const on = !$('btnPct').classList.contains('on'); this.v.setPercent(on); this.v.log = false; $('btnPct').classList.toggle('on', on); $('btnLog').classList.remove('on') };
@@ -3515,7 +3613,7 @@ const app = LC.app = {
     this.panels.forEach(p => p.mount(body.querySelector(`.pn[data-p="${p.id}"]`), this));
     rail.onclick = e => { const b = e.target.closest('button'); if(!b) return; if(b.dataset.x === 'market') return LC.widgets.menu(b);
       if(b.dataset.x === 'more'){ const r = b.getBoundingClientRect(), hid = this.panels.filter(p => this.railHide.includes(p.id));
-        return LC.ctxMenu(r.left - 210, r.top, [...hid.map(p => [p.label, () => { this.toggleAside(false); this.showPanel(p.id) }]), ...(hid.length ? ['-'] : []), ['아이콘 고르기…', pickIcons], ['내 서버 · 텔레그램 · 동기화…', () => LC.srv.open()], [this.asideHidden ? '오른쪽 창 열기' : '오른쪽 창 닫기', () => this.toggleAside(!this.asideHidden)]]) }
+        return LC.ctxMenu(r.left - 210, r.top, [...hid.map(p => [p.label, () => { this.toggleAside(false); this.showPanel(p.id) }]), ...(hid.length ? ['-'] : []), ['아이콘 고르기…', pickIcons], ['알림 목록…', () => LC.srv.alerts()], ['내 서버 · 텔레그램 · 동기화…', () => LC.srv.open()], [this.asideHidden ? '오른쪽 창 열기' : '오른쪽 창 닫기', () => this.toggleAside(!this.asideHidden)]]) }
       if(b.dataset.p === this.panelId && !this.asideHidden) return this.toggleAside(true); this.toggleAside(false); this.showPanel(b.dataset.p) };
     /* 왼쪽 가장자리를 끌어 너비 조절 */
     const app = document.querySelector('.app'), grip = $('asideGrip');
