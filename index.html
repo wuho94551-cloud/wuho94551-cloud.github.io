@@ -360,6 +360,7 @@ input[type=range]{accent-color:var(--accent);width:100%}
 .mk-b{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:1px 7px;border-radius:10px;font-weight:500;white-space:nowrap;pointer-events:auto;cursor:default;vertical-align:1px}.mk-b i{width:6px;height:6px;border-radius:50%;background:currentColor}
 .mk-b.open{color:var(--up);background:rgba(22,199,132,.12)}.mk-b.pre{color:#f0a33b;background:rgba(240,163,59,.12)}.mk-b.closed{color:var(--dim);background:var(--panel2)}
 #hMk:empty{display:none}.lg-mk:empty{display:none}
+.book-ctl [hidden]{display:none}
 .ls-more{display:block;width:100%;padding:12px;color:var(--dim);font-size:12px;text-align:center}.ls-more:hover{color:var(--accent)}.ls-note{padding:6px 12px;font-size:11px;color:var(--dim)}
 .aicw{position:relative;display:inline-block;flex:none;border-radius:50%;overflow:hidden}.aicw img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;border-radius:50%;background:var(--panel)}
 .aic{display:inline-grid;place-items:center;border-radius:50%;color:#fff;font-weight:700;flex:none;line-height:1}.aic.bk{position:absolute;inset:0}
@@ -1963,6 +1964,16 @@ const FLOW = {
     this.sym = v.sym; this.market = v.market; this.trades = []; this.ws && this.ws.close(); this.bybit && this.bybit.close();
     this.app.views.forEach(x => { x.bubbles = x.bubbles || new Bubbles() });
     const s = v.sym.toLowerCase(), sym = v.sym, mkt = v.market;
+    const onTrade = (T, p, q, buy) => { if(sym !== this.sym) return; const usd = p*q;
+      if(usd >= this.cfg.bubbleMin) this.app.views.forEach(x => { if(x.sym === sym && x.market === mkt) x.bubbles.add({t:Math.floor(T/1000), p, usd, buy}) });
+      if(usd < this.cfg.tradeMin) return;
+      this.trades.unshift({T, p, usd, buy, s:sym}); if(this.trades.length > 300) this.trades.pop();
+      if(this.cfg.sound && usd >= Math.max(this.cfg.tradeMin, 5e4)) LC.beep(buy ? 660 : 440, 0.05, 0.08);
+      this.dirty = true };
+    /* 하이퍼리퀴드 종목: 하이퍼리퀴드 실시간 체결 */
+    if(mkt === 'hl'){ this.ws = LC.openWS('wss://api.hyperliquid.xyz/ws', m => { if(m.channel !== 'trades' || !Array.isArray(m.data)) return;
+        m.data.forEach(t => { if(t.coin === sym) onTrade(+t.time, +t.px, +t.sz, t.side === 'B') }) }, null,
+      ws => ws.send(JSON.stringify({ method:'subscribe', subscription:{ type:'trades', coin:sym } }))); this.ws.keepAlive({ method:'ping' }, 45000); return }
     this.ws = LC.openWS(`${LC.EP[mkt].ws}/${s}@aggTrade`, m => {
       if(sym !== this.sym) return; const p = +m.p, q = +m.q, usd = p*q, buy = !m.m;
       if(usd >= this.cfg.bubbleMin) this.app.views.forEach(x => { if(x.sym === sym && x.market === mkt) x.bubbles.add({t:Math.floor(m.T/1000), p, usd, buy}) });
@@ -2029,7 +2040,7 @@ const BOOK = {
   id:'book', label:'호가', ex: store.get('bookEx', 'Binance'), group:0, bids:new Map(), asks:new Map(),
   mount(el, app){
     this.el = el; this.app = app;
-    el.innerHTML = `<div class="book-ctl"><div class="seg" data-c="ex"><button data-v="Binance">Binance</button><button data-v="Bybit">Bybit</button></div>
+    el.innerHTML = `<div class="book-ctl"><div class="seg" data-c="ex"><button data-v="Binance">Binance</button><button data-v="Bybit">Bybit</button></div><span class="book-src dim" hidden>Hyperliquid 호가</span>
       <label>묶음 <select data-c="group"></select></label></div>
       <div class="book-head"><span>가격</span><span>수량</span><span>누적(USDT)</span></div>
       <div class="book"><div class="asks"></div><div class="mid num"></div><div class="bids"></div></div>
@@ -2048,6 +2059,10 @@ const BOOK = {
     this.ws && this.ws.close(); this.bids = new Map(); this.asks = new Map();
     this.el.querySelectorAll('[data-c=ex] button').forEach(b => b.classList.toggle('on', b.dataset.v === this.ex));
     const s = this.sym, m = this.market;
+    this.el.querySelector('[data-c=ex]').hidden = m === 'hl'; this.el.querySelector('.book-src').hidden = m !== 'hl';
+    if(m === 'hl'){ this.ws = LC.openWS('wss://api.hyperliquid.xyz/ws', d => { if(d.channel !== 'l2Book' || !d.data || d.data.coin !== s) return; const [b, a] = d.data.levels;
+        this.bids = new Map(b.map(x => [+x.px, +x.sz])); this.asks = new Map(a.map(x => [+x.px, +x.sz])) }, null,
+      ws => ws.send(JSON.stringify({ method:'subscribe', subscription:{ type:'l2Book', coin:s } }))); this.ws.keepAlive({ method:'ping' }, 45000); return }
     if(this.ex === 'Binance'){
       this.ws = LC.openWS(`${LC.EP[m].wsPub}/${s.toLowerCase()}@depth20@100ms`, d => {
         const b = d.b || d.bids, a = d.a || d.asks; if(!b) return;
