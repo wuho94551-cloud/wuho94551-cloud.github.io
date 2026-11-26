@@ -56,6 +56,10 @@ header .right{margin-left:auto;display:flex;align-items:center;gap:6px}
 .ix-row .dotc{width:10px;height:10px;border-radius:50%;flex:none}.ix-row.cur .dim{flex:1}.ix-act{display:flex;gap:2px}.ix-act button{width:26px;height:24px;border-radius:4px;color:var(--dim)}.ix-act button:hover{background:var(--line);color:var(--ink)}
 @media(max-width:700px){.ix{grid-template-columns:1fr;height:auto}.ix-cats{flex-direction:row;flex-wrap:wrap;border:0}}
 .modal.mid{width:min(760px,100%)}
+.srv section{padding:10px 0;border-bottom:1px solid var(--line)}.srv section:last-child{border:0}.srv h4{margin:0 0 4px;font-size:13px}.srv p{margin:0 0 8px;font-size:12px;line-height:1.5}
+.srv .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}.srv input[placeholder]{flex:1;min-width:200px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:7px 9px;font:inherit}
+.srv .btn{padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--ink);cursor:pointer;text-decoration:none;font-size:12px}.srv .btn:hover{border-color:#4aa3ff}.srv .btn.off{opacity:.45}
+.srv #sv-code{font-size:15px;letter-spacing:1px;min-width:110px}.srv .st{font-size:12px;color:#8a94a6}.srv .st.bad{color:#ea3943}
 .sx{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;min-height:430px}
 .sx-nav{display:flex;flex-direction:column;gap:2px}.sx-nav button{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--ink);text-align:left;font-size:14px}
 .sx-nav button:hover{background:var(--panel2)}.sx-nav button.on{background:var(--panel2);font-weight:600}
@@ -2725,6 +2729,103 @@ const H = LC.hlm = {
 
 </script>
 <script>
+/* 내 도우미 서버(Cloudflare Workers) 연결: 텔레그램 가격 알림, 영어 뉴스 번역, 설정 동기화, 막힌 거래소 공지 */
+(() => {
+const { store, esc } = LC;
+LC.bus = LC.bus || { h:{}, on(k, f){ (this.h[k] = this.h[k] || []).push(f) }, emit(k, d){ (this.h[k] || []).forEach(f => { try{ f(d) }catch(e){ console.error(e) } }) } };
+const NOSYNC = /^lc_(newsSeen|cgMeta|trCache|srv)/;
+const S = LC.srv = {
+  get url(){ return (store.get('srvUrl', '') || '').replace(/\/+$/, '') },
+  get code(){ return store.get('srvCode', '') },
+  get on(){ return !!this.url },
+  info: store.get('srvInfo', null),
+  async api(path, opt = {}){
+    if(!this.on) throw new Error('서버 주소가 없어요');
+    const r = await fetch(this.url + path, { ...opt, headers: { 'content-type': 'application/json', ...(opt.headers || {}) }, body: opt.body && typeof opt.body !== 'string' ? JSON.stringify(opt.body) : opt.body });
+    const d = await r.json().catch(() => ({})); if(!r.ok) throw new Error(d.error || ('서버 응답 ' + r.status)); return d;
+  },
+  async check(){ const d = await this.api('/health'); this.info = d; store.set('srvInfo', d); return d },
+
+  /* 번역: 브라우저에 600개까지 기억해 두고, 새 제목만 서버에 물어봐요 */
+  tr: store.get('trCache', {}),
+  get trOn(){ return this.on && store.get('srvTr', true) && !!(this.info && this.info.ai) },
+  async translate(items, done){
+    if(!this.on || !store.get('srvTr', true)) return;
+    if(!this.info) await this.check().catch(() => {});
+    if(!this.trOn) return;
+    items.forEach(x => { if(x.lang === 'en' && this.tr[x.title]) x.ko = this.tr[x.title] });
+    const need = [...new Set(items.filter(x => x.lang === 'en' && !x.ko).map(x => x.title))].slice(0, 80);
+    for(let i = 0; i < need.length; i += 40){
+      try{ const d = await this.api('/translate', { method: 'POST', body: { titles: need.slice(i, i + 40) } }); Object.assign(this.tr, d.map || {}) }catch(e){ break }
+    }
+    const keys = Object.keys(this.tr); if(keys.length > 600) keys.slice(0, keys.length - 600).forEach(k => delete this.tr[k]);
+    store.set('trCache', this.tr);
+    items.forEach(x => { if(x.lang === 'en' && this.tr[x.title]) x.ko = this.tr[x.title] });
+    done && done();
+  },
+  async notices(){ if(!this.on) return []; const d = await this.api('/notices?ex=upbit,okx'); return d.items || [] },
+
+  /* 동기화 */
+  async newCode(){ const d = await this.api('/sync/new', { method: 'POST' }); store.set('srvCode', d.code); return d.code },
+  snapshot(){ const o = {}; for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(k.startsWith('lc_') && !NOSYNC.test(k)) o[k] = localStorage.getItem(k) } return o },
+  async upload(){ if(!this.code) await this.newCode(); const data = this.snapshot(); const d = await this.api('/sync/' + this.code, { method: 'PUT', body: { data } }); store.set('srvSyncAt', d.at); return Object.keys(data).length },
+  async download(code = this.code){
+    const d = await this.api('/sync/' + code); const data = d.data || {}, n = Object.keys(data).length; if(!n) throw new Error('이 코드에는 아직 올린 설정이 없어요');
+    Object.keys(data).forEach(k => { if(k.startsWith('lc_') && !NOSYNC.test(k)) localStorage.setItem(k, data[k]) }); store.set('srvCode', code); return n;
+  },
+
+  /* 텔레그램 알림: 차트에 그은 가격 알림선을 모아 서버에 올려요 */
+  collectAlerts(){
+    const T = (LC.app && LC.app.tickers) || {}, out = [];
+    for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(!k.startsWith('lc_dr_')) continue; const sym = k.slice(6), m = sym.includes(':') ? 'hl' : 'futures';
+      let items = []; try{ items = JSON.parse(localStorage.getItem(k)) || [] }catch(e){}
+      const px = ((T[m] || {})[sym] || (T.spot || {})[sym] || {}).c;
+      items.filter(it => it.type === 'alert' && !it.fired && it.pts && it.pts[0]).forEach(it => { const lv = +it.pts[0].p; if(!px) return;
+        out.push({ sym, m, lv, dir: px < lv ? 'up' : 'dn', name: LC.assets ? LC.assets.base(sym) : sym }) }) }
+    return out;
+  },
+  pushAlerts(){ if(!this.on || !this.code || !store.get('srvTg', false)) return; clearTimeout(this._at);
+    this._at = setTimeout(() => this.api('/alerts/' + this.code, { method: 'PUT', body: { list: this.collectAlerts() } }).catch(e => console.warn('알림 올리기 실패', e)), 1500) },
+
+  /* 설정 창 */
+  open(){
+    LC.modal('내 서버 · 텔레그램 알림 · 동기화', `<div class="srv">
+      <section><h4>서버 주소</h4><p class="dim">Cloudflare에 올린 도우미 서버 주소예요. 예: https://wuho-api.이름.workers.dev</p>
+        <div class="row"><input id="sv-url" placeholder="https://…workers.dev" value="${esc(this.url)}"><button class="btn" id="sv-chk">연결 확인</button></div><div id="sv-st" class="st"></div></section>
+      <section><h4>설정 동기화</h4><p class="dim">이 코드를 다른 기기에 넣으면 즐겨찾기·지표·그림·레이아웃이 그대로 옮겨져요. 코드는 비밀번호처럼 남에게 보이지 마세요.</p>
+        <div class="row"><b class="num" id="sv-code">${esc(this.code || '아직 없음')}</b><button class="btn" id="sv-up">이 기기 설정 올리기</button><button class="btn" id="sv-dn">서버에서 가져오기</button></div>
+        <div class="row"><input id="sv-in" placeholder="다른 기기의 코드 10자리" maxlength="10"><button class="btn" id="sv-use">이 코드로 가져오기</button></div><div id="sv-sy" class="st"></div></section>
+      <section><h4>텔레그램 가격 알림</h4><p class="dim">차트에 그은 가격 알림선(Alt+A)이 서버로 올라가서, 사이트를 꺼 둬도 1분마다 확인하고 텔레그램으로 알려 줘요.</p>
+        <div class="row"><label><input type="checkbox" id="sv-tg" ${store.get('srvTg', false) ? 'checked' : ''}> 알림선을 서버로 보내기</label></div>
+        <div class="row"><a class="btn" id="sv-link" target="_blank" rel="noopener">텔레그램 연결하기 ↗</a><button class="btn" id="sv-test">시험 알림</button><span id="sv-tgst" class="st"></span></div></section>
+      <section><h4>뉴스 번역</h4><div class="row"><label><input type="checkbox" id="sv-tr" ${store.get('srvTr', true) ? 'checked' : ''}> 영어 뉴스 제목을 한국어로 보기</label><span id="sv-trst" class="st"></span></div></section>
+    </div>`, (mb) => {
+      const $ = s => mb.querySelector(s), say = (id, t, bad) => { const e = $(id); e.textContent = t; e.classList.toggle('bad', !!bad) };
+      const paint = () => { const i = this.info; $('#sv-code').textContent = this.code || '아직 없음';
+        say('#sv-st', !this.on ? '주소를 넣고 연결 확인을 눌러 주세요' : !i ? '확인 전' : `연결됨 · 텔레그램 ${i.tg ? '✓' : '✗ (TG_TOKEN 없음)'} · 번역 ${i.ai ? '✓' : '✗ (ANTHROPIC_API_KEY 없음)'} · 저장소 ${i.kv ? '✓' : '✗'}`, this.on && i && !(i.kv && i.tg));
+        say('#sv-trst', this.info && !this.info.ai ? '서버에 번역 키가 없어서 꺼져 있어요' : '');
+        const a = $('#sv-link'); if(i && i.bot && this.code){ a.href = `https://t.me/${i.bot}?start=${this.code}`; a.classList.remove('off') } else { a.removeAttribute('href'); a.classList.add('off') } };
+      const tgStatus = async () => { if(!this.on || !this.code) return say('#sv-tgst', '먼저 동기화 코드를 만들어 주세요(“이 기기 설정 올리기”)');
+        try{ const d = await this.api('/tg/status/' + this.code); say('#sv-tgst', d.linked ? `연결됨 · 서버에 알림 ${d.alerts}개` : '아직 연결 안 됨: 위 버튼으로 봇을 열고 시작(Start)을 눌러 주세요') }catch(e){ say('#sv-tgst', e.message, true) } };
+      const run = (id, fn) => async () => { say(id, '처리 중…'); try{ say(id, await fn()) }catch(e){ say(id, e.message, true) } paint() };
+      $('#sv-chk').onclick = run('#sv-st', async () => { let u = $('#sv-url').value.trim(); if(u && !/^https:\/\//.test(u)) u = 'https://' + u; store.set('srvUrl', u); if(!u){ this.info = null; return '서버 연결을 껐어요' } await this.check(); setTimeout(tgStatus, 100); return '연결됐어요' });
+      $('#sv-up').onclick = run('#sv-sy', async () => { const n = await this.upload(); setTimeout(tgStatus, 50); this.pushAlerts(); return `설정 ${n}개를 올렸어요` });
+      $('#sv-dn').onclick = run('#sv-sy', async () => { if(!this.code) throw new Error('아직 코드가 없어요'); const n = await this.download(); setTimeout(() => location.reload(), 900); return `설정 ${n}개를 가져왔어요. 새로 고칠게요` });
+      $('#sv-use').onclick = run('#sv-sy', async () => { const c = $('#sv-in').value.trim().toUpperCase(); if(!/^[A-Z2-9]{10}$/.test(c)) throw new Error('코드는 10자리예요'); const n = await this.download(c); setTimeout(() => location.reload(), 900); return `설정 ${n}개를 가져왔어요. 새로 고칠게요` });
+      $('#sv-tg').onchange = e => { store.set('srvTg', e.target.checked); if(e.target.checked) this.pushAlerts() };
+      $('#sv-link').onclick = e => { if(!$('#sv-link').href){ e.preventDefault(); say('#sv-tgst', !this.code ? '먼저 “이 기기 설정 올리기”로 코드를 만들어 주세요' : '먼저 연결 확인을 눌러 주세요', true) } else { store.set('srvTg', true); $('#sv-tg').checked = true; this.pushAlerts(); setTimeout(tgStatus, 15000) } };
+      $('#sv-test').onclick = run('#sv-tgst', async () => { await this.api('/tg/test', { method: 'POST', body: { code: this.code } }); return '보냈어요. 텔레그램을 확인해 보세요' });
+      $('#sv-tr').onchange = e => { store.set('srvTr', e.target.checked); LC.news && LC.news.items.length && (e.target.checked ? this.translate(LC.news.items, () => LC.bus && LC.bus.emit && LC.bus.emit('newsTr')) : (LC.news.items.forEach(x => delete x.ko), LC.bus && LC.bus.emit && LC.bus.emit('newsTr'))) };
+      paint(); if(this.on) this.check().then(paint, () => say('#sv-st', '서버에 닿지 않아요. 주소를 확인해 주세요', true)).then(tgStatus);
+    }, 'mid');
+  }
+};
+if(LC.Drawings){ const o = LC.Drawings.prototype.save; LC.Drawings.prototype.save = function(){ o.call(this); if(this.items.some(x => x.type === 'alert') || this._hadAlert) S.pushAlerts(); this._hadAlert = this.items.some(x => x.type === 'alert') } }
+if(S.on) S.check().catch(() => {});
+})();
+
+</script>
+<script>
 /* 뉴스 모으기·분류: 공개 RSS(rss2json 경유) + 거래소 공지 API. 섹션, 중요도(★), 상태(속보·전개중·확인·정정)를 제목으로 판단해요 */
 (() => {
 const { getJSON } = LC;
@@ -2787,7 +2888,9 @@ const NC = LC.news = {
     this.items = all.filter(x => { const k = x.title.slice(0, 36); if(seen.has(k)) return false; seen.add(k); return now - x.t < 4*864e5 }).sort((a, b) => b.t - a.t).map(x => this.classify(x));
     this.items.forEach(x => { if(!this.seenAt[x.link]) this.seenAt[x.link] = now; x.first = this.seenAt[x.link] });
     const keep = {}; this.items.forEach(x => keep[x.link] = this.seenAt[x.link]); this.seenAt = keep; LC.store.set('newsSeen', keep);
-    this.cluster(); this.ok = ok; this.at = Date.now(); return this.items;
+    this.cluster(); this.ok = ok; this.at = Date.now();
+    if(LC.srv && LC.srv.on) LC.srv.translate(this.items, () => LC.bus && LC.bus.emit('newsTr'));
+    return this.items;
   },
   isNew(x){ return Date.now() - x.t < 15*6e4 },
   trending(){
@@ -2805,7 +2908,9 @@ const NC = LC.news = {
       (async () => { const d = await getJSON('https://www.binance.com/bapi/composite/v1/public/cms/article/list/query?type=1&pageNo=1&pageSize=15');
         const out = []; d.data.catalogs.forEach(c => (c.articles || []).forEach(a => out.push({ ex:'Binance', title:a.title, t:a.releaseDate, link:`https://www.binance.com/en/support/announcement/detail/${a.code}` }))); return out })(),
       (async () => { const d = await getJSON('https://api.bybit.com/v5/announcements/index?locale=en-US&limit=30'); return d.result.list.map(a => ({ ex:'Bybit', title:a.title, t:+a.publishTime || +a.dateTimestamp, link:a.url })) })(),
-      (async () => { const d = await getJSON('https://api.bitget.com/api/v2/public/annoucements?language=en_US'); return d.data.map(a => ({ ex:'Bitget', title:a.annTitle, t:+a.cTime, link:a.annUrl })) })()
+      (async () => { const d = await getJSON('https://api.bitget.com/api/v2/public/annoucements?language=en_US'); return d.data.map(a => ({ ex:'Bitget', title:a.annTitle, t:+a.cTime, link:a.annUrl })) })(),
+      /* 업비트·OKX는 브라우저에서 막혀 있어서 내 서버가 있을 때만 가져와요 */
+      LC.srv && LC.srv.on ? LC.srv.notices() : Promise.resolve([])
     ];
     const r = await Promise.allSettled(jobs), all = []; r.forEach(x => x.status === 'fulfilled' && all.push(...x.value));
     this.notices = all.filter(x => x.title).map(x => ({ ...x, kind:kind(x.title) })).sort((a, b) => b.t - a.t).slice(0, 120); return this.notices;
@@ -2906,11 +3011,11 @@ const NEWS = {
     el.querySelector('.sub-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.tab = b.dataset.t; store.set('newsTab2', this.tab); this.render(); if(this.tab === 'ntc' && !LC.news.notices.length) this.loadN() };
     setInterval(() => { if(!el.hidden) this.load() }, 300000); setInterval(() => { if(!el.hidden) this.render() }, 30000) },
   onShow(on){ if(on){ if(!LC.news.at || Date.now() - LC.news.at > 120000) this.load(); if(this.tab === 'ntc') this.loadN(); this.render() } }, onSymbol(){ if(!this.el.hidden && this.tab === 'coin') this.render() },
-  async load(){ if(this.busy) return; this.busy = true; this.render(); try{ await LC.news.load() }catch(e){} LC.news.loadedOnce = true; this.busy = false; this.render() },
+  async load(){ if(!this._tr){ this._tr = 1; LC.bus && LC.bus.on('newsTr', () => this.render()) } if(this.busy) return; this.busy = true; this.render(); try{ await LC.news.load() }catch(e){} LC.news.loadedOnce = true; this.busy = false; this.render() },
   async loadN(){ try{ await LC.news.loadNotices() }catch(e){} this.render() },
   render(){ if(this.el.hidden) return; const N = LC.news; this.el.querySelectorAll('.sub-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === this.tab));
     const sub = this.el.querySelector('.fd-sub'), L = this.el.querySelector('.news-list');
-    if(this.tab === 'ntc'){ sub.textContent = '바이낸스 · 바이비트 · 비트겟 공지 (업비트·OKX는 브라우저에서 막혀 있어요)';
+    if(this.tab === 'ntc'){ sub.textContent = LC.srv && LC.srv.on ? '바이낸스 · 바이비트 · 비트겟 · 업비트 · OKX 공지' : '바이낸스 · 바이비트 · 비트겟 공지 (업비트·OKX는 내 서버를 연결하면 보여요)';
       L.innerHTML = N.notices.length ? N.notices.slice(0, 80).map(x => `<a class="nrow" href="${esc(x.link)}" target="_blank" rel="noopener"><div class="nmeta"><b>${esc(x.ex)}</b><span class="nk ${x.kind}">${N.NKIND[x.kind]}</span><span class="dim">${ago(x.t)}</span></div><div class="ntitle">${esc(x.title)}</div></a>`).join('') : '<div class="empty">공지를 불러오는 중…</div>'; return }
     const v = this.app.v, coin = v ? v.sym.replace(/USDT$/, '').replace(/^1000/, '') : 'BTC', NM = { BTC:'비트코인|bitcoin', ETH:'이더리움|ethereum|ether', SOL:'솔라나|solana', XRP:'리플|xrp|ripple', DOGE:'도지|dogecoin' };
     const re = new RegExp(`(\\b${coin}\\b|${NM[coin] || coin})`, 'i');
@@ -2918,7 +3023,7 @@ const NEWS = {
     if(this.tab === 'coin') items = items.filter(x => re.test(x.title));
     if(this.tab === 'imp') items = items.filter(x => Date.now() - x.t < 864e5).sort((a, b) => b.stars - a.stars || b.srcN - a.srcN || b.t - a.t);
     sub.textContent = this.busy && !N.items.length ? '뉴스를 모으는 중…' : N.at ? `${N.ok}/${N.SOURCES.length}곳 · ${ago(N.at)} 갱신 · ★ 많을수록 시장 전체에 큰 뉴스` : '';
-    L.innerHTML = items.length ? items.slice(0, 120).map(x => { const S = N.STATUS[x.status]; return `<a class="nrow" href="${esc(x.link)}" target="_blank" rel="noopener"><div class="nmeta"><span class="nst" style="--c:${S[2]}">${S[0]}</span><b class="${x.lang}">${esc(x.src)}</b>${x.srcN > 1 ? `<span class="dim">+${x.srcN - 1}곳</span>` : ''}<span class="stars s${x.stars}">${'★'.repeat(x.stars)}</span><span class="dim" style="margin-left:auto">${ago(x.t)}</span></div><div class="ntitle">${esc(x.title)}</div></a>` }).join('')
+    L.innerHTML = items.length ? items.slice(0, 120).map(x => { const S = N.STATUS[x.status]; return `<a class="nrow" href="${esc(x.link)}" target="_blank" rel="noopener"><div class="nmeta"><span class="nst" style="--c:${S[2]}">${S[0]}</span><b class="${x.lang}">${esc(x.src)}</b>${x.srcN > 1 ? `<span class="dim">+${x.srcN - 1}곳</span>` : ''}<span class="stars s${x.stars}">${'★'.repeat(x.stars)}</span><span class="dim" style="margin-left:auto">${ago(x.t)}</span></div><div class="ntitle"${x.ko ? ` title="${esc(x.title)}"` : ''}>${esc(x.ko || x.title)}</div></a>` }).join('')
       : `<div class="empty">${this.busy ? '불러오는 중…' : this.tab === 'coin' ? `${esc(coin)} 관련 최근 뉴스가 없어요` : '뉴스를 못 받았어요. 잠시 뒤 다시 열어 주세요.'}</div>` }
 };
 
@@ -3410,7 +3515,7 @@ const app = LC.app = {
     this.panels.forEach(p => p.mount(body.querySelector(`.pn[data-p="${p.id}"]`), this));
     rail.onclick = e => { const b = e.target.closest('button'); if(!b) return; if(b.dataset.x === 'market') return LC.widgets.menu(b);
       if(b.dataset.x === 'more'){ const r = b.getBoundingClientRect(), hid = this.panels.filter(p => this.railHide.includes(p.id));
-        return LC.ctxMenu(r.left - 210, r.top, [...hid.map(p => [p.label, () => { this.toggleAside(false); this.showPanel(p.id) }]), ...(hid.length ? ['-'] : []), ['아이콘 고르기…', pickIcons], [this.asideHidden ? '오른쪽 창 열기' : '오른쪽 창 닫기', () => this.toggleAside(!this.asideHidden)]]) }
+        return LC.ctxMenu(r.left - 210, r.top, [...hid.map(p => [p.label, () => { this.toggleAside(false); this.showPanel(p.id) }]), ...(hid.length ? ['-'] : []), ['아이콘 고르기…', pickIcons], ['내 서버 · 텔레그램 · 동기화…', () => LC.srv.open()], [this.asideHidden ? '오른쪽 창 열기' : '오른쪽 창 닫기', () => this.toggleAside(!this.asideHidden)]]) }
       if(b.dataset.p === this.panelId && !this.asideHidden) return this.toggleAside(true); this.toggleAside(false); this.showPanel(b.dataset.p) };
     /* 왼쪽 가장자리를 끌어 너비 조절 */
     const app = document.querySelector('.app'), grip = $('asideGrip');
