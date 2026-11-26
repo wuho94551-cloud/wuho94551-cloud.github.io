@@ -331,6 +331,21 @@ input[type=range]{accent-color:var(--accent);width:100%}
   #tools{display:none}#bbar{grid-column:1/3}#rail{grid-row:5;grid-column:3}
   aside{grid-row:5;grid-column:1/3;border-left:0;border-top:1px solid var(--line)}#asideGrip{display:none}
   .stat{display:none}#toasts{right:16px}
+  .main{grid-row:3;grid-column:2}
+}
+/* 휴대폰: 차트 위, 고른 칸 아래, 아이콘 줄은 맨 아래 가로로 */
+@media(max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:34px 42px minmax(0,1fr) 30px 44vh 52px;height:100dvh}
+  .app.aside-off{grid-template-rows:34px 42px minmax(0,1fr) 30px 0 52px}
+  .topbar,header{grid-column:1}.main{grid-row:3;grid-column:1}#bbar{grid-row:4;grid-column:1}
+  aside{grid-row:5;grid-column:1}#asideHead{display:none}
+  #rail{grid-row:6;grid-column:1;flex-direction:row;overflow-x:auto;overflow-y:hidden;justify-content:flex-start;border-left:0;border-top:1px solid var(--line);padding:0 4px;gap:0}
+  #rail .tsep{width:1px;height:26px;margin:0 3px}#rail button{width:52px;height:48px}
+  #ctabs,#ctabAdd,#clock{display:none}.topbar{gap:6px}.pnav a{padding:4px 7px}
+  header .right #laySel,header .right #btnShot,header .right #btnFull,header .right #btnSync{display:none}
+  .pn[data-p=list] .detail,.pn[data-p=list] .lgrip{display:none}
+  .lg{max-width:calc(100% - 70px)}.lg-o{font-size:11px}
+  .modal{max-height:92dvh}.modal-bg{padding:8px}
 }
 
 /* 목록 칸 */
@@ -3411,7 +3426,7 @@ const app = LC.app = {
     if(this.v) this.panels.forEach(p => p.onSymbol && p.onSymbol(this.v));
     this.renderTabs();
   },
-  toggleAside(hide){ this.asideHidden = hide; store.set('asideHidden', hide); document.querySelector('aside').style.display = hide ? 'none' : '';
+  toggleAside(hide){ this.asideHidden = hide; store.set('asideHidden', hide); document.querySelector('aside').style.display = hide ? 'none' : ''; document.querySelector('.app').classList.toggle('aside-off', hide);
     document.querySelector('.app').style.setProperty('--asideW', hide ? '0px' : store.get('asideW', 380) + 'px');
     this.drawRail && this.drawRail(); window.dispatchEvent(new Event('resize')) },
   showPanel(id){
