@@ -357,6 +357,9 @@ input[type=range]{accent-color:var(--accent);width:100%}
 .wrow .star{position:absolute;left:1px;top:50%;transform:translateY(-50%);width:15px;height:22px;padding:0;font-size:11px;color:#4a5668;opacity:0}.wrow:hover .star,.wrow .star.on{opacity:1}.star.on{color:var(--accent)}.star:hover{color:var(--accent)}
 .sr-cats{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}.sr-cats button{padding:5px 11px;border-radius:14px;border:1px solid var(--line);font-size:12px;color:var(--dim)}.sr-cats button.on{border-color:var(--accent);color:var(--accent)}
 .sr-nm{overflow:hidden;line-height:1.3}.sr-nm b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sr-nm small{display:block;color:var(--dim);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sr-row .num{text-align:right}
+.mk-b{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:1px 7px;border-radius:10px;font-weight:500;white-space:nowrap;pointer-events:auto;cursor:default;vertical-align:1px}.mk-b i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.mk-b.open{color:var(--up);background:rgba(22,199,132,.12)}.mk-b.pre{color:#f0a33b;background:rgba(240,163,59,.12)}.mk-b.closed{color:var(--dim);background:var(--panel2)}
+#hMk:empty{display:none}.lg-mk:empty{display:none}
 .ls-more{display:block;width:100%;padding:12px;color:var(--dim);font-size:12px;text-align:center}.ls-more:hover{color:var(--accent)}.ls-note{padding:6px 12px;font-size:11px;color:var(--dim)}
 .aicw{position:relative;display:inline-block;flex:none;border-radius:50%;overflow:hidden}.aicw img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;border-radius:50%;background:var(--panel)}
 .aic{display:inline-grid;place-items:center;border-radius:50%;color:#fff;font-weight:700;flex:none;line-height:1}.aic.bk{position:absolute;inset:0}
@@ -415,7 +418,7 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
     <div class="right"><span class="hchip" id="hTemp" title="BTC 최근 3분 ÷ 앞 1시간 평소">시장 온도 -</span><span id="clock" class="num">-</span></div>
   </div>
   <header>
-    <button class="symbtn" id="btnSym" title="종목 찾기 (/)"><span class="sym" id="hSym">-</span><span class="caret">▼</span></button>
+    <button class="symbtn" id="btnSym" title="종목 찾기 (/)"><span class="sym" id="hSym">-</span><span class="caret">▼</span></button><span id="hMk"></span>
     <span class="last num" id="hLast">-</span><span class="chg num" id="hChg">-</span>
     <span class="sep"></span>
     <div class="seg" id="mkt"><button data-m="futures">선물</button><button data-m="spot">현물</button></div>
@@ -1299,7 +1302,7 @@ class ChartView {
     this.candles = []; this.shown = []; this.inds = []; this.prec = 2; this.replay = null; this.log = false;
     const box = this.box = document.createElement('div'); box.className = 'cv';
     box.innerHTML = `<div class="cv-chart"></div>
-      <div class="lg"><div class="lg1"><b class="lg-t"></b><span class="lg-o"></span></div><div class="lg-i"></div></div><div class="lg-p"></div>
+      <div class="lg"><div class="lg1"><b class="lg-t"></b><span class="lg-mk"></span><span class="lg-o"></span></div><div class="lg-i"></div></div><div class="lg-p"></div>
       <div class="cv-cd num"></div><div class="cv-load">차트 불러오는 중…</div>
       <div class="cv-replay" hidden><span class="rp-t">리플레이</span><button data-r="play" title="재생/멈춤">▶</button><button data-r="step" title="한 봉 앞으로 (Shift+→)">⏭</button>
         <select data-r="speed" aria-label="속도"><option value="1000">1x</option><option value="333">3x</option><option value="100">10x</option></select><span class="rp-time num"></span><button data-r="exit">실시간으로</button></div>`;
@@ -1389,6 +1392,7 @@ class ChartView {
     this.closeStreams(); this.replayExit(true); this.noMore = false; this.loadedSym = null;
     const ld = this.q('.cv-load'); ld.hidden = false; ld.textContent = '차트 불러오는 중…';
     this.q('.lg-t').textContent = this.market === 'hl' ? `${this.sym.split(':')[1] || this.sym} · ${(LC.TF.find(x=>x[0]===this.tf)||[,''])[1]} · HYPERLIQUID ${(this.sym.split(':')[0] || '').toUpperCase()}` : `${this.sym}${this.market==='futures'?'.P':''} · ${(LC.TF.find(x=>x[0]===this.tf)||[,''])[1]} · BINANCE`;
+    this.q('.lg-mk').innerHTML = LC.session ? LC.session.badge(this.sym, this.market) : '';
     this.drawings.load(); if(this.bubbles) this.bubbles.items = []; if(this.wm) LC.chartStyle.apply(this);
     try{
       if(this.market === 'hl'){ const r = await LC.hlm.klines(this.sym, this.tf); if(tok !== this.tok) return; this.candles = r }
@@ -1714,6 +1718,48 @@ const A = LC.assets = {
 document.addEventListener('error', e => { const i = e.target; if(!i.classList || !i.classList.contains('aimg')) return; const alt = (i.dataset.alt || '').split('|').filter(Boolean);
   if(alt.length){ i.dataset.alt = alt.slice(1).join('|'); i.src = alt[0] } else i.remove() }, true);
 A.load();
+})();
+
+</script>
+<script>
+/* 주식·원자재 장 상태: 실제 거래소 시간 기준 (공휴일은 빼고 요일·시간만 봐요) */
+(() => {
+const ZONES = {
+  us:{ tz:'America/New_York', name:'미국', open:[[570,960]], pre:[240,570], post:[960,1200] },
+  kr:{ tz:'Asia/Seoul', name:'한국', open:[[540,930]] },
+  hk:{ tz:'Asia/Hong_Kong', name:'홍콩', open:[[570,720],[780,960]] },
+  cn:{ tz:'Asia/Shanghai', name:'중국', open:[[570,690],[780,900]] },
+  jp:{ tz:'Asia/Tokyo', name:'일본', open:[[540,690],[750,930]] },
+  in:{ tz:'Asia/Kolkata', name:'인도', open:[[555,930]] },
+  br:{ tz:'America/Sao_Paulo', name:'브라질', open:[[600,1015]] }
+};
+/* 휴장일 (2026~2027년, 각 거래소 날짜) */
+const HOL = { us:'2026-01-01 2026-01-19 2026-02-16 2026-04-03 2026-05-25 2026-06-19 2026-07-03 2026-09-07 2026-11-26 2026-12-25 2027-01-01 2027-01-18 2027-02-15 2027-03-26 2027-05-31 2027-06-18 2027-07-05 2027-09-06 2027-11-25 2027-12-24',
+  kr:'2026-01-01 2026-02-16 2026-02-17 2026-02-18 2026-03-02 2026-05-01 2026-05-05 2026-05-25 2026-06-03 2026-08-17 2026-09-24 2026-09-25 2026-10-05 2026-10-09 2026-12-25 2026-12-31 2027-01-01 2027-02-08 2027-02-09 2027-03-01 2027-05-05 2027-05-13 2027-08-16 2027-09-14 2027-09-15 2027-09-16 2027-10-04 2027-10-11 2027-12-27 2027-12-31' };
+const ymd = tz => new Intl.DateTimeFormat('en-CA', { timeZone:tz, year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
+const JP = new Set(['SOFTBANK','KIOXIA','IBIDEN','JP225','SONY']), CN = new Set(['CATL','CXMT','UNITREE','CAMBRICON','INNOLIGHT','AMEC','YMTC','ZHONGJI']), IN = new Set(['NIFTY','RELIANCE','JIO']);
+const now = tz => { const p = new Intl.DateTimeFormat('en-US', { timeZone:tz, weekday:'short', hour:'2-digit', minute:'2-digit', hour12:false }).formatToParts(new Date());
+  const g = t => (p.find(x => x.type === t) || {}).value; return { wd:g('weekday'), m:(+g('hour') % 24)*60 + +g('minute') } };
+const zoneOf = (sym, market) => { const A = LC.assets, g = A.group(sym, market), k = A.key(sym);
+  if(g === 'coin') return null; if(g === 'cmd' || g === 'fx') return g;
+  if(JP.has(k)) return 'jp'; if(CN.has(k)) return 'cn'; if(IN.has(k)) return 'in'; if(k === 'IBOV') return 'br';
+  if(g === 'kr') return 'kr'; if(g === 'hk') return 'hk'; return 'us' };
+LC.session = {
+  /* [글자, 종류(open/pre/closed), 설명] 또는 null(코인) */
+  of(sym, market){ const z = zoneOf(sym, market); if(!z) return null;
+    if(z === 'cmd' || z === 'fx'){ /* 선물·외환: 뉴욕 기준 일 18시 ~ 금 17시, 매일 17~18시 쉼 */
+      const t = now('America/New_York'), wk = t.wd === 'Sat' || (t.wd === 'Sun' && t.m < 1080) || (t.wd === 'Fri' && t.m >= 1020);
+      if(wk) return ['장 마감', 'closed', '주말 휴장 (뉴욕 일요일 18시 재개)']; if(t.m >= 1020 && t.m < 1080) return ['쉬는 시간', 'closed', '매일 뉴욕 17~18시는 쉬어요'];
+      return ['장 중', 'open', z === 'fx' ? '외환 시장 거래 중' : '원자재 선물 거래 중'] }
+    const Z = ZONES[z], t = now(Z.tz); if(t.wd === 'Sat' || t.wd === 'Sun') return ['장 마감', 'closed', `${Z.name} 주말 휴장`];
+    if(HOL[z] && HOL[z].includes(ymd(Z.tz))) return ['휴장', 'closed', `${Z.name} 증시 휴일`];
+    if(Z.open.some(([a, b]) => t.m >= a && t.m < b)) return ['장 중', 'open', `${Z.name} 정규장 거래 중`];
+    if(Z.pre && t.m >= Z.pre[0] && t.m < Z.pre[1]) return ['프리마켓', 'pre', '미국 정규장 전 (뉴욕 4:00~9:30)'];
+    if(Z.post && t.m >= Z.post[0] && t.m < Z.post[1]) return ['애프터마켓', 'pre', '미국 정규장 뒤 (뉴욕 16:00~20:00)'];
+    if(Z.open.length > 1 && t.m >= Z.open[0][1] && t.m < Z.open[1][0]) return ['점심 휴장', 'closed', `${Z.name} 점심 쉬는 시간`];
+    return ['장 마감', 'closed', `${Z.name} 정규장 밖 · 선물은 계속 거래돼서 실제 주가와 다를 수 있어요`] },
+  badge(sym, market){ const s = this.of(sym, market); return s ? `<span class="mk-b ${s[1]}" title="${LC.esc(s[2])}"><i></i>${s[0]}</span>` : '' }
+};
 })();
 
 </script>
@@ -3109,6 +3155,7 @@ const app = LC.app = {
     $('laySel').onchange = e => this.applyLayout(e.target.value);
     $('mkt').onclick = e => { const b = e.target.closest('button'); if(!b || !this.v || b.dataset.m === this.v.market) return; if(this.v.market === 'hl') return LC.toast('하이퍼리퀴드 종목은 무기한 선물만 있어요');
       const m = b.dataset.m, sym = this.v.sym; this.v.market = m; this.v.set(sym, m); this.syncHeader(); this.panels.forEach(p => p.onMarket && p.onMarket(m)) };
+    setInterval(() => { this.v && ($('hMk').innerHTML = LC.session.badge(this.v.sym, this.v.market)); this.views.forEach(v => { const e = v.q('.lg-mk'); if(e) e.innerHTML = LC.session.badge(v.sym, v.market) }) }, 30000);
     $('btnInd').onclick = () => this.indModal();
     $('btnWg').onclick = e => LC.widgets.menu(e.currentTarget);
     $('btnReplay').onclick = () => this.v && (this.v.replay ? this.v.replayExit() : this.v.replayBegin());
@@ -3184,6 +3231,7 @@ const app = LC.app = {
     const v = this.v; if(!v) return;
     $('hSym').textContent = v.market === 'hl' ? (v.sym.split(':')[1] || v.sym) + ' · ' + LC.hlm.label(v.sym) : v.sym + (v.market === 'futures' ? '.P' : '');
     if(v.market === 'hl') LC.hlm.start();
+    $('hMk').innerHTML = LC.session.badge(v.sym, v.market);
     [...$('tfs').children].forEach(b => b.classList.toggle('on', b.dataset.tf === v.tf));
     [...$('ranges').children].forEach(b => b.classList.toggle('on', b.dataset.tf === v.tf));
     this.tabSync();
