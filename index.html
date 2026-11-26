@@ -226,16 +226,8 @@ aside{grid-row:3/5;grid-column:3;position:relative;background:var(--panel);borde
 .sub-tabs button.on{background:var(--panel2);color:var(--ink)}
 .search{padding:8px;flex:none}
 .inp,.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:8px 10px;font:inherit;font-size:13px}
-.lhead,.wrow{display:grid;grid-template-columns:18px minmax(0,1fr) 84px 70px 58px;align-items:center;gap:4px;padding:0 10px}
-.lhead{font-size:11px;color:var(--dim);padding-bottom:4px;border-bottom:1px solid var(--line);flex:none}
-.lhead [data-s]{cursor:pointer}.lhead div:nth-child(n+3){text-align:right}
 .list{overflow-y:auto;flex:1;min-height:0}
-.wrow{height:40px;cursor:pointer;border-bottom:1px solid #1a222d}
 .wrow:hover{background:var(--panel2)}.wrow.sel{background:#1d2633}
-.wrow .nm{font-weight:500;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wrow .nm small{display:block;color:var(--dim);font-size:11px;font-weight:400}
-.wrow .px,.wrow .pc{text-align:right;font-size:12.5px}
-.star{color:#3a4656;font-size:14px;width:22px;height:22px}.star.on{color:var(--accent)}
 .flash-up{animation:fu .6s}.flash-down{animation:fd .6s}
 @keyframes fu{from{background:rgba(22,199,132,.22)}to{background:transparent}}
 @keyframes fd{from{background:rgba(234,57,67,.22)}to{background:transparent}}
@@ -340,6 +332,32 @@ input[type=range]{accent-color:var(--accent);width:100%}
   .stat{display:none}#toasts{right:16px}
 }
 
+/* 목록 칸 */
+.ls-top{display:flex;align-items:center;gap:8px;padding:8px 10px 4px;flex:none}
+.ls-tabs{display:flex;gap:4px}.ls-tabs button{padding:6px 11px;border-radius:6px;font-size:13.5px;font-weight:500;color:var(--dim)}
+.ls-tabs button:hover{color:var(--ink)}.ls-tabs button.on{background:var(--panel2);color:var(--ink)}
+.ls-n{margin-left:auto;font-size:12px;color:var(--dim)}
+.ls-cats{display:flex;gap:2px;padding:4px 10px 0;border-bottom:1px solid var(--line);flex:none}
+.ls-cats button{padding:7px 10px;font-size:13px;color:var(--dim);border-bottom:2px solid transparent;margin-bottom:-1px}.ls-cats button:hover{color:var(--ink)}
+.ls-cats button.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:500}
+.ls-subs{display:flex;gap:4px;padding:8px 10px 2px;flex-wrap:wrap;flex:none}
+.ls-subs button{padding:4px 10px;border-radius:5px;font-size:12px;color:var(--dim);background:var(--panel2)}.ls-subs button:hover{color:var(--ink)}
+.ls-subs button.on{color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+[hidden].ls-cats,[hidden].ls-subs{display:none}
+.pn[data-p=list] .search{position:relative;padding:8px 10px;flex:none}.pn[data-p=list] .search svg{position:absolute;left:20px;top:50%;width:15px;height:15px;transform:translateY(-50%);fill:none;stroke:var(--dim);stroke-width:2}
+.pn[data-p=list] .search input{padding-left:32px;border-radius:7px;background:var(--panel2)}
+.lhead,.wrow{display:grid;align-items:center;gap:6px;padding:0 10px}
+.lhead{grid-template-columns:24px minmax(0,1fr) 76px 58px 48px;padding-left:16px;font-size:11.5px;color:var(--dim);height:28px;border-bottom:1px solid var(--line);flex:none}
+.lhead [data-s]{cursor:pointer;white-space:nowrap}.lhead [data-s]:hover{color:var(--ink)}.lhead div:nth-child(n+3){text-align:right}
+.wrow{position:relative;grid-template-columns:24px minmax(0,1fr) 76px 58px 48px;padding-left:16px;height:50px;cursor:pointer;border-bottom:1px solid rgba(35,45,59,.55)}
+.wrow:hover{background:var(--panel2)}.wrow.sel{background:#1a2430;box-shadow:inset 2px 0 0 var(--accent)}
+.wrow .nm{overflow:hidden;line-height:1.3}.wrow .nm b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wrow .nm small{display:block;color:var(--dim);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wrow .px{text-align:right;font-size:13px;font-weight:500;color:var(--ink)}.wrow .pc{text-align:right;font-size:12.5px}.wrow .mc{text-align:right;font-size:12px;color:var(--dim)}
+.wrow .star{position:absolute;left:1px;top:50%;transform:translateY(-50%);width:15px;height:22px;padding:0;font-size:11px;color:#4a5668;opacity:0}.wrow:hover .star,.wrow .star.on{opacity:1}.star.on{color:var(--accent)}.star:hover{color:var(--accent)}
+.aicw{position:relative;display:inline-block;flex:none;border-radius:50%;overflow:hidden}.aicw img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;border-radius:50%;background:var(--panel)}
+.aic{display:inline-grid;place-items:center;border-radius:50%;color:#fff;font-weight:700;flex:none;line-height:1}.aic.bk{position:absolute;inset:0}
+.d-h{display:flex;align-items:center;gap:8px}.d-h b{font-size:15px}
 /* 오른쪽 창: 지표·아비트라지·뉴스·X */
 .fd-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px 2px;flex:none}.fd-head b{font-size:13px}
 .fd-head a.btn{text-decoration:none}
@@ -1620,16 +1638,72 @@ LC.ChartView = ChartView;
 
 </script>
 <script>
+/* 종목 아이콘·이름·시가총액. 코인은 코인게코 상위 500개(12시간 보관), 주식은 공개 로고 주소, 그 밖엔 글자 동그라미 */
+(() => {
+const { esc, store } = LC;
+const KR = { SAMSUNG:['삼성전자','005930.KS'], SKHYNIX:['SK하이닉스','000660.KS'], HYUNDAI:['현대차','005380.KS'], SAMSUNGEM:['삼성전기','009150.KS'], HANMI:['한미반도체','042700.KS'],
+  LGELECTRONICS:['LG전자','066570.KS'], NAVER:['네이버','035420.KS'], KODEX200:['KODEX 200','069500.KS'] };
+const HK = { HK0700:['텐센트','0700.HK'], TENCENT:['텐센트','0700.HK'], HK1810:['샤오미','1810.HK'], BYD:['BYD','1211.HK'], MEITUAN:['메이퇀','3690.HK'], KUAISHOU:['콰이쇼우','1024.HK'],
+  POPMART:['팝마트','9992.HK'], HK0992:['레노버','0992.HK'], HK0625:['','0625.HK'], MINIMAX:['MiniMax',''], ZHIPU:['Zhipu AI',''], GIGADEV:['GigaDevice',''], ZHONGJI:['중지쉬촹',''],
+  CSOPSKHYNIX2L:['SK하이닉스 2배',''], CSOPSAMSUNG2L:['삼성전자 2배',''], CXMT:['CXMT',''], UNITREE:['유니트리',''] };
+const CMD = { XAU:['금','#d4a72c'], XAG:['은','#aeb6c2'], XPT:['백금','#9fb3c8'], XPD:['팔라듐','#c0a88a'], COPPER:['구리','#c46a3a'], CL:['WTI 원유','#5a6270'], BZ:['브렌트유','#4d5866'],
+  NATGAS:['천연가스','#3f8fd6'], USDBRL:['달러/헤알','#2f9e6b'] };
+const US = { SPY:'S&P 500 ETF', QQQ:'나스닥 100 ETF', IWM:'러셀 2000 ETF', EWY:'한국 ETF', EWJ:'일본 ETF', EWT:'대만 ETF', EWZ:'브라질 ETF', SOXL:'반도체 3배', SOXS:'반도체 -3배', TQQQ:'나스닥 3배', SQQQ:'나스닥 -3배',
+  TSLA:'Tesla', NVDA:'NVIDIA', AAPL:'Apple', MSFT:'Microsoft', AMZN:'Amazon', GOOGL:'Alphabet', META:'Meta', AMD:'AMD', INTC:'Intel', MSTR:'Strategy', COIN:'Coinbase', HOOD:'Robinhood', PLTR:'Palantir',
+  TSM:'TSMC', MU:'Micron', AVGO:'Broadcom', NFLX:'Netflix', ORCL:'Oracle', CRCL:'Circle', BABA:'Alibaba', QCOM:'Qualcomm', ASML:'ASML', ARM:'Arm', UBER:'Uber', DIS:'Disney', JPM:'JPMorgan', WMT:'Walmart', LLY:'Eli Lilly' };
+const COL = ['#f0b90b','#4aa3ff','#16c784','#e05bd6','#ff9f43','#2ec4b6','#c38bff','#ea3943'];
+const hash = s => { let h = 0; for(const ch of s) h = (h*31 + ch.charCodeAt(0)) | 0; return Math.abs(h) };
+
+const A = LC.assets = {
+  cg: store.get('cgMeta', null),
+  base(sym){ return sym.replace(/USDT$|USDC$|USD1$/, '') },
+  coinBase(sym){ return this.base(sym).replace(/^1000000|^1000|^1M/, '') },
+  kind(sym, market){ const i = LC.app && LC.app.info[market || 'futures'] && LC.app.info[market || 'futures'][sym]; return i && i.ut ? i.ut : 'COIN' },
+  group(sym, market){ const k = market === 'spot' ? 'COIN' : this.kind(sym, 'futures');
+    return k === 'EQUITY' || k === 'PREMARKET' ? 'us' : k === 'KR_EQUITY' ? 'kr' : (k === 'HK_EQUITY' || k === 'CN_EQUITY') ? 'hk' : k === 'COMMODITY' ? 'cmd' : k === 'FX' ? 'fx' : 'coin' },
+  async load(){
+    if(this.cg && Date.now() - this.cg.at < 12*36e5) return;
+    try{ const pages = await Promise.all([1, 2].map(p => LC.getJSON(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=${p}`)));
+      const m = {}; pages.flat().forEach(c => { const k = c.symbol.toUpperCase(); if(!m[k]) m[k] = [c.name, (c.image || '').replace('/large/', '/small/'), c.market_cap || 0] });
+      this.cg = { at:Date.now(), m }; store.set('cgMeta', this.cg); LC.bus && LC.bus.emit('assets') }catch(e){}
+  },
+  /* [이름, 시총] */
+  info(sym, market){ const g = this.group(sym, market), b = this.base(sym);
+    if(g === 'kr') return [(KR[b] || [b])[0], null]; if(g === 'hk') return [(HK[b] || [b])[0] || b, null];
+    if(g === 'cmd' || g === 'fx') return [(CMD[b] || [b])[0], null]; if(g === 'us') return [US[b] || b, null];
+    const c = this.cg && this.cg.m[this.coinBase(sym)]; return c ? [c[0], c[2]] : [this.coinBase(sym), null] },
+  icon(sym, market, size){ const g = this.group(sym, market), b = this.base(sym), cb = this.coinBase(sym), sz = size || 24;
+    const letter = (t, col) => `<span class="aic" style="width:${sz}px;height:${sz}px;background:${col || COL[hash(b) % COL.length]};font-size:${Math.round(sz*.42)}px">${esc(t)}</span>`;
+    let srcs = [];
+    if(g === 'coin'){ const c = this.cg && this.cg.m[cb]; if(c && c[1]) srcs.push(c[1]); srcs.push(`https://static.okx.com/cdn/oksupport/asset/currency/icon/${cb.toLowerCase()}.png`) }
+    else if(g === 'us') srcs.push(`https://financialmodelingprep.com/image-stock/${b === 'BRKB' ? 'BRK-B' : b}.png`);
+    else if(g === 'kr' && KR[b]) srcs.push(`https://financialmodelingprep.com/image-stock/${KR[b][1]}.png`);
+    else if(g === 'hk' && HK[b] && HK[b][1]) srcs.push(`https://financialmodelingprep.com/image-stock/${HK[b][1]}.png`);
+    const fb = g === 'cmd' || g === 'fx' ? letter((CMD[b] || [b])[0].slice(0, 1), (CMD[b] || [])[1]) : letter((g === 'kr' ? (KR[b] || [b])[0] : cb).slice(0, 1));
+    if(!srcs.length) return fb;
+    return `<span class="aicw" style="width:${sz}px;height:${sz}px"><img class="aimg" src="${esc(srcs[0])}" data-alt="${esc(srcs.slice(1).join('|'))}" loading="lazy" alt="" width="${sz}" height="${sz}">${fb.replace('class="aic"', 'class="aic bk"')}</span>` }
+};
+/* 그림이 안 열리면 다음 주소, 다 안 되면 뒤에 깔린 글자 동그라미가 보여요 */
+document.addEventListener('error', e => { const i = e.target; if(!i.classList || !i.classList.contains('aimg')) return; const alt = (i.dataset.alt || '').split('|').filter(Boolean);
+  if(alt.length){ i.dataset.alt = alt.slice(1).join('|'); i.src = alt[0] } else i.remove() }, true);
+A.load();
+})();
+
+</script>
+<script>
 /* 오른쪽 창: 종목 목록(즐겨찾기·전체) */
 (() => {
 const { esc, store } = LC;
+const cap = v => { const f = (x, u) => (x >= 100 ? Math.round(x) : x >= 10 ? x.toFixed(1) : x.toFixed(2)) + u; return v >= 1e12 ? f(v/1e12, 'T') : v >= 1e9 ? f(v/1e9, 'B') : v >= 1e6 ? f(v/1e6, 'M') : v >= 1e3 ? f(v/1e3, 'K') : String(Math.round(v)) };
 const P = {
   id:'list', label:'목록', tab:'fav', market:null, ws:null, sortKey:'q', sortDir:-1,
   mount(el, app){
-    this.el = el; this.app = app;
-    el.innerHTML = `<div class="sub-tabs"><button data-t="fav" class="on">즐겨찾기</button><button data-t="all">전체 종목</button><button data-t="gain">상승</button><button data-t="loss">하락</button></div>
-      <div class="search"><input id="q" placeholder="종목 검색 (예: SOL)" autocomplete="off" aria-label="종목 검색"></div>
-      <div class="lhead"><div></div><div data-s="s">심볼</div><div data-s="c">현재가</div><div data-s="P">변동</div><div data-s="P">변동%</div></div>
+    this.el = el; this.app = app; this.top = store.get('lsTop', 'fav'); this.cat = store.get('lsCat', 'coin'); this.sub = store.get('lsSub', {});
+    if(store.get('lsSort2', null) == null){ this.sortKey = 'q'; this.sortDir = -1 } else Object.assign(this, store.get('lsSort2'));
+    el.innerHTML = `<div class="ls-top"><div class="ls-tabs"><button data-top="fav">내 목록</button><button data-top="all">전체 종목</button></div><span class="ls-n num"></span></div>
+      <div class="ls-cats"></div><div class="ls-subs"></div>
+      <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg><input id="q" placeholder="종목 찾기" autocomplete="off" aria-label="종목 찾기"></div>
+      <div class="lhead"></div>
       <div class="list"></div><div class="lgrip" title="끌어서 높이 조절"></div><div class="detail"></div>`;
     const det = el.querySelector('.detail'), grip = el.querySelector('.lgrip'); det.style.height = store.get('detailH', 300) + 'px';
     grip.onmousedown = e => { e.preventDefault(); const y0 = e.clientY, h0 = det.offsetHeight; let h = h0;
@@ -1639,18 +1713,24 @@ const P = {
     setInterval(() => { if(!this.el.hidden) this.detail() }, 1000);
     setInterval(() => this.loadOI(), 30000);
     this.list = el.querySelector('.list');
-    el.querySelector('.sub-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.tab = b.dataset.t;
-      el.querySelectorAll('.sub-tabs button').forEach(x => x.classList.toggle('on', x === b)); this.render() };
+    el.querySelector('.ls-tabs').onclick = e => { const b = e.target.closest('[data-top]'); if(!b) return; this.top = b.dataset.top; store.set('lsTop', this.top); this.render() };
+    el.querySelector('.ls-cats').onclick = e => { const b = e.target.closest('[data-cat]'); if(!b) return; this.cat = b.dataset.cat; store.set('lsCat', this.cat); this.fixMarket(); this.render() };
+    el.querySelector('.ls-subs').onclick = e => { const b = e.target.closest('[data-sub]'); if(!b) return; this.sub[this.cat] = b.dataset.sub; store.set('lsSub', this.sub); this.fixMarket(); this.render() };
     el.querySelector('#q').oninput = () => this.render();
     el.querySelector('.lhead').onclick = e => { const d = e.target.closest('[data-s]'); if(!d) return;
-      if(this.sortKey === d.dataset.s) this.sortDir *= -1; else { this.sortKey = d.dataset.s; this.sortDir = -1 } this.render() };
+      if(this.sortKey === d.dataset.s) this.sortDir *= -1; else { this.sortKey = d.dataset.s; this.sortDir = d.dataset.s === 's' ? 1 : -1 } store.set('lsSort2', { sortKey:this.sortKey, sortDir:this.sortDir }); this.render() };
     this.list.onclick = e => {
       const st = e.target.closest('[data-star]'); const m = this.market;
       if(st){ const s = st.dataset.star, f = this.favs(); store.set('favs_'+m, f.includes(s) ? f.filter(x => x !== s) : [...f, s]); this.render(); return }
       const r = e.target.closest('.wrow'); if(r) app.openSymbol(r.dataset.s, m);
     };
     this.list.onscroll = () => { this.scrolled = Date.now() };
+    LC.bus.on('assets', () => this.render()); LC.bus.on('info', () => this.render());
   },
+  CATS: [['coin','코인',[['futures','선물'],['spot','현물']]], ['stock','주식',[['us','미국'],['kr','한국'],['hk','홍콩·중국']]], ['cmd','원자재·외환',[['cmd','원자재'],['fx','외환']]]],
+  subOf(c){ const C = this.CATS.find(x => x[0] === c); return this.sub[c] || C[2][0][0] },
+  /* 주식·원자재는 바이낸스 선물에만 있어요 */
+  fixMarket(){ if(this.top !== 'all') return; const want = this.cat === 'coin' ? this.subOf('coin') : 'futures'; if(want !== this.market) this.onMarket(want) },
   favs(){ return store.get('favs_' + this.market, ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT','DOGEUSDT','BNBUSDT']) },
   onSymbol(v){ if(v.market !== this.market) this.onMarket(v.market); else this.markSel(); this.oi = null; this.loadOI(); this.detail() },
   async loadOI(){ const v = this.app.v; if(!v || v.market !== 'futures' || this.el.hidden) return;
@@ -1662,7 +1742,7 @@ const P = {
     const chg = last && t.P != null ? last - last/(1 + P/100) : null, f = this.app.fund && this.app.fund.sym === v.sym ? this.app.fund : null;
     const hl = LC.hl && LC.hl.ready ? LC.hl.positions(v.sym.replace(/USDT$/, '').replace(/^1000/, 'k')) : [], lv = hl.filter(p => p.szi > 0).reduce((s, p) => s + p.val, 0), sv = hl.filter(p => p.szi < 0).reduce((s, p) => s + p.val, 0);
     const kv = (k, val) => `<div class="dk"><span>${k}</span><b class="num">${val}</b></div>`;
-    el.innerHTML = `<div class="d-h"><span class="d-ic">${esc(v.sym.replace(/USDT$/, '').slice(0, 1))}</span><b>${esc(v.sym.replace(/USDT$/, ''))}</b><span class="dim">${v.market === 'futures' ? 'USDT 무기한 · 바이낸스' : 'USDT 현물 · 바이낸스'}</span></div>
+    el.innerHTML = `<div class="d-h">${LC.assets.icon(v.sym, v.market, 26)}<b>${esc(LC.assets.base(v.sym))}</b><span class="dim">${esc(LC.assets.info(v.sym, v.market)[0])}</span><span class="dim" style="margin-left:auto;font-size:11px">${v.market === 'futures' ? 'USDT 무기한 · 바이낸스' : 'USDT 현물 · 바이낸스'}</span></div>
       <div class="d-p"><span class="num big ${cls}">${last ? LC.fmtN(last, pr) : '-'}</span><span class="dim">USDT</span><span class="num ${cls}">${chg != null ? (chg >= 0 ? '+' : '') + LC.fmtN(chg, pr) : ''}</span><span class="num ${cls}">${t.P != null ? LC.fmtPct(P) : ''}</span></div>
       <div class="d-live"><i class="dotl"></i>${v.kws ? '실시간' : '연결 중'}</div>
       <div class="d-grid">${kv('24h 고가', t.h ? LC.fmtN(t.h, pr) : '-')}${kv('24h 저가', t.l ? LC.fmtN(t.l, pr) : '-')}${kv('24h 거래대금', t.q ? LC.fmtBig(t.q) : '-')}
@@ -1687,30 +1767,42 @@ const P = {
     });
   },
   syms(){
-    const T = this.app.tickers[this.market] || {}, q = (this.el.querySelector('#q').value || '').trim().toUpperCase();
-    let s = q ? Object.keys(T).filter(k => k.includes(q)) : this.tab === 'fav' ? this.favs() : Object.keys(T);
-    if(!q && this.tab === 'gain') s = s.sort((a,b) => T[b].P - T[a].P).slice(0, 50);
-    else if(!q && this.tab === 'loss') s = s.sort((a,b) => T[a].P - T[b].P).slice(0, 50);
-    else if(this.tab !== 'fav' || q){ const k = this.sortKey, d = this.sortDir; s = s.sort((a,b) => k === 's' ? d*(a < b ? 1 : -1) : d*((T[a]||{})[k] - (T[b]||{})[k])) }
+    const T = this.app.tickers[this.market] || {}, q = (this.el.querySelector('#q').value || '').trim().toUpperCase(), A = LC.assets;
+    let s;
+    if(q) s = Object.keys(T).filter(k => k.includes(q) || (A.info(k, this.market)[0] || '').toUpperCase().includes(q));
+    else if(this.top === 'fav') s = this.favs();
+    else { const sub = this.subOf(this.cat), want = this.cat === 'coin' ? 'coin' : sub; s = Object.keys(T).filter(k => A.group(k, this.market) === want) }
+    if(this.top === 'all' || q){ const k = this.sortKey, d = this.sortDir, mc = x => A.info(x, this.market)[1] || 0;
+      s = s.sort((a, b) => k === 's' ? d*(a < b ? -1 : 1) : k === 'm' ? d*(mc(a) - mc(b)) : d*(((T[a]||{})[k] || 0) - ((T[b]||{})[k] || 0))) }
     return s.slice(0, 400);
   },
   row(s){
-    const t = (this.app.tickers[this.market] || {})[s] || {}, fav = this.favs().includes(s), cls = (t.P||0) >= 0 ? 'up' : 'down';
-    return `<div class="wrow ${this.app.v && s === this.app.v.sym ? 'sel' : ''}" data-s="${esc(s)}"><button class="star ${fav?'on':''}" data-star="${esc(s)}" aria-label="즐겨찾기">★</button>
-      <div class="nm">${esc(s.replace(/USDT$/, ''))}<small>${t.q ? '거래대금 ' + LC.fmtBig(t.q) : ''}</small></div>
-      <div class="px num">${t.c != null ? LC.fmtPx(t.c) : '-'}</div><div class="ch num ${cls}">${t.P != null && t.c ? LC.fmtPx(t.c - t.c/(1 + t.P/100)) : '-'}</div><div class="pc num ${cls}">${t.P != null ? LC.fmtPct(t.P) : '-'}</div></div>`;
+    const t = (this.app.tickers[this.market] || {})[s] || {}, fav = this.favs().includes(s), cls = (t.P||0) >= 0 ? 'up' : 'down', A = LC.assets, [nm, mc] = A.info(s, this.market);
+    const ex = this.market === 'futures' ? 'BINANCE' : 'BINANCE 현물', g = A.group(s, this.market), main = g === 'kr' || g === 'cmd' ? nm : A.base(s), sub2 = g === 'kr' || g === 'cmd' ? A.base(s) : nm;
+    return `<div class="wrow ${this.app.v && s === this.app.v.sym ? 'sel' : ''}" data-s="${esc(s)}"><button class="star ${fav?'on':''}" data-star="${esc(s)}" aria-label="즐겨찾기">${fav ? '★' : '☆'}</button>
+      ${A.icon(s, this.market, 24)}<div class="nm"><b>${esc(main)}</b><small>${esc(sub2)} · ${ex}</small></div>
+      <div class="px num">${t.c != null ? LC.fmtPx(t.c) : '-'}</div><div class="pc num ${cls}">${t.P != null ? (t.P > 0 ? '+' : '') + LC.fmtPct(t.P).replace(/^\+/, '') : '-'}</div><div class="mc num">${mc ? cap(mc) : t.q ? cap(t.q) : '-'}</div></div>`;
   },
-  render(){ if(!this.market) return; const s = this.syms(); this.list.innerHTML = s.length ? s.map(x => this.row(x)).join('') : `<div class="empty">${this.tab === 'fav' ? '★을 눌러 즐겨찾기를 추가해 보세요' : '검색 결과가 없어요'}</div>` },
+  render(){ if(!this.market) return;
+    const el = this.el, all = this.top === 'all';
+    el.querySelectorAll('.ls-tabs [data-top]').forEach(b => b.classList.toggle('on', b.dataset.top === this.top));
+    el.querySelector('.ls-cats').hidden = el.querySelector('.ls-subs').hidden = !all;
+    if(all){ el.querySelector('.ls-cats').innerHTML = this.CATS.map(c => `<button data-cat="${c[0]}" class="${this.cat === c[0] ? 'on' : ''}">${c[1]}</button>`).join('');
+      const C = this.CATS.find(x => x[0] === this.cat), cur = this.subOf(this.cat);
+      el.querySelector('.ls-subs').innerHTML = C[2].map(([k, n]) => `<button data-sub="${k}" class="${cur === k ? 'on' : ''}">${n}</button>`).join('') }
+    const ar = k => this.sortKey === k ? (this.sortDir > 0 ? ' ▲' : ' ▼') : '';
+    const mcLabel = this.cat === 'coin' || !all ? '시총' : '거래대금';
+    el.querySelector('.lhead').innerHTML = `<div data-s="s" style="grid-column:1/3">종목${ar('s')}</div><div data-s="c">현재가${ar('c')}</div><div data-s="P">일봉${ar('P')}</div><div data-s="${mcLabel === '시총' ? 'm' : 'q'}">${mcLabel}${ar(mcLabel === '시총' ? 'm' : 'q')}</div>`;
+    const s = this.syms(); el.querySelector('.ls-n').textContent = s.length + '개';
+    this.list.innerHTML = s.length ? s.map(x => this.row(x)).join('') : `<div class="empty">${this.top === 'fav' ? '전체 종목에서 ☆을 눌러 내 목록에 담아 보세요' : '종목이 없어요'}</div>` },
   markSel(){ this.list.querySelectorAll('.wrow').forEach(r => r.classList.toggle('sel', this.app.v && r.dataset.s === this.app.v.sym)) },
   patch(ch){
     if(this.el.hidden) return;
-    if(this.tab === 'gain' || this.tab === 'loss'){ if(!this.lastFull || Date.now() - this.lastFull > 3000){ this.lastFull = Date.now(); this.render() } return }
     const map = {}; this.list.querySelectorAll('.wrow').forEach(r => map[r.dataset.s] = r);
     const T = this.app.tickers[this.market];
     ch.forEach(([s, dir]) => { const r = map[s]; if(!r) return; const t = T[s], cls = t.P >= 0 ? 'up' : 'down';
-      const px = r.querySelector('.px'), pc = r.querySelector('.pc'), chc = r.querySelector('.ch');
-      px.textContent = LC.fmtPx(t.c); pc.textContent = LC.fmtPct(t.P); pc.className = 'pc num ' + cls; chc.textContent = LC.fmtPx(t.c - t.c/(1 + t.P/100)); chc.className = 'ch num ' + cls;
-      r.querySelector('small').textContent = '거래대금 ' + LC.fmtBig(t.q);
+      const px = r.querySelector('.px'), pc = r.querySelector('.pc');
+      px.textContent = LC.fmtPx(t.c); pc.textContent = (t.P > 0 ? '+' : '') + LC.fmtPct(t.P).replace(/^\+/, ''); pc.className = 'pc num ' + cls;
       r.classList.remove('flash-up','flash-down'); void r.offsetWidth; r.classList.add(dir > 0 ? 'flash-up' : 'flash-down') });
   },
   onShow(on){ if(on) this.render() }
@@ -2918,7 +3010,8 @@ const app = LC.app = {
     try{ const d = await LC.getJSON(`${LC.EP[m].rest}/exchangeInfo`); const map = {};
       d.symbols.forEach(s => { if(m === 'futures' && (s.contractType !== 'PERPETUAL' || s.status !== 'TRADING')) return; if(m === 'spot' && s.status !== 'TRADING') return;
         const f = (s.filters||[]).find(x => x.filterType === 'PRICE_FILTER'); const ts = f ? f.tickSize : '0.01';
-        map[s.symbol] = { prec: Math.max(0, (ts.replace(/0+$/,'').split('.')[1]||'').length), base:s.baseAsset } });
+        map[s.symbol] = { prec: Math.max(0, (ts.replace(/0+$/,'').split('.')[1]||'').length), base:s.baseAsset, ut:s.underlyingType || 'COIN' } });
+      if(LC.bus) LC.bus.emit('info', m);
       this.info[m] = map; this.views.forEach(v => { if(v.market === m){ const p = this.precOf(v.sym, m); if(p != null && p !== v.prec){ v.prec = p; v.series.applyOptions({priceFormat:{type:'price', precision:p, minMove:1/10**p}}) } } });
     }catch(e){}
   },
@@ -3115,7 +3208,7 @@ const app = LC.app = {
     /* 왼쪽 가장자리를 끌어 너비 조절 */
     const app = document.querySelector('.app'), grip = $('asideGrip');
     const setW = w => { w = Math.max(260, Math.min(720, w)); app.style.setProperty('--asideW', w + 'px'); return w };
-    setW(store.get('asideW', 340));
+    setW(store.get('asideW', 380));
     grip.onmousedown = e => { e.preventDefault(); grip.classList.add('on'); const x0 = e.clientX, w0 = $('asideBody').offsetWidth; let w = w0;
       const mv = ev => { w = setW(w0 + x0 - ev.clientX); this.views.forEach(v => v.resize && v.resize()) };
       const up = () => { grip.classList.remove('on'); store.set('asideW', w); document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); window.dispatchEvent(new Event('resize')) };
