@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0b0c0f"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="우호">
 <title>우호 · 뉴스</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%235b9cf6%22/%3E%3Cpath d=%22M5 16l4-5 3 3 5-7%22 stroke=%22%23111%22 stroke-width=%222.2%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%2217%22 cy=%227%22 r=%221.6%22 fill=%22%23111%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -78,6 +79,14 @@ input[type=checkbox]:checked{background:var(--accent) url("data:image/svg+xml,%3
 .modal{background:var(--panel);border:1px solid var(--line2);border-radius:12px}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.16)}::-webkit-scrollbar-track{background:transparent}
 :root[data-theme=light] ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12)}
+/* 보완: 자리표시 · 아이콘 버튼 */
+@keyframes skp{0%,100%{opacity:.45}50%{opacity:.95}}
+.skel-wrap{display:flex;flex-direction:column;gap:9px;padding:12px;width:100%;box-sizing:border-box}
+.skel-row{height:12px;border-radius:4px;background:var(--panel2);animation:skp 1.3s ease-in-out infinite}
+.skel-row:nth-child(3n+2){width:82%}.skel-row:nth-child(3n){width:64%}
+.skel-wrap.tall .skel-row{height:30px}.empty .skel-wrap{padding:0}
+.hb.ic{display:inline-flex;align-items:center;justify-content:center;width:28px;height:26px;padding:0!important}.hb.ic .hi{width:16px;height:16px;opacity:.85}
+.topbar{gap:10px!important}.pnav a{padding:4px 9px!important}
 </style>
 </head>
 <body>
@@ -85,7 +94,7 @@ input[type=checkbox]:checked{background:var(--accent) url("data:image/svg+xml,%3
   <div class="topbar">
     <a class="brand" href="./" title="우호"><svg viewBox="0 0 24 24" aria-label="우호"><rect width="24" height="24" rx="6" fill="#5b9cf6"/><path d="M5 16l4-5 3 3 5-7" stroke="#111" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="7" r="1.6" fill="#111"/></svg></a>
     <nav class="pnav"><a href="./">차트</a><a href="scalp.html">스캘핑</a><a href="news.html" class="on">뉴스</a></nav>
-    <div class="right"><span id="clock" class="num">-</span><button class="hb" id="btnTheme" title="밝은/어두운 화면">◐</button></div>
+    <div class="right"><span id="clock" class="num">-</span><button class="hb ic" id="btnTheme" title="밝은/어두운 화면" aria-label="밝은/어두운 화면"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><path d="M9 3a6 6 0 0 0 0 12z" fill="currentColor"/></svg></button><button class="hb ic" id="btnFull" title="전체 화면" aria-label="전체 화면"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V3h4M11 3h4v4M15 11v4h-4M7 15H3v-4"/></svg></button></div>
   </div>
   <div class="cols">
     <aside class="col lcol">
@@ -115,7 +124,7 @@ input[type=checkbox]:checked{background:var(--accent) url("data:image/svg+xml,%3
       <div id="reports"></div>
       <div class="rh"><b>뉴스룸 · 거래소 공지</b><span class="dim num" id="nAt" style="font-size:11px"></span></div>
       <div class="chips nchips" id="nk"></div>
-      <div id="notices"><div class="empty">공지를 불러오는 중…</div></div>
+      <div id="notices"><div class="skel-wrap tall"><div class="skel-row"></div><div class="skel-row"></div><div class="skel-row"></div><div class="skel-row"></div><div class="skel-row"></div></div></div>
       <div class="foot" id="nfoot">바이낸스·바이비트·비트겟 공지예요. 업비트·OKX 공지는 차트 화면 더보기 → 내 서버를 연결하면 같이 보여요.</div>
     </aside>
   </div>
@@ -146,6 +155,8 @@ const fmtPx = v => fmtN(v, autoPrec(v));
 const fmtBig = v => { v = Number(v); const a = Math.abs(v);
   return a>=1e9 ? (v/1e9).toFixed(2)+'B' : a>=1e6 ? (v/1e6).toFixed(2)+'M' : a>=1e3 ? (v/1e3).toFixed(1)+'K' : v.toFixed(a<10?2:0) };
 const fmtPct = v => (v>=0?'+':'') + Number(v).toFixed(2) + '%';
+/* 변동률: 색과 함께 ▲▼도 붙여요 (색만으로 구분하지 않게) */
+const fmtChg = v => v == null || isNaN(v) ? '-' : (v > 0 ? '▲ ' : v < 0 ? '▼ ' : '') + Math.abs(+v).toFixed(2) + '%';
 const pad = n => String(n).padStart(2,'0');
 const fmtClock = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` };
 const fmtDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms/36e5), m = Math.floor(ms%36e5/6e4), s = Math.floor(ms%6e4/1e3);
@@ -212,7 +223,9 @@ LC.LG_ICON = { eye: ic('<path d="M1.5 9S4.3 4 9 4s7.5 5 7.5 5-2.8 5-7.5 5S1.5 9 
   trash: ic('<path d="M3 5h12M7 5V3h4v2M4.5 5l.8 10h7.4l.8-10M7.5 8v4.5M10.5 8v4.5"/>'),
   more: ic('<circle cx="4" cy="9" r=".9" fill="currentColor"/><circle cx="9" cy="9" r=".9" fill="currentColor"/><circle cx="14" cy="9" r=".9" fill="currentColor"/>'),
   up: ic('<path d="M5 11l4-4 4 4"/>'), down: ic('<path d="M5 7l4 4 4-4"/>') };
-Object.assign(LC, { $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
+/* 불러오는 동안 보여 줄 회색 줄 */
+const skel = (n = 6, cls = '') => `<div class="skel-wrap ${cls}">${'<div class="skel-row"></div>'.repeat(n)}</div>`;
+Object.assign(LC, { skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
 })();
 
 </script>
@@ -550,6 +563,7 @@ async function load(){ $('liveTxt').textContent = '모으는 중'; try{ await N.
 async function loadN(){ try{ await N.loadNotices() }catch(e){} notices() }
 
 document.documentElement.dataset.theme = store.get('theme', 'dark');
+$('btnFull').onclick = () => { try{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() }catch(e){} };
 $('btnTheme').onclick = () => { const t = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; document.documentElement.dataset.theme = t; store.set('theme', t) };
 setInterval(() => { $('clock').textContent = new Date().toLocaleTimeString('ko-KR', { timeZone:'Asia/Seoul', hour12:false }) + ' KST' }, 1000);
 $('secs').onclick = e => { const b = e.target.closest('[data-s]'); if(!b) return; S.sec = b.dataset.s; store.set('nwSec', S.sec); all(); $('wireCol').scrollTop = 0 };
@@ -565,5 +579,6 @@ setInterval(load, 180000); setInterval(loadN, 300000); setInterval(all, 60000);
 })();
 
 </script>
+<script>if('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </body>
 </html>

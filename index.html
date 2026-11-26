@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0b0c0f"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="우호">
 <title>우호 · 차트</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%235b9cf6%22/%3E%3Cpath d=%22M5 16l4-5 3 3 5-7%22 stroke=%22%23111%22 stroke-width=%222.2%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%2217%22 cy=%227%22 r=%221.6%22 fill=%22%23111%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -465,6 +466,40 @@ label{color:var(--dim);font-size:12.5px}
 .st,.dim{color:var(--dim)}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.16)}::-webkit-scrollbar-track{background:transparent}
 :root[data-theme=light] ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12)}
+/* 보완: 자리표시 · 아이콘 버튼 */
+@keyframes skp{0%,100%{opacity:.45}50%{opacity:.95}}
+.skel-wrap{display:flex;flex-direction:column;gap:9px;padding:12px;width:100%;box-sizing:border-box}
+.skel-row{height:12px;border-radius:4px;background:var(--panel2);animation:skp 1.3s ease-in-out infinite}
+.skel-row:nth-child(3n+2){width:82%}.skel-row:nth-child(3n){width:64%}
+.skel-wrap.tall .skel-row{height:30px}.empty .skel-wrap{padding:0}
+.hb.ic{display:inline-flex;align-items:center;justify-content:center;width:28px;height:26px;padding:0!important}.hb.ic .hi{width:16px;height:16px;opacity:.85}
+
+/* 보완 12가지 */
+.xb{font-style:normal;font-size:9.5px;font-weight:600;padding:1px 4px;border-radius:3px;margin-left:5px;background:var(--panel2);color:var(--dim);vertical-align:1px;letter-spacing:.02em}
+.xb.hl{color:#4fd1b5;background:rgba(79,209,181,.12)}
+.qmark{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;border:1px solid var(--line2);color:var(--dim);font-size:10.5px;cursor:help;margin-left:6px;flex:none}
+.book .skel-row{height:11px;margin:4px 10px;width:auto!important}
+.cv-sk{display:flex;align-items:flex-end;gap:9px;height:110px}
+.cv-sk i{width:11px;border-radius:2px;background:var(--panel2);animation:skp 1.3s ease-in-out infinite}
+.cv-sk i:nth-child(1){height:38%}.cv-sk i:nth-child(2){height:55%}.cv-sk i:nth-child(3){height:46%}.cv-sk i:nth-child(4){height:72%}.cv-sk i:nth-child(5){height:60%}.cv-sk i:nth-child(6){height:88%}.cv-sk i:nth-child(7){height:76%}
+.cv-sk i:nth-child(2n){animation-delay:.15s}.cv-sk i:nth-child(3n){animation-delay:.3s}
+#hLast{border-radius:4px;padding:0 3px}#hLast.fl-up{animation:hfu .7s}#hLast.fl-dn{animation:hfd .7s}
+@keyframes hfu{0%{background:rgba(var(--acc-rgb),.3)}100%{background:transparent}}
+@keyframes hfd{0%{background:rgba(240,97,109,.3)}100%{background:transparent}}
+.dot.bk{background:#f0b90b;box-shadow:0 0 6px #f0b90b}.conn{cursor:default}#connTxt:empty{display:none}
+.lhead .col4{display:flex;justify-content:flex-end;align-items:center;gap:1px;white-space:nowrap}
+.lhead [data-col4]{cursor:pointer}.lhead [data-col4]:hover{color:var(--ink)}.c4b{padding:0 2px;color:var(--faint)}
+.wrow .sp{display:flex;justify-content:flex-end;align-items:center;min-height:20px}
+.kh{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}.kh div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.kh em{font-style:normal;color:var(--dim);font-size:12.5px;text-align:right}
+kbd{font:inherit;font-size:11.5px;padding:1px 6px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;background:var(--panel2);color:var(--ink)}
+.tour{position:fixed;inset:0;z-index:9999}
+.tour-hole{position:fixed;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.62);outline:2px solid var(--accent);transition:all .25s;pointer-events:none}
+.tour-box{position:fixed;background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:14px 16px;box-shadow:0 12px 32px rgba(0,0,0,.45)}
+.tour-box small{color:var(--faint);font-size:11.5px}.tour-box b{display:block;font-size:15px;margin:3px 0 6px}.tour-box p{margin:0;color:var(--dim);font-size:13px;line-height:1.6}
+.tour-b{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.tour-b button{padding:6px 12px;border-radius:6px;font-size:13px}
+.tour-skip{color:var(--dim)}.tour-skip:hover{color:var(--ink)}.tour-next{background:var(--accent);color:#fff;font-weight:600}
+@media(max-width:700px){.kh{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -495,10 +530,10 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
     <button class="hb" id="btnReplay" title="과거 봉부터 한 봉씩 다시 보기"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4.5L3.5 9l5 4.5zM15 4.5L10 9l5 4.5z"/></svg>리플레이</button>
     <div class="right">
       <select id="laySel" aria-label="차트 분할"></select><button class="hb" id="btnSync" title="분할 화면 십자선·시간 범위 연동" hidden>연동</button>
-      <button class="hb" id="btnShot" title="차트 그림 저장">📷</button>
-      <button class="hb" id="btnSet" title="차트 설정 (색, 배경, 격자, 십자선…) · 차트에서 오른쪽 클릭해도 돼요">⚙</button>
-      <button class="hb" id="btnTheme" title="밝은/어두운 화면">◐</button>
-      <button class="hb" id="btnFull" title="전체 화면">⛶</button>
+      <button class="hb ic" id="btnShot" title="차트 그림 저장" aria-label="차트 그림 저장"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="13" height="9.5" rx="2"/><circle cx="9" cy="9.7" r="2.6"/><path d="M6.5 5l1-2h3l1 2"/></svg></button>
+      <button class="hb ic" id="btnSet" title="차트 설정 (색, 배경, 격자, 십자선…) · 차트에서 오른쪽 클릭해도 돼요" aria-label="차트 설정"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="2.3"/><path d="M9 2v2M9 14v2M2 9h2M14 9h2M4 4l1.4 1.4M12.6 12.6L14 14M4 14l1.4-1.4M12.6 5.4L14 4"/></svg></button>
+      <button class="hb ic" id="btnTheme" title="밝은/어두운 화면" aria-label="밝은/어두운 화면"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><path d="M9 3a6 6 0 0 0 0 12z" fill="currentColor"/></svg></button>
+      <button class="hb ic" id="btnFull" title="전체 화면" aria-label="전체 화면"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V3h4M11 3h4v4M15 11v4h-4M7 15H3v-4"/></svg></button>
     </div>
   </header>
   <nav id="tools" aria-label="작도 도구"></nav>
@@ -549,6 +584,8 @@ const fmtPx = v => fmtN(v, autoPrec(v));
 const fmtBig = v => { v = Number(v); const a = Math.abs(v);
   return a>=1e9 ? (v/1e9).toFixed(2)+'B' : a>=1e6 ? (v/1e6).toFixed(2)+'M' : a>=1e3 ? (v/1e3).toFixed(1)+'K' : v.toFixed(a<10?2:0) };
 const fmtPct = v => (v>=0?'+':'') + Number(v).toFixed(2) + '%';
+/* 변동률: 색과 함께 ▲▼도 붙여요 (색만으로 구분하지 않게) */
+const fmtChg = v => v == null || isNaN(v) ? '-' : (v > 0 ? '▲ ' : v < 0 ? '▼ ' : '') + Math.abs(+v).toFixed(2) + '%';
 const pad = n => String(n).padStart(2,'0');
 const fmtClock = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` };
 const fmtDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms/36e5), m = Math.floor(ms%36e5/6e4), s = Math.floor(ms%6e4/1e3);
@@ -615,7 +652,9 @@ LC.LG_ICON = { eye: ic('<path d="M1.5 9S4.3 4 9 4s7.5 5 7.5 5-2.8 5-7.5 5S1.5 9 
   trash: ic('<path d="M3 5h12M7 5V3h4v2M4.5 5l.8 10h7.4l.8-10M7.5 8v4.5M10.5 8v4.5"/>'),
   more: ic('<circle cx="4" cy="9" r=".9" fill="currentColor"/><circle cx="9" cy="9" r=".9" fill="currentColor"/><circle cx="14" cy="9" r=".9" fill="currentColor"/>'),
   up: ic('<path d="M5 11l4-4 4 4"/>'), down: ic('<path d="M5 7l4 4 4-4"/>') };
-Object.assign(LC, { $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
+/* 불러오는 동안 보여 줄 회색 줄 */
+const skel = (n = 6, cls = '') => `<div class="skel-wrap ${cls}">${'<div class="skel-row"></div>'.repeat(n)}</div>`;
+Object.assign(LC, { skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
 })();
 
 </script>
@@ -1366,7 +1405,7 @@ class ChartView {
     const box = this.box = document.createElement('div'); box.className = 'cv';
     box.innerHTML = `<div class="cv-chart"></div>
       <div class="lg"><div class="lg1"><b class="lg-t"></b><span class="lg-mk"></span><span class="lg-o"></span></div><div class="lg-i"></div></div><div class="lg-p"></div>
-      <div class="cv-cd num"></div><div class="cv-load">차트 불러오는 중…</div>
+      <div class="cv-cd num"></div><div class="cv-load"><div class="cv-sk"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
       <div class="cv-replay" hidden><span class="rp-t">리플레이</span><button data-r="play" title="재생/멈춤">▶</button><button data-r="step" title="한 봉 앞으로 (Shift+→)">⏭</button>
         <select data-r="speed" aria-label="속도"><option value="1000">1x</option><option value="333">3x</option><option value="100">10x</option></select><span class="rp-time num"></span><button data-r="exit">실시간으로</button></div>`;
     host.appendChild(box);
@@ -1454,7 +1493,7 @@ class ChartView {
   async load(){
     const tok = this.tok = Math.random();
     this.closeStreams(); this.replayExit(true); this.noMore = false; this.loadedSym = null;
-    const ld = this.q('.cv-load'); ld.hidden = false; ld.textContent = '차트 불러오는 중…';
+    const ld = this.q('.cv-load'); ld.hidden = false; ld.innerHTML = '<div class="cv-sk"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>';
     this.q('.lg-t').textContent = this.market === 'hl' ? `${this.sym.split(':')[1] || this.sym} · ${(LC.TF.find(x=>x[0]===this.tf)||[,''])[1]} · HYPERLIQUID ${(this.sym.split(':')[0] || '').toUpperCase()}` : `${this.sym}${this.market==='futures'?'.P':''} · ${(LC.TF.find(x=>x[0]===this.tf)||[,''])[1]} · BINANCE`;
     this.q('.lg-mk').innerHTML = LC.session ? LC.session.badge(this.sym, this.market) : '';
     this.drawings.load(); if(this.bubbles) this.bubbles.items = []; if(this.wm) LC.chartStyle.apply(this);
@@ -1470,15 +1509,33 @@ class ChartView {
     }catch(e){ ld.textContent = '데이터를 못 불러왔어요. 종목이나 인터넷 연결을 확인해 주세요.'; return }
     this.prevPrice = this.last && this.last.close;
     if(this.market === 'hl') this.kws = LC.hlm.stream(this.sym, this.tf, b => { if(tok === this.tok) this.onBar(b) }, ok => this.app.setConn(this, ok));
-    else this.kws = LC.openWS(`${LC.EP[this.market].ws}/${this.sym.toLowerCase()}@kline_${this.tf}`, m => {
-      if(tok !== this.tok || !m.k) return; const k = m.k;
-      this.onBar({time:Math.floor(k.t/1000), open:+k.o, high:+k.h, low:+k.l, close:+k.c, volume:+k.v, tbv:+k.V});
-    }, ok => this.app.setConn(this, ok));
+    else { let bnOk = false;
+      this.kws = LC.openWS(`${LC.EP[this.market].ws}/${this.sym.toLowerCase()}@kline_${this.tf}`, m => {
+        if(tok !== this.tok || !m.k) return; const k = m.k;
+        this.onBar({time:Math.floor(k.t/1000), open:+k.o, high:+k.h, low:+k.l, close:+k.c, volume:+k.v, tbv:+k.V});
+      }, ok => { bnOk = ok;
+        if(ok){ clearTimeout(this.bkT); this.bkT = null; this.stopBackup() } else if(!this.bkT && !this.bkws) this.bkT = setTimeout(() => { this.bkT = null; this.startBackup(tok) }, 8000);
+        this.app.setConn(this, ok || this.bkOk, ok ? '' : this.bkOk ? 'bybit' : '') });
+      /* 처음 8초 안에 바이낸스가 안 열리면(막힌 지역 등) 바로 바이비트로 */
+      clearTimeout(this.bkT); this.bkT = setTimeout(() => { this.bkT = null; if(!bnOk) this.startBackup(tok) }, 8000) }
     this.inds.filter(i => i.def.async).forEach(i => this.fetchAsync(i));
     clearInterval(this.asyncTimer); this.asyncTimer = setInterval(() => this.inds.filter(i => i.def.async).forEach(i => this.fetchAsync(i)), 60000);
     this.app.onViewLoaded(this);
   }
-  closeStreams(){ this.kws && this.kws.close(); this.kws = null; clearInterval(this.asyncTimer) }
+  closeStreams(){ this.kws && this.kws.close(); this.kws = null; clearInterval(this.asyncTimer); clearTimeout(this.bkT); this.bkT = null; this.stopBackup() }
+  /* 예비 실시간 시세: 바이낸스 봉 스트림이 8초 넘게 끊기면 바이비트 봉으로 잠시 이어 그려요 */
+  startBackup(tok){
+    const iv = {'1m':'1','3m':'3','5m':'5','15m':'15','30m':'30','1h':'60','2h':'120','4h':'240','6h':'360','12h':'720','1d':'D','1w':'W'}[this.tf];
+    if(this.bkws || tok !== this.tok || !iv || this.market === 'hl') return;
+    const topic = `kline.${iv}.${this.sym}`;
+    this.bkws = LC.openWS(`wss://stream.bybit.com/v5/public/${this.market === 'spot' ? 'spot' : 'linear'}`, m => {
+      if(tok !== this.tok || m.topic !== topic || !Array.isArray(m.data)) return;
+      m.data.forEach(k => { const t = Math.floor(k.start/1000), l = this.candles[this.candles.length-1];
+        this.onBar({time:t, open:+k.open, high:+k.high, low:+k.low, close:+k.close, volume:+k.volume, tbv: l && l.time === t ? l.tbv : null}) });
+    }, ok => { this.bkOk = ok; if(this.kws) this.app.setConn(this, ok, ok ? 'bybit' : '') }, ws => ws.send(JSON.stringify({op:'subscribe', args:[topic]})));
+    this.bkws.keepAlive({op:'ping'}, 20000);
+  }
+  stopBackup(){ if(this.bkws){ this.bkws.close(); this.bkws = null } this.bkOk = false }
   async loadMore(){
     if(this.loadingMore || this.noMore || !this.candles.length) return;
     this.loadingMore = true; const tok = this.tok;
@@ -1833,7 +1890,7 @@ LC.session = {
 const { esc, store } = LC;
 const cap = v => { const f = (x, u) => (x >= 100 ? Math.round(x) : x >= 10 ? x.toFixed(1) : x.toFixed(2)) + u; return v >= 1e12 ? f(v/1e12, 'T') : v >= 1e9 ? f(v/1e9, 'B') : v >= 1e6 ? f(v/1e6, 'M') : v >= 1e3 ? f(v/1e3, 'K') : String(Math.round(v)) };
 const P = {
-  id:'list', label:'목록', tab:'fav', market:null, ws:null, sortKey:'q', sortDir:-1,
+  id:'list', label:'목록', tab:'fav', market:null, ws:null, sortKey:'q', sortDir:-1, col4:store.get('lsCol4', 'cap'),
   mount(el, app){
     this.el = el; this.app = app; this.top = store.get('lsTop', 'fav'); this.cat = store.get('lsCat', 'coin'); this.sub = store.get('lsSub', {});
     if(store.get('lsSort2', null) == null){ this.sortKey = 'q'; this.sortDir = -1 } else Object.assign(this, store.get('lsSort2'));
@@ -1854,7 +1911,8 @@ const P = {
     el.querySelector('.ls-cats').onclick = e => { const b = e.target.closest('[data-cat]'); if(!b) return; this.cat = b.dataset.cat; store.set('lsCat', this.cat); this.fixMarket(); this.render() };
     el.querySelector('.ls-subs').onclick = e => { const b = e.target.closest('[data-sub]'); if(!b) return; this.sub[this.cat] = b.dataset.sub; store.set('lsSub', this.sub); this.fixMarket(); this.render() };
     el.querySelector('#q').oninput = () => this.render();
-    el.querySelector('.lhead').onclick = e => { const d = e.target.closest('[data-s]'); if(!d) return;
+    el.querySelector('.lhead').onclick = e => { if(e.target.closest('[data-col4]')){ this.col4 = this.col4 === 'spark' ? 'cap' : 'spark'; store.set('lsCol4', this.col4); this.render(); return }
+      const d = e.target.closest('[data-s]'); if(!d) return;
       if(this.sortKey === d.dataset.s) this.sortDir *= -1; else { this.sortKey = d.dataset.s; this.sortDir = d.dataset.s === 's' ? 1 : -1 } store.set('lsSort2', { sortKey:this.sortKey, sortDir:this.sortDir }); this.render() };
     this.list.onclick = e => {
       if(e.target.closest('.ls-more')){ this.showThin = !this.showThin; this.render(); return }
@@ -1883,7 +1941,7 @@ const P = {
     const hl = LC.hl && LC.hl.ready ? LC.hl.positions(v.sym.replace(/USDT$/, '').replace(/^1000/, 'k')) : [], lv = hl.filter(p => p.szi > 0).reduce((s, p) => s + p.val, 0), sv = hl.filter(p => p.szi < 0).reduce((s, p) => s + p.val, 0);
     const kv = (k, val) => `<div class="dk"><span>${k}</span><b class="num">${val}</b></div>`;
     el.innerHTML = `<div class="d-h">${LC.assets.icon(v.sym, v.market, 26)}<b>${esc(LC.assets.base(v.sym))}</b><span class="dim">${esc(LC.assets.info(v.sym, v.market)[0])}</span><span class="dim" style="margin-left:auto;font-size:11px">${v.market === 'hl' ? '무기한 · 하이퍼리퀴드 ' + esc((v.sym.split(':')[0] || '').toUpperCase()) : v.market === 'futures' ? 'USDT 무기한 · 바이낸스' : 'USDT 현물 · 바이낸스'}</span></div>
-      <div class="d-p"><span class="num big ${cls}">${last ? LC.fmtN(last, pr) : '-'}</span><span class="dim">USDT</span><span class="num ${cls}">${chg != null ? (chg >= 0 ? '+' : '') + LC.fmtN(chg, pr) : ''}</span><span class="num ${cls}">${t.P != null ? LC.fmtPct(P) : ''}</span></div>
+      <div class="d-p"><span class="num big ${cls}">${last ? LC.fmtN(last, pr) : '-'}</span><span class="dim">USDT</span><span class="num ${cls}">${chg != null ? (chg >= 0 ? '+' : '') + LC.fmtN(chg, pr) : ''}</span><span class="num ${cls}">${t.P != null ? LC.fmtChg(P) : ''}</span></div>
       <div class="d-live"><i class="dotl"></i>${v.kws ? '실시간' : '연결 중'}</div>
       <div class="d-grid">${kv('24h 고가', t.h ? LC.fmtN(t.h, pr) : '-')}${kv('24h 저가', t.l ? LC.fmtN(t.l, pr) : '-')}${kv('24h 거래대금', t.q ? LC.fmtBig(t.q) : '-')}
         ${v.market === 'futures' ? kv('펀딩비', f ? `<span class="${f.rate >= 0 ? 'up' : 'down'}">${(f.rate*100).toFixed(4)}%</span>` : '-') + kv('다음 펀딩', f ? LC.fmtDur(Math.max(0, f.next - Date.now())) : '-')
@@ -1933,8 +1991,31 @@ const P = {
     const t = (this.app.tickers[m] || {})[s] || {}, fav = this.favs(m).includes(s), cls = (t.P||0) >= 0 ? 'up' : 'down', A = LC.assets, [nm, mc] = A.info(s, m);
     const ex = m === 'hl' ? LC.hlm.label(s) : m === 'futures' ? 'BINANCE' : 'BINANCE 현물', g = A.group(s, m), main = g === 'kr' || g === 'cmd' || g === 'fx' ? nm : A.base(s), sub2 = g === 'kr' || g === 'cmd' || g === 'fx' ? A.base(s) : nm;
     return `<div class="wrow ${this.app.v && s === this.app.v.sym ? 'sel' : ''}" data-s="${esc(s)}" data-m="${m}"><button class="star ${fav?'on':''}" data-star="1" aria-label="즐겨찾기">${fav ? '★' : '☆'}</button>
-      ${A.icon(s, m, 24)}<div class="nm"><b>${esc(main)}</b><small>${esc(sub2)} · ${ex}</small></div>
-      <div class="px num">${t.c != null ? LC.fmtPx(t.c) : '-'}</div><div class="pc num ${cls}">${t.P != null ? (t.P > 0 ? '+' : '') + LC.fmtPct(t.P).replace(/^\+/, '') : '-'}</div><div class="mc num">${mc ? cap(mc) : t.q ? cap(t.q) : '-'}</div></div>`;
+      ${A.icon(s, m, 24)}<div class="nm"><b>${esc(main)}${m === 'hl' ? '<i class="xb hl">HL</i>' : m === 'spot' ? '<i class="xb">현물</i>' : ''}</b><small title="${esc(ex)}">${esc(sub2 && sub2 !== main ? sub2 : m === 'hl' ? ex : m === 'spot' ? 'USDT 현물' : 'USDT 무기한')}</small></div>
+      <div class="px num">${t.c != null ? LC.fmtPx(t.c) : '-'}</div><div class="pc num ${cls}">${t.P != null ? LC.fmtChg(t.P) : '-'}</div>${this.col4 === 'spark' ? `<div class="mc sp" data-sp="${esc(s)}|${m}">${this.sparkSvg(s, m)}</div>` : `<div class="mc num">${mc ? cap(mc) : t.q ? cap(t.q) : '-'}</div>`}</div>`;
+  },
+  /* 24시간 흐름: 1시간봉 24개를 화면에 보이는 줄만 받아 와서 작은 선으로 그려요 (10분 보관) */
+  sparkSvg(s, m){ const c = (this.spc || {})[s + '|' + m]; if(!c || !c.p.length) return '';
+    const p = c.p, lo = Math.min(...p), hi = Math.max(...p), W = 46, H = 18, k = hi > lo ? H / (hi - lo) : 0;
+    const pts = p.map((v, i) => `${(i * W / (p.length - 1)).toFixed(1)},${(H - (v - lo) * k + 1).toFixed(1)}`).join(' ');
+    return `<svg viewBox="0 0 ${W} ${H+2}" width="${W}" height="${H+2}"><polyline points="${pts}" fill="none" stroke="var(--${p[p.length-1] >= p[0] ? 'up' : 'down'})" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
+  },
+  sparkWatch(){
+    this.spc = this.spc || {}; this.spq = this.spq || [];
+    if(!this.spo) this.spo = new IntersectionObserver(es => es.forEach(e => { if(!e.isIntersecting) return; this.spo.unobserve(e.target); const k = e.target.dataset.sp;
+      const c = this.spc[k]; if(c && Date.now() - c.t < 6e5) return; if(!this.spq.includes(k)) this.spq.push(k); this.sparkRun() }), { root:this.list });
+    this.spo.disconnect(); this.list.querySelectorAll('.sp[data-sp]').forEach(el => this.spo.observe(el));
+  },
+  async sparkRun(){
+    this.spn = this.spn || 0; if(this.spn >= 4) return;
+    const k = this.spq.shift(); if(!k) return; this.spn++;
+    try{ const [s, m] = k.split('|'); let p;
+      if(m === 'hl') p = (await LC.hlm.klines(s, '1h')).slice(-24).map(b => b.close);
+      else p = (await LC.getJSON(`${LC.EP[m].rest}/klines?symbol=${s}&interval=1h&limit=24`)).map(r => +r[4]).slice(-24);
+      this.spc[k] = { t:Date.now(), p };
+      this.list.querySelectorAll('.sp[data-sp]').forEach(el => { if(el.dataset.sp === k) el.innerHTML = this.sparkSvg(s, m) });
+    }catch(e){ this.spc[k] = { t:Date.now() - 5e5, p:[] } }
+    this.spn--; this.sparkRun();
   },
   render(){ if(!this.market) return;
     const el = this.el, all = this.top === 'all';
@@ -1945,11 +2026,12 @@ const P = {
       el.querySelector('.ls-subs').innerHTML = C[2].map(([k, n]) => `<button data-sub="${k}" class="${cur === k ? 'on' : ''}">${n}</button>`).join('') }
     const s = this.syms(), ar = k => this.sortKey === k ? (this.sortDir > 0 ? ' ▲' : ' ▼') : '';
     const isCap = !all || this.cat === 'coin', mk = isCap && this.sortKey !== 'q' ? 'm' : 'q';
-    el.querySelector('.lhead').innerHTML = `<div data-s="s" style="grid-column:1/3">종목${ar('s')}</div><div data-s="c">현재가${ar('c')}</div><div data-s="P">일봉${ar('P')}</div><div data-s="${isCap ? 'm' : 'q'}" title="${isCap ? '시가총액 (없으면 하루 거래대금)' : '하루 거래대금'}">${isCap ? '시총' : '거래대금'}${ar(isCap ? 'm' : 'q')}</div>`;
+    el.querySelector('.lhead').innerHTML = `<div data-s="s" style="grid-column:1/3">종목${ar('s')}</div><div data-s="c">현재가${ar('c')}</div><div data-s="P">일봉${ar('P')}</div>${this.col4 === 'spark' ? `<div class="col4" data-col4="1" title="눌러서 ${isCap ? '시총' : '거래대금'} 보기로 바꾸기">24시간 ▾</div>` : `<div class="col4"><span data-s="${isCap ? 'm' : 'q'}" title="${isCap ? '시가총액 (없으면 하루 거래대금)' : '하루 거래대금'}">${isCap ? '시총' : '거래대금'}${ar(isCap ? 'm' : 'q')}</span><span class="c4b" data-col4="1" title="24시간 흐름 보기로 바꾸기">▾</span></div>`}`;
     el.querySelector('.ls-n').textContent = s.length + '개';
     const loading = all && this.cat !== 'coin' && !LC.hlm.ready ? '<div class="ls-note">하이퍼리퀴드 종목도 불러오는 중…</div>' : '';
     const more = this.thinN || this.showThin ? `<button class="ls-more">${this.showThin ? '거래 적은 종목 접기' : `하루 거래대금 $300K 안 되는 ${this.thinN}개 더 보기`}</button>` : '';
-    this.list.innerHTML = loading + (s.length ? s.map(([x, m]) => this.row(x, m)).join('') : `<div class="empty">${this.top === 'fav' ? '전체 종목에서 ☆을 눌러 내 목록에 담아 보세요' : '종목이 없어요'}</div>`) + more },
+    this.list.innerHTML = loading + (s.length ? s.map(([x, m]) => this.row(x, m)).join('') : `<div class="empty">${this.top === 'fav' ? '전체 종목에서 ☆을 눌러 내 목록에 담아 보세요' : '종목이 없어요'}</div>`) + more;
+    if(this.col4 === 'spark') this.sparkWatch() },
   markSel(){ this.list.querySelectorAll('.wrow').forEach(r => r.classList.toggle('sel', !!this.app.v && r.dataset.s === this.app.v.sym)) },
   patch(ch){
     if(this.el.hidden) return;
@@ -1957,7 +2039,7 @@ const P = {
     const T = this.app.tickers[this.market];
     ch.forEach(([s, dir]) => { const r = map[s]; if(!r) return; const t = T[s], cls = t.P >= 0 ? 'up' : 'down';
       const px = r.querySelector('.px'), pc = r.querySelector('.pc');
-      px.textContent = LC.fmtPx(t.c); pc.textContent = (t.P > 0 ? '+' : '') + LC.fmtPct(t.P).replace(/^\+/, ''); pc.className = 'pc num ' + cls;
+      px.textContent = LC.fmtPx(t.c); pc.textContent = LC.fmtChg(t.P); pc.className = 'pc num ' + cls;
       r.classList.remove('flash-up','flash-down'); void r.offsetWidth; r.classList.add(dir > 0 ? 'flash-up' : 'flash-down') });
   },
   onShow(on){ if(on) this.render() }
@@ -2092,7 +2174,7 @@ const FLOW = {
     mins.forEach((k, i) => { const hl = k.long / max * (mid - 4), hs = k.short / max * (mid - 4);
       ctx.fillStyle = '#f0616d'; ctx.fillRect(i*bw + 1, mid, bw - 2, hl); ctx.fillStyle = '#5b9cf6'; ctx.fillRect(i*bw + 1, mid - hs, bw - 2, hs) });
     ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(0, mid, W, 1);
-    this.el.querySelector('.liq-sum').innerHTML = `30분 청산 · <span class="down">롱 $${LC.fmtBig(tl)}</span> · <span class="up">숏 $${LC.fmtBig(ts)}</span>`;
+    this.el.querySelector('.liq-sum').innerHTML = tl + ts ? `30분 청산 · <span class="down">롱 $${LC.fmtBig(tl)}</span> · <span class="up">숏 $${LC.fmtBig(ts)}</span>` : '<span class="dim">최근 30분 동안 청산이 없어요</span>';
     Object.keys(this.liqMin).forEach(k => { if(k < now - 60) delete this.liqMin[k] });
   },
   onShow(on){ if(on){ this.renderFeed(); this.drawLiqChart() } }
@@ -2144,12 +2226,14 @@ const BOOK = {
   agg(map, side){
     const g = this.group || 0, out = new Map();
     map.forEach((q, p) => { const k = g ? (side === 'bid' ? Math.floor(p/g)*g : Math.ceil(p/g)*g) : p; out.set(+k.toFixed(10), (out.get(+k.toFixed(10)) || 0) + q) });
-    return [...out.entries()].sort((a, b) => side === 'bid' ? b[0] - a[0] : a[0] - b[0]).slice(0, 14);
+    return [...out.entries()].sort((a, b) => side === 'bid' ? b[0] - a[0] : a[0] - b[0]).slice(0, this.depth || 14);
   },
   render(){
     if(this.el.hidden || !this.sym) return;
+    /* 패널 높이에 맞춰 호가 줄 수를 정해요 (한 줄 약 19px) */
+    const bh = this.el.querySelector('.book').clientHeight; if(bh) this.depth = Math.max(6, Math.min(40, Math.floor((bh - 40) / 2 / 19)));
     const bids = this.agg(this.bids, 'bid'), asks = this.agg(this.asks, 'ask');
-    if(!bids.length || !asks.length){ this.el.querySelector('.mid').textContent = '호가 불러오는 중…'; return }
+    if(!bids.length || !asks.length){ const sk = '<div class="skel-row"></div>'.repeat(this.depth || 10); this.el.querySelector('.asks').innerHTML = sk; this.el.querySelector('.bids').innerHTML = sk; this.el.querySelector('.mid').innerHTML = '<span class="dim">호가 기다리는 중</span>'; return }
     const v = this.app.v, pr = v ? Math.max(0, v.prec) : 2;
     const cum = arr => { let c = 0; return arr.map(([p, q]) => { c += p*q; return [p, q, c] }) };
     const B = cum(bids), A = cum(asks); const max = Math.max(B[B.length-1][2], A[A.length-1][2]);
@@ -2175,8 +2259,7 @@ const MOVE = {
     el.innerHTML = `<div class="flow-ctl"><label>1분 <input type="number" step="0.1" min="0.2" data-c="th1" value="${this.cfg.th1}">%</label>
       <label>5분 <input type="number" step="0.1" min="0.5" data-c="th5" value="${this.cfg.th5}">%</label>
       <label class="chk"><input type="checkbox" data-c="sound" ${this.cfg.sound?'checked':''}>소리</label>
-      <label class="chk"><input type="checkbox" data-c="toast" ${this.cfg.toast?'checked':''}>팝업</label></div>
-      <p class="muted pad">지금 보고 있는 시장(선물/현물)의 모든 USDT 종목을 지켜보다가 1분·5분 사이 기준보다 크게 움직이면 알려 줘요. 같은 종목은 5분에 한 번만 알려요.</p>
+      <label class="chk"><input type="checkbox" data-c="toast" ${this.cfg.toast?'checked':''}>팝업</label><span class="qmark" title="지금 보고 있는 시장(선물/현물)의 모든 USDT 종목을 지켜보다가 1분·5분 사이 기준보다 크게 움직이면 알려 줘요. 같은 종목은 5분에 한 번만 알려요.">?</span></div>
       <div class="feed"></div>`;
     this.feed = el.querySelector('.feed');
     el.querySelector('.flow-ctl').onchange = e => { const k = e.target.dataset.c; if(!k) return;
@@ -2239,7 +2322,7 @@ const M = LC.market = {
   show(t){
     clearInterval(timer); LC.store.set('mkTab', t); this.tab = t;
     this.mb.querySelectorAll('.mk-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
-    this.body.innerHTML = '<div class="empty">불러오는 중…</div>';
+    this.body.innerHTML = LC.skel(8);
     const run = () => this[t]().catch(e => { if(this.tab === t) this.body.innerHTML = `<div class="empty">자료를 못 불러왔어요 (${esc(e.message)}). 잠시 뒤 다시 열어 주세요.</div>` });
     run(); timer = setInterval(run, t === 'flow' ? 60000 : t === 'kimp' ? 15000 : 10000);
   },
@@ -3153,7 +3236,7 @@ const NEWS = {
     if(this.tab === 'imp') items = items.filter(x => Date.now() - x.t < 864e5).sort((a, b) => b.stars - a.stars || b.srcN - a.srcN || b.t - a.t);
     sub.textContent = this.busy && !N.items.length ? '뉴스를 모으는 중…' : N.at ? `${N.ok}/${N.SOURCES.length}곳 · ${ago(N.at)} 갱신 · ★ 많을수록 시장 전체에 큰 뉴스` : '';
     L.innerHTML = items.length ? items.slice(0, 120).map(x => { const S = N.STATUS[x.status]; return `<a class="nrow" href="${esc(x.link)}" target="_blank" rel="noopener"><div class="nmeta"><span class="nst" style="--c:${S[2]}">${S[0]}</span><b class="${x.lang}">${esc(x.src)}</b>${x.srcN > 1 ? `<span class="dim">+${x.srcN - 1}곳</span>` : ''}<span class="stars s${x.stars}">${'★'.repeat(x.stars)}</span><span class="dim" style="margin-left:auto">${ago(x.t)}</span></div><div class="ntitle"${x.ko ? ` title="${esc(x.title)}"` : ''}>${esc(x.ko || x.title)}</div></a>` }).join('')
-      : `<div class="empty">${this.busy ? '불러오는 중…' : this.tab === 'coin' ? `${esc(coin)} 관련 최근 뉴스가 없어요` : '뉴스를 못 받았어요. 잠시 뒤 다시 열어 주세요.'}</div>` }
+      : `<div class="empty">${this.busy ? LC.skel(7, 'tall') : this.tab === 'coin' ? `${esc(coin)} 관련 최근 뉴스가 없어요` : '뉴스를 못 받았어요. 잠시 뒤 다시 열어 주세요.'}</div>` }
 };
 
 /* ── X 피드: 공개 미러(니터) RSS로 계정들의 최근 글을 모아요 ── */
@@ -3182,7 +3265,7 @@ const XF = {
         + this.accts.map(a => `<div class="arow"><b>@${esc(a)}</b><span></span><button class="hb" data-del="${esc(a)}" title="빼기">✕</button></div>`).join('') + '<div style="padding:10px"><button class="btn sm" id="xReset">기본 계정으로</button></div>'; return }
     sub.textContent = this.busy && !this.items.length ? `계정 ${this.accts.length}곳 글을 모으는 중…` : `${this.ok || 0}/${this.accts.length}개 계정 · ${this.at ? ago(this.at) : ''} 갱신 · 공개 미러라 가끔 늦거나 빠질 수 있어요`;
     L.innerHTML = this.items.length ? this.items.map(x => `<a class="xrow" href="${esc(x.link)}" target="_blank" rel="noopener"><div class="nmeta"><b>@${esc(x.a)}</b>${x.rt ? '<span class="tag">리포스트</span>' : ''}<span class="dim">${ago(x.t)}</span></div><div class="xtext">${esc(x.text.slice(0, 420))}</div></a>`).join('')
-      : `<div class="empty">${this.busy ? '불러오는 중…' : '글을 못 받았어요. 공개 미러가 잠시 막혔을 수 있어요.'}</div>` }
+      : `<div class="empty">${this.busy ? LC.skel(7, 'tall') : '글을 못 받았어요. 공개 미러가 잠시 막혔을 수 있어요.'}</div>` }
 };
 
 LC.panels.push(IND, ARB, NEWS, XF);
@@ -3411,7 +3494,7 @@ const app = LC.app = {
     if(market && market !== v.market) v.market = market;
     v.set(sym); this.syncHeader(); this.panels.forEach(p => p.onSymbol && p.onSymbol(v));
   },
-  setConn(v, ok){ if(v === this.active){ $('dot').classList.toggle('ok', ok); $('connTxt').textContent = ok ? '실시간 연결됨' : '재연결 중…' } },
+  setConn(v, ok, via){ if(v === this.active){ const bk = ok && via === 'bybit'; $('dot').classList.toggle('ok', ok && !bk); $('dot').classList.toggle('bk', bk); $('connTxt').textContent = bk ? '예비' : ok ? '' : '재연결'; $('connTxt').parentNode.title = bk ? '바이낸스 연결이 끊겨 바이비트 시세로 잠시 이어 그리는 중이에요 (값이 조금 다를 수 있어요)' : ok ? '실시간 연결됨' : '연결이 끊겨 다시 잇는 중이에요' } },
   hint(t){ const h = $('hint'); h.textContent = t; h.classList.toggle('show', !!t) },
 
   /* 거래소 종목 정보 (가격 소수점) */
@@ -3468,6 +3551,7 @@ const app = LC.app = {
     $('ctabs').onclick = e => { const t = e.target.closest('.ctab'); if(!t) return; const i = +t.dataset.i;
       if(e.target.closest('.x')){ if(this.ctabs.length < 2) return; this.ctabs.splice(i, 1); if(this.ctabOn >= this.ctabs.length) this.ctabOn = this.ctabs.length - 1; this.saveTabs(); this.goTab(this.ctabOn); return }
       this.goTab(i) };
+    setTimeout(() => this.tour(), 1800);
     const clk = () => { $('clock').textContent = new Date().toLocaleTimeString('ko-KR', { timeZone:'Asia/Seoul', hour12:false }) + ' KST' }; clk(); setInterval(clk, 1000);
   },
   /* 위쪽 차트 탭: 종목·시장·봉 묶음을 저장해 두고 눌러서 바꿔요 */
@@ -3502,8 +3586,8 @@ const app = LC.app = {
         L.innerHTML = rows.map((r, i) => { const t = (this.tickers[r.m] || {})[r.s] || {}, [nm] = A.info(r.s, r.m), g = A.group(r.s, r.m);
           const ex = r.m === 'hl' ? LC.hlm.label(r.s) : r.m === 'spot' ? 'BINANCE 현물' : 'BINANCE 무기한';
           return `<div class="sr-row ${i === sel ? 'on' : ''}" data-i="${i}">${A.icon(r.s, r.m, 22)}<div class="sr-nm"><b>${esc(g === 'kr' || g === 'cmd' || g === 'fx' ? nm : A.base(r.s))}</b><small>${esc(g === 'kr' || g === 'cmd' || g === 'fx' ? A.base(r.s) : nm)} · ${ex}</small></div>
-          <span class="num">${t.c ? LC.fmtPx(t.c) : '-'}</span><span class="num ${(t.P||0) >= 0 ? 'up' : 'down'}">${t.P != null ? LC.fmtPct(t.P) : ''}</span><span class="num dim">${t.q ? LC.fmtBig(t.q) : ''}</span></div>` }).join('')
-          || `<div class="empty">${k ? '찾는 종목이 없어요' : '시세를 불러오는 중이에요'}</div>`;
+          <span class="num">${t.c ? LC.fmtPx(t.c) : '-'}</span><span class="num ${(t.P||0) >= 0 ? 'up' : 'down'}">${t.P != null ? LC.fmtChg(t.P) : ''}</span><span class="num dim">${t.q ? LC.fmtBig(t.q) : ''}</span></div>` }).join('')
+          || (k ? '<div class="empty">찾는 종목이 없어요</div>' : LC.skel(8));
         const on = L.querySelector('.sr-row.on'); on && on.scrollIntoView({ block:'nearest' }) };
       const pick = r => { close(); this.openSymbol(r.s, r.m) };
       q.oninput = () => { sel = 0; draw() };
@@ -3536,9 +3620,9 @@ const app = LC.app = {
   updateHeader(){
     const v = this.v; if(!v) return;
     const t = (this.tickers[v.market] || {})[v.sym], last = v.last, pr = v.prec;
-    if(last && v.loadedSym === v.sym){ $('hLast').textContent = LC.fmtN(last.close, pr); document.title = `${v.sym} ${LC.fmtN(last.close, pr)} · 우호` }
+    if(last && v.loadedSym === v.sym){ const hl = $('hLast'), nv = last.close; if(this._hlv != null && this._hlsym === v.sym && nv !== this._hlv){ hl.classList.remove('fl-up','fl-dn'); void hl.offsetWidth; hl.classList.add(nv > this._hlv ? 'fl-up' : 'fl-dn') } this._hlv = nv; this._hlsym = v.sym; hl.textContent = LC.fmtN(nv, pr); document.title = `${v.sym} ${LC.fmtN(last.close, pr)} · 우호` }
     if(t && v.market === 'hl' && v.loadedSym === v.sym && last){ const d = v.candles.filter(b => b.time >= Date.now()/1000 - 86400); if(d.length){ t.h = Math.max(...d.map(b => b.high)); t.l = Math.min(...d.map(b => b.low)) } }
-    if(t){ const cls = t.P >= 0 ? 'up' : 'down'; $('hLast').className = 'last num ' + cls; $('hChg').textContent = LC.fmtPct(t.P); $('hChg').className = 'chg num ' + cls;
+    if(t){ const cls = t.P >= 0 ? 'up' : 'down'; $('hLast').classList.remove('up','down'); $('hLast').classList.add('last','num',cls); $('hChg').textContent = LC.fmtChg(t.P); $('hChg').className = 'chg num ' + cls;
       $('sHigh').textContent = LC.fmtN(t.h, pr); $('sLow').textContent = LC.fmtN(t.l, pr); $('sVol').textContent = LC.fmtBig(t.q) + ' USDT' }
   },
   async loadFunding(){
@@ -3593,6 +3677,30 @@ const app = LC.app = {
     else if(e.altKey && !e.ctrlKey){ const m = {t:'trend', h:'hline', v:'vline', f:'fib', a:'alert', r:'rect'}[e.key.toLowerCase()]; if(m){ this.setTool(m); e.preventDefault() } }
     else if(e.shiftKey && e.key === 'ArrowRight' && v && v.replay){ v.replayStep(); e.preventDefault() }
     else if(e.key === '/' && !e.ctrlKey){ this.symSearch(); e.preventDefault() }
+    else if(e.key === '?' && !e.ctrlKey && !document.querySelector('.modal-bg')){ this.keysHelp(); e.preventDefault() }
+  },
+  keysHelp(){
+    const K = [['/', '종목 찾기'], ['?', '이 단축키 안내'], ['Esc', '그리기 취소 · 선택 풀기 · 창 닫기'], ['Del', '고른 그림 지우기'], ['Ctrl + Z', '그리기 되돌리기'],
+      ['Alt + T', '추세선'], ['Alt + H', '수평선'], ['Alt + V', '수직선'], ['Alt + R', '네모'], ['Alt + F', '피보나치'], ['Alt + A', '가격 알림선'],
+      ['Shift + →', '리플레이에서 한 봉 앞으로'], ['마우스 휠', '차트 확대·축소'], ['오른쪽 클릭', '차트 설정']];
+    LC.modal('단축키', `<div class="kh">${K.map(([k, d]) => `<div><span>${k.split(' + ').map(x => `<kbd>${esc(x)}</kbd>`).join(' + ')}</span><em>${d}</em></div>`).join('')}</div>`);
+  },
+  /* 처음 온 사람에게 3단계로 화면을 짚어 줘요 */
+  tour(force){
+    if(!force && store.get('tourDone', false)) return;
+    const S = [['#tfs', '시간 단위', '자주 쓰는 시간 단위가 여기 있어요. ▾를 누르면 다른 단위를 고르고 즐겨찾기를 바꿀 수 있어요. 지표는 옆의 지표 버튼에서 넣어요.'],
+      ['aside', '종목 목록', '오른쪽 목록에서 종목을 눌러 차트를 바꿔요. ☆을 누르면 내 목록에 담겨요. 키보드 / 를 눌러도 찾을 수 있어요.'],
+      ['#btnAl', '알림', '가격선, 급등락, 펀딩비, 거래대금 알림을 한곳에서 관리해요. 텔레그램을 이어 두면 창을 닫아도 휴대폰으로 받아요.']];
+    let i = 0; const ov = document.createElement('div'); ov.className = 'tour'; document.body.appendChild(ov);
+    const end = () => { ov.remove(); store.set('tourDone', true); removeEventListener('resize', show) };
+    const show = () => { const [sel, t, d] = S[i], el = document.querySelector(sel), r = el && el.offsetParent ? el.getBoundingClientRect() : null;
+      const hole = r ? `left:${r.left-6}px;top:${r.top-6}px;width:${r.width+12}px;height:${r.height+12}px` : 'left:50%;top:40%;width:0;height:0';
+      const bw = 300, bx = r ? Math.max(12, Math.min(innerWidth - bw - 12, r.left + r.width/2 - bw/2)) : innerWidth/2 - bw/2;
+      const by = r ? (r.bottom + 180 < innerHeight ? r.bottom + 14 : Math.max(12, r.top - 170)) : innerHeight * .4;
+      ov.innerHTML = `<div class="tour-hole" style="${hole}"></div><div class="tour-box" style="left:${bx}px;top:${by}px;width:${bw}px"><small>${i+1} / ${S.length}</small><b>${t}</b><p>${d}</p>
+        <div class="tour-b"><button class="tour-skip">건너뛰기</button><button class="tour-next">${i < S.length-1 ? '다음' : '시작하기'}</button></div></div>`;
+      ov.querySelector('.tour-skip').onclick = end; ov.querySelector('.tour-next').onclick = () => { if(++i >= S.length) end(); else show() } };
+    addEventListener('resize', show); show();
   },
 
   /* 지표 고르기 */
@@ -3657,7 +3765,7 @@ const app = LC.app = {
     this.panels.forEach(p => p.mount(body.querySelector(`.pn[data-p="${p.id}"]`), this));
     rail.onclick = e => { const b = e.target.closest('button'); if(!b) return; if(b.dataset.x === 'market') return LC.widgets.menu(b);
       if(b.dataset.x === 'more'){ const r = b.getBoundingClientRect(), hid = this.panels.filter(p => this.railHide.includes(p.id));
-        return LC.ctxMenu(r.left - 210, r.top, [...hid.map(p => [p.label, () => { this.toggleAside(false); this.showPanel(p.id) }]), ...(hid.length ? ['-'] : []), ['아이콘 고르기…', pickIcons], ['알림 목록…', () => LC.srv.alerts()], ['내 서버 · 텔레그램 · 동기화…', () => LC.srv.open()], [this.asideHidden ? '오른쪽 창 열기' : '오른쪽 창 닫기', () => this.toggleAside(!this.asideHidden)]]) }
+        return LC.ctxMenu(r.left - 210, r.top, [...hid.map(p => [p.label, () => { this.toggleAside(false); this.showPanel(p.id) }]), ...(hid.length ? ['-'] : []), ['아이콘 고르기…', pickIcons], ['알림 목록…', () => LC.srv.alerts()], ['내 서버 · 텔레그램 · 동기화…', () => LC.srv.open()], ['단축키 보기  ?', () => this.keysHelp()], ['처음 안내 다시 보기', () => this.tour(true)], [this.asideHidden ? '오른쪽 창 열기' : '오른쪽 창 닫기', () => this.toggleAside(!this.asideHidden)]]) }
       if(b.dataset.p === this.panelId && !this.asideHidden) return this.toggleAside(true); this.toggleAside(false); this.showPanel(b.dataset.p) };
     /* 왼쪽 가장자리를 끌어 너비 조절 */
     const app = document.querySelector('.app'), grip = $('asideGrip');
@@ -3690,5 +3798,6 @@ window.addEventListener('DOMContentLoaded', () => app.init());
 })();
 
 </script>
+<script>if('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </body>
 </html>

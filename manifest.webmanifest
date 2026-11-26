@@ -1,0 +1,39 @@
+{
+ "name": "우호 · 실시간 차트",
+ "short_name": "우호",
+ "lang": "ko",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#0b0c0f",
+ "theme_color": "#0b0c0f",
+ "description": "코인·주식 실시간 차트, 스캘핑 보드, 뉴스",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-mask.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "스캘핑",
+   "url": "scalp.html"
+  },
+  {
+   "name": "뉴스",
+   "url": "news.html"
+  }
+ ]
+}
