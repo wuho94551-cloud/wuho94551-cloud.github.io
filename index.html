@@ -1655,7 +1655,7 @@ const HK = { HK0700:['텐센트','0700.HK'], TENCENT:['텐센트','0700.HK'], HK
   CSOPSKHYNIX2L:['SK하이닉스 2배',''], CSOPSAMSUNG2L:['삼성전자 2배',''], CXMT:['CXMT',''], UNITREE:['유니트리',''] };
 const CMD = { XAU:['금','#d4a72c'], XAG:['은','#aeb6c2'], XPT:['백금','#9fb3c8'], XPD:['팔라듐','#c0a88a'], COPPER:['구리','#c46a3a'], CL:['WTI 원유','#5a6270'], BZ:['브렌트유','#4d5866'],
   NATGAS:['천연가스','#3f8fd6'], USDBRL:['달러/헤알','#2f9e6b'] };
-const US = { SPY:'S&P 500 ETF', QQQ:'나스닥 100 ETF', IWM:'러셀 2000 ETF', EWY:'한국 ETF', EWJ:'일본 ETF', EWT:'대만 ETF', EWZ:'브라질 ETF', SOXL:'반도체 3배', SOXS:'반도체 -3배', TQQQ:'나스닥 3배', SQQQ:'나스닥 -3배',
+const US = { KORU:'한국 3배 ETF', SMH:'반도체 ETF', SOXX:'반도체 ETF', XLE:'에너지 ETF', GDX:'금광 ETF', IBIT:'비트코인 ETF', TLT:'미 장기채 ETF', UVXY:'VIX 1.5배', NVDL:'엔비디아 2배', TSLL:'테슬라 2배', SPY:'S&P 500 ETF', QQQ:'나스닥 100 ETF', IWM:'러셀 2000 ETF', EWY:'한국 ETF', EWJ:'일본 ETF', EWT:'대만 ETF', EWZ:'브라질 ETF', SOXL:'반도체 3배', SOXS:'반도체 -3배', TQQQ:'나스닥 3배', SQQQ:'나스닥 -3배',
   TSLA:'Tesla', NVDA:'NVIDIA', AAPL:'Apple', MSFT:'Microsoft', AMZN:'Amazon', GOOGL:'Alphabet', META:'Meta', AMD:'AMD', INTC:'Intel', MSTR:'Strategy', COIN:'Coinbase', HOOD:'Robinhood', PLTR:'Palantir',
   TSM:'TSMC', MU:'Micron', AVGO:'Broadcom', NFLX:'Netflix', ORCL:'Oracle', CRCL:'Circle', BABA:'Alibaba', QCOM:'Qualcomm', ASML:'ASML', ARM:'Arm', UBER:'Uber', DIS:'Disney', JPM:'JPMorgan', WMT:'Walmart', LLY:'Eli Lilly' };
 /* 하이퍼리퀴드 이름 → 바이낸스 쪽 이름 (같은 종목 묶기) */
@@ -1664,6 +1664,7 @@ const ALIAS = { GOLD:'XAU', SILVER:'XAG', PLATINUM:'XPT', PALLADIUM:'XPD', WTI:'
 const HL_CMD = new Set(['XAU','XAG','XPT','XPD','COPPER','CL','BZ','NATGAS','URANIUM','ALUMINIUM','CORN','WHEAT','SOY','TTF','HO','GOLDJM','SILVERJM','USENERGY','GLDMINE']);
 const HL_FX = new Set(['JPY','EUR','GBP','KRW','DXY','USDBRL']);
 const HL_IDX = new Set(['XYZ100','SP500','SMALL2000','JP225','NIFTY','IBOV','VIX','VOL','MAG7','SEMIS','SEMI','TOTAL2','OTHERS','BTCD','USBOND','10Y','2Y','30Y','ROBOT','INFOTECH','NUCLEAR','DEFENSE','ENERGY','BIOTECH']);
+const ETF = new Set(['SPY','QQQ','IWM','DIA','SOXL','SOXS','TQQQ','SQQQ','KORU','NVDL','TSLL','AMDL','MSTU','TZA','TMF','TBT','UVXY','SMH','SOXX','XLE','XBI','GDX','URNM','IGV','EWY','EWJ','EWT','EWZ','EWZS','KWEB','ARTY','BITO','IBIT','MAGS','SKUU','SKDD','MUU','TLT','STXX','SNXX','CSOPSKHYNIX2L','CSOPSAMSUNG2L']);
 const HL_KR = new Set(['SAMSUNG','SKHYNIX','HYUNDAI','KR200']);
 const HL_ASIA = new Set(['HK1810','TENCENT','CATL','CXMT','UNITREE','MINIMAX','ZHIPU','GIGADEV','CAMBRICON','INNOLIGHT','AMEC','YMTC','SOFTBANK','KIOXIA','IBIDEN','RELIANCE','JIO','SHEIN','UMC']);
 CMD.GOLD = CMD.XAU; Object.assign(CMD, { URANIUM:['우라늄','#7bb661'], ALUMINIUM:['알루미늄','#9aa4b2'], CORN:['옥수수','#e3b23c'], WHEAT:['밀','#d9a85b'], SOY:['대두','#b59a5a'], TTF:['유럽 가스','#3f8fd6'], HO:['난방유','#6b7280'],
@@ -1681,9 +1682,9 @@ const A = LC.assets = {
   coinBase(sym){ return this.base(sym).replace(/^1000000|^1000|^1M/, '') },
   kind(sym, market){ const i = LC.app && LC.app.info[market || 'futures'] && LC.app.info[market || 'futures'][sym]; return i && i.ut ? i.ut : 'COIN' },
   group(sym, market){
-    if(market === 'hl'){ const k = this.key(sym); return HL_CMD.has(k) ? 'cmd' : HL_FX.has(k) ? 'fx' : HL_IDX.has(k) ? 'idx' : HL_KR.has(k) ? 'kr' : HL_ASIA.has(k) || HK[k] ? 'hk' : 'us' }
+    if(market === 'hl'){ const k = this.key(sym); return HL_CMD.has(k) ? 'cmd' : HL_FX.has(k) ? 'fx' : (HL_IDX.has(k) || ETF.has(k)) ? 'idx' : HL_KR.has(k) ? 'kr' : HL_ASIA.has(k) || HK[k] ? 'hk' : 'us' }
     const k = market === 'spot' ? 'COIN' : this.kind(sym, 'futures');
-    if(k === 'EQUITY' && /^(SPY|QQQ|IWM|DIA)$/.test(this.base(sym))) return 'idx';
+    if(/EQUITY$/.test(k) && ETF.has(this.base(sym))) return 'idx';
     return k === 'EQUITY' || k === 'PREMARKET' ? 'us' : k === 'KR_EQUITY' ? 'kr' : (k === 'HK_EQUITY' || k === 'CN_EQUITY') ? 'hk' : k === 'COMMODITY' ? 'cmd' : k === 'FX' ? 'fx' : 'coin' },
   async load(){
     if(this.cg && Date.now() - this.cg.at < 12*36e5) return;
