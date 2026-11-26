@@ -432,7 +432,7 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
     <button class="hb" id="btnReplay" title="과거 봉부터 한 봉씩 다시 보기">리플레이</button>
     <button class="hb mk" id="btnMarket" title="김치 프리미엄, 히트맵, 펀딩·OI, 시장 온도">시장 자료</button>
     <div class="right">
-      <select id="laySel" aria-label="차트 분할"></select>
+      <select id="laySel" aria-label="차트 분할"></select><button class="hb" id="btnSync" title="분할 화면 십자선·시간 범위 연동" hidden>연동</button>
       <button class="hb" id="btnShot" title="차트 그림 저장">📷</button>
       <button class="hb" id="btnSet" title="차트 설정 (색, 배경, 격자, 십자선…) · 차트에서 오른쪽 클릭해도 돼요">⚙</button>
       <button class="hb" id="btnTheme" title="밝은/어두운 화면">◐</button>
@@ -1322,7 +1322,8 @@ class ChartView {
     this.makeMain();
     this.bubbles = LC.Bubbles ? new LC.Bubbles() : null;
     this.drawings = new LC.Drawings(this);
-    this.chart.subscribeCrosshairMove(p => this.onCross(p));
+    this.chart.subscribeCrosshairMove(p => { this.onCross(p); if(p.sourceEvent !== undefined || p.point) this.app.syncCross(this, p) });
+    this.chart.timeScale().subscribeVisibleTimeRangeChange(r => this.app.syncRange(this, r));
     this.chart.subscribeClick(p => this.onClick(p));
     this.chart.timeScale().subscribeVisibleLogicalRangeChange(r => { if(r && r.from < 15 && !this.replay) this.loadMore() });
     this.q('.cv-replay').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return;
@@ -2049,9 +2050,9 @@ const BOOK = {
     el.querySelector('[data-c=group]').onchange = e => { this.group = +e.target.value; this.render() };
     setInterval(() => this.render(), 250);
   },
-  onSymbol(v){ if(this.sym === v.sym && this.market === v.market) return; this.sym = v.sym; this.market = v.market; this.setupGroups(v); this.connect() },
+  onSymbol(v){ if(this.sym === v.sym && this.market === v.market){ if(this.prec !== v.prec) this.setupGroups(v); return } this.sym = v.sym; this.market = v.market; this.setupGroups(v); this.connect() },
   setupGroups(v){
-    const tick = 1 / 10 ** v.prec; const g = [1, 2, 5, 10, 50, 100, 500].map(m => +(tick*m).toFixed(10));
+    this.prec = v.prec; const tick = 1 / 10 ** v.prec; const g = [1, 2, 5, 10, 50, 100, 500].map(m => +(tick*m).toFixed(10));
     this.group = g[0];
     this.el.querySelector('[data-c=group]').innerHTML = g.map(x => `<option value="${x}">${x}</option>`).join('');
   },
@@ -3131,9 +3132,22 @@ const app = LC.app = {
     }
     if(!this.views.includes(this.active)) this.setActive(this.views[0]);
     if(this.theme) this.setTheme(this.theme);
-    host.classList.toggle('multi', n > 1);
+    host.classList.toggle('multi', n > 1); $('btnSync').hidden = n < 2;
     $('laySel').value = lay; this.save();
   },
+  /* 분할 화면 연동: 십자선 시간, 보이는 시간 범위 */
+  syncCross(src, p){
+    if(!this.syncOn || this.views.length < 2 || this.syncing) return; this.syncing = true;
+    try{ this.views.forEach(v => { if(v === src) return;
+      if(!p.time || !p.point){ v.chart.clearCrosshairPosition(); return }
+      const t = p.time, c = v.shown; if(!c.length) return; let lo = 0, hi = c.length - 1;
+      while(lo < hi){ const m = (lo + hi + 1) >> 1; if(c[m].time <= t) lo = m; else hi = m - 1 }
+      const b = c[lo]; if(b.time > t) return; v.chart.setCrosshairPosition(b.close, b.time, v.series) }) }catch(e){}
+    this.syncing = false },
+  syncRange(src, r){
+    if(!this.syncOn || this.views.length < 2 || !r || this.syncingR || src !== this.active) return; this.syncingR = true;
+    try{ this.views.forEach(v => { if(v !== src && v.shown.length) v.chart.timeScale().setVisibleRange(r) }) }catch(e){}
+    setTimeout(() => this.syncingR = false, 0) },
   setActive(v){
     if(this.active === v) return;
     this.active = v; this.views.forEach(o => o.box.classList.toggle('active', o === v));
@@ -3168,6 +3182,8 @@ const app = LC.app = {
     $('typeSel').onchange = e => this.v && this.v.setType(e.target.value);
     $('laySel').innerHTML = LAYOUTS.map(([k,n]) => `<option value="${k}">${n}</option>`).join('');
     $('laySel').onchange = e => this.applyLayout(e.target.value);
+    this.syncOn = store.get('syncOn', true); $('btnSync').classList.toggle('on', this.syncOn);
+    $('btnSync').onclick = () => { this.syncOn = !this.syncOn; store.set('syncOn', this.syncOn); $('btnSync').classList.toggle('on', this.syncOn); LC.toast(this.syncOn ? '분할 화면 십자선·시간 범위를 같이 움직여요' : '분할 화면 연동을 껐어요') };
     $('mkt').onclick = e => { const b = e.target.closest('button'); if(!b || !this.v || b.dataset.m === this.v.market) return; if(this.v.market === 'hl') return LC.toast('하이퍼리퀴드 종목은 무기한 선물만 있어요');
       const m = b.dataset.m, sym = this.v.sym; this.v.market = m; this.v.set(sym, m); this.syncHeader(); this.panels.forEach(p => p.onMarket && p.onMarket(m)) };
     setInterval(() => { this.v && ($('hMk').innerHTML = LC.session.badge(this.v.sym, this.v.market)); this.views.forEach(v => { const e = v.q('.lg-mk'); if(e) e.innerHTML = LC.session.badge(v.sym, v.market) }) }, 30000);
@@ -3258,7 +3274,7 @@ const app = LC.app = {
   updateHeader(){
     const v = this.v; if(!v) return;
     const t = (this.tickers[v.market] || {})[v.sym], last = v.last, pr = v.prec;
-    if(last){ $('hLast').textContent = LC.fmtN(last.close, pr); document.title = `${v.sym} ${LC.fmtN(last.close, pr)} · 우호` }
+    if(last && v.loadedSym === v.sym){ $('hLast').textContent = LC.fmtN(last.close, pr); document.title = `${v.sym} ${LC.fmtN(last.close, pr)} · 우호` }
     if(t && v.market === 'hl' && v.loadedSym === v.sym && last){ const d = v.candles.filter(b => b.time >= Date.now()/1000 - 86400); if(d.length){ t.h = Math.max(...d.map(b => b.high)); t.l = Math.min(...d.map(b => b.low)) } }
     if(t){ const cls = t.P >= 0 ? 'up' : 'down'; $('hLast').className = 'last num ' + cls; $('hChg').textContent = LC.fmtPct(t.P); $('hChg').className = 'chg num ' + cls;
       $('sHigh').textContent = LC.fmtN(t.h, pr); $('sLow').textContent = LC.fmtN(t.l, pr); $('sVol').textContent = LC.fmtBig(t.q) + ' USDT' }
