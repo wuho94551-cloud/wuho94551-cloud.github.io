@@ -544,6 +544,11 @@ kbd{font:inherit;font-size:11.5px;padding:1px 6px;border:1px solid var(--line2);
 .jr-top .btn.sm{padding:5px 10px;font-size:12.5px}.jr-more{width:28px;height:28px;display:grid;place-items:center;border-radius:6px;color:var(--dim)}.jr-more:hover{background:var(--panel2);color:var(--ink)}.jr-more svg{width:16px;height:16px}
 .jr-body{flex:1;min-height:0;overflow:auto;padding:0 12px 14px}
 .jr-f{display:flex;align-items:center;gap:10px;margin:2px 0 8px}.jr-f select{padding:4px 26px 4px 8px;font-size:12.5px}.jr-n{margin-left:auto;font-size:12px}
+.bt-f{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:flex-end}.bt-f label,.bt-p label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--dim)}.bt-p{display:contents}.bt-f .inp{width:auto;min-width:78px;max-width:140px;padding:6px 8px}
+.bt-desc{margin:8px 0 4px;font-size:12px}.bt-note{margin:8px 0 0;font-size:11.5px}.bt .jks{margin-top:6px}
+.bt-list{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px}.bt-row{display:grid;grid-template-columns:34px 96px 1fr 70px 72px;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);font-size:12.5px;cursor:pointer}.bt-row:hover{background:var(--panel2)}.bt-row b{text-align:right}.bt-row:last-child{border-bottom:0}
+.bt-cmp .jt-h,.bt-cmp .jt-r{grid-template-columns:1.6fr .6fr .7fr .9fr .9fr}.bt-cmp .jt-r{cursor:pointer}.bt-cmp .jt-r:hover{background:var(--panel2)}
+@media(max-width:700px){.bt-row{grid-template-columns:30px 1fr 64px;}.bt-row .dim,.bt-row small{display:none}}
 .jr-brk{margin:0 0 10px;padding:10px 12px;border-radius:10px;background:rgba(240,163,59,.12);border:1px solid rgba(240,163,59,.35);display:flex;flex-direction:column;gap:3px}.jr-brk b{color:#f0a33b;font-size:13px}.jr-brk small{color:var(--dim);line-height:1.45}.jr-brk.soft{background:transparent;border-style:dashed;padding:6px 10px}
 .jf-rules{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}.jf .jf-rules label.chk{display:inline-flex;flex-direction:row;align-items:center;gap:6px;font-size:12.5px;color:var(--text);margin:0}.jf .jf-rules label.chk input{width:15px;margin:0}.jf-rs{margin-left:auto;font-size:12px}.jf h6 .jf-now{margin-left:8px;vertical-align:middle}
 .jr-row{display:flex;align-items:center;gap:8px;padding:9px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}.jr-row:hover{background:var(--panel2)}
@@ -641,6 +646,7 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
     <button class="hb" id="btnAl" title="가격·급등락·펀딩비·거래대금 알림 모아 보기"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12V8.5a4 4 0 018 0V12l1.5 1.5h-11zM7.5 15.5a1.6 1.6 0 003 0"/></svg>알림</button>
     <button class="hb" id="btnWg" title="청산 차트·포지션 맵·히트맵·김치 프리미엄·시장 온도"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="2.5" width="5" height="5" rx="1"/><rect x="10.5" y="2.5" width="5" height="5" rx="1"/><rect x="2.5" y="10.5" width="5" height="5" rx="1"/><rect x="10.5" y="10.5" width="5" height="5" rx="1"/></svg>위젯</button>
     <button class="hb" id="btnReplay" title="과거 봉부터 한 봉씩 다시 보기"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4.5L3.5 9l5 4.5zM15 4.5L10 9l5 4.5z"/></svg>리플레이</button>
+    <button class="hb" id="btnBt" title="지금 차트 봉으로 매매 규칙 시험해 보기 (승률·손익·최대 낙폭)"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v12h12"/><path d="M6 11l3-3 2 2 4-5"/><circle cx="15" cy="5" r="1.2" fill="currentColor"/></svg>백테스트</button>
     <div class="right">
       <select id="laySel" aria-label="차트 분할"></select><button class="hb" id="btnSync" title="분할 화면 십자선·시간 범위 연동" hidden>연동</button><button class="hb" id="btnSymLink" title="분할 화면 종목 따라가기: 한 칸에서 종목을 바꾸면 다른 칸도 같이" hidden>종목 연동</button>
       <button class="hb ic" id="btnShot" title="차트 그림 저장" aria-label="차트 그림 저장"><svg class="hi" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="13" height="9.5" rx="2"/><circle cx="9" cy="9.7" r="2.6"/><path d="M6.5 5l1-2h3l1 2"/></svg></button>
@@ -654,7 +660,7 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
   <div id="bbar">
     <div class="seg" id="ranges"></div>
     <span class="sep"></span>
-    <button class="hb" id="btnReplay2" title="과거 봉부터 한 봉씩 다시 보기">⏪ 리플레이</button>
+    <button class="hb" id="btnReplay2" title="과거 봉부터 한 봉씩 다시 보기">⏪ 리플레이</button><button class="hb" id="btnBt2" title="지금 차트 봉으로 매매 규칙 시험해 보기">🧪 백테스트</button>
     <span class="sep"></span><button class="hb cal-chip" id="calChip" title="이번 주 미국 경제 일정">📅 경제 일정</button>
     <div class="right">
       <div class="stat"><span>고가</span><b class="num" id="sHigh">-</b></div>
@@ -3357,6 +3363,143 @@ LC.panels.push(J);
 
 </script>
 <script>
+/* 간단 백테스트: 지금 차트에 불러온 봉으로 정해진 규칙을 돌려서 승률·손익·최대 낙폭을 보여 줘요.
+   신호는 봉이 닫힐 때 보고, 진입은 다음 봉 시가로 해요. 손절·목표는 봉 안에서 닿으면 그 값으로 나가고,
+   한 봉에서 둘 다 닿으면 손절로 쳐요 (보수적으로). 수수료는 진입·청산 때 한 번씩 빼요. */
+(() => {
+const { esc, store } = LC;
+const sma = (v, p) => { const o = new Array(v.length).fill(null); let s = 0; for(let i = 0; i < v.length; i++){ s += v[i]; if(i >= p) s -= v[i - p]; if(i >= p - 1) o[i] = s / p } return o };
+const ema = (v, p) => { const o = new Array(v.length).fill(null), k = 2 / (p + 1); let e = null; for(let i = 0; i < v.length; i++){ if(i < p - 1) continue; if(e == null){ let s = 0; for(let j = i - p + 1; j <= i; j++) s += v[j]; e = s / p } else e = v[i] * k + e * (1 - k); o[i] = e } return o };
+const rsi = (v, p) => { const o = new Array(v.length).fill(null); let g = 0, l = 0;
+  for(let i = 1; i < v.length; i++){ const d = v[i] - v[i - 1], up = Math.max(d, 0), dn = Math.max(-d, 0);
+    if(i <= p){ g += up; l += dn; if(i === p){ g /= p; l /= p; o[i] = l === 0 ? 100 : 100 - 100 / (1 + g / l) } }
+    else { g = (g * (p - 1) + up) / p; l = (l * (p - 1) + dn) / p; o[i] = l === 0 ? 100 : 100 - 100 / (1 + g / l) } } return o };
+const sd = (v, p, m) => v.map((_, i) => { if(m[i] == null) return null; let s = 0; for(let j = i - p + 1; j <= i; j++) s += (v[j] - m[i]) ** 2; return Math.sqrt(s / p) });
+
+/* 전략: 각 봉이 닫힐 때 +1(롱 신호) / -1(숏 신호) / 0 */
+const STRATS = {
+  ma:  { name:'이평선 교차', desc:'빠른 이평이 느린 이평을 위로 뚫으면 롱, 아래로 뚫으면 숏', params:[['fast','빠른 이평', 9], ['slow','느린 이평', 21], ['type','종류', 'EMA', ['EMA','SMA']]],
+    sig(c, p){ const cl = c.map(b => b.close), f = p.type === 'SMA' ? sma(cl, +p.fast) : ema(cl, +p.fast), s = p.type === 'SMA' ? sma(cl, +p.slow) : ema(cl, +p.slow);
+      return c.map((_, i) => i && f[i] != null && s[i] != null && f[i - 1] != null && s[i - 1] != null ? (f[i - 1] <= s[i - 1] && f[i] > s[i] ? 1 : f[i - 1] >= s[i - 1] && f[i] < s[i] ? -1 : 0) : 0) } },
+  rsi: { name:'RSI 되돌림', desc:'RSI가 과매도 선을 아래에서 위로 넘으면 롱, 과매수 선을 위에서 아래로 넘으면 숏', params:[['len','기간', 14], ['lo','과매도', 30], ['hi','과매수', 70]],
+    sig(c, p){ const r = rsi(c.map(b => b.close), +p.len); return c.map((_, i) => i && r[i] != null && r[i - 1] != null ? (r[i - 1] < +p.lo && r[i] >= +p.lo ? 1 : r[i - 1] > +p.hi && r[i] <= +p.hi ? -1 : 0) : 0) } },
+  brk: { name:'N봉 돌파', desc:'종가가 앞선 N봉 최고가를 넘으면 롱, 최저가 아래로 내려가면 숏', params:[['n','봉 수', 20]],
+    sig(c, p){ const n = +p.n; return c.map((b, i) => { if(i < n) return 0; let hi = -Infinity, lo = Infinity; for(let j = i - n; j < i; j++){ hi = Math.max(hi, c[j].high); lo = Math.min(lo, c[j].low) } return b.close > hi ? 1 : b.close < lo ? -1 : 0 }) } },
+  bb:  { name:'볼린저 밴드 반등', desc:'종가가 아래 밴드 밖에서 안으로 들어오면 롱, 위 밴드 밖에서 안으로 들어오면 숏', params:[['len','기간', 20], ['k','폭 (표준편차)', 2]],
+    sig(c, p){ const cl = c.map(b => b.close), m = sma(cl, +p.len), s = sd(cl, +p.len, m), k = +p.k;
+      return c.map((b, i) => { if(!i || m[i] == null || m[i - 1] == null) return 0; const lo0 = m[i - 1] - k * s[i - 1], lo1 = m[i] - k * s[i], hi0 = m[i - 1] + k * s[i - 1], hi1 = m[i] + k * s[i];
+        return cl[i - 1] < lo0 && cl[i] >= lo1 ? 1 : cl[i - 1] > hi0 && cl[i] <= hi1 ? -1 : 0 }) } },
+};
+
+/* 돌리기 */
+function run(c, cfg){
+  const S = STRATS[cfg.s], P = { ...Object.fromEntries(S.params.map(x => [x[0], x[2]])), ...(cfg.p || {}) }, sig = S.sig(c, P);
+  const side = cfg.side || 'both', sl = +cfg.sl || 0, tp = +cfg.tp || 0, fee = Math.max(0, +cfg.fee || 0);
+  const ok = d => side === 'both' || (side === 'long' ? d > 0 : d < 0);
+  const T = []; let pos = null;
+  const close = (j, px, why) => { const pct = ((px / pos.entry) - 1) * pos.d * 100 - 2 * fee; T.push({ ...pos, j, t1: c[j].time, exit: px, pct, why }); pos = null };
+  const open = (j, d) => { const e = c[j].open; pos = { d, i: j, t0: c[j].time, entry: e, stop: sl ? e * (1 - d * sl / 100) : null, tgt: tp ? e * (1 + d * tp / 100) : null } };
+  for(let i = 0; i < c.length; i++){
+    const b = c[i];
+    if(pos){ /* 봉 안에서 손절·목표 */
+      if(pos.stop != null && (pos.d > 0 ? b.low <= pos.stop : b.high >= pos.stop)) close(i, pos.d > 0 ? Math.min(b.open, pos.stop) : Math.max(b.open, pos.stop), '손절');
+      else if(pos.tgt != null && (pos.d > 0 ? b.high >= pos.tgt : b.low <= pos.tgt)) close(i, pos.d > 0 ? Math.max(b.open, pos.tgt) : Math.min(b.open, pos.tgt), '목표');
+    }
+    const s = sig[i]; if(!s || i + 1 >= c.length) continue;
+    if(pos && pos.d !== s){ close(i + 1, c[i + 1].open, '반대 신호'); }
+    if(!pos && ok(s)) open(i + 1, s);
+  }
+  let openT = null; if(pos){ const L = c[c.length - 1]; openT = { ...pos, t1: L.time, exit: L.close, pct: ((L.close / pos.entry) - 1) * pos.d * 100 - fee, open: true } }
+  /* 통계 */
+  let eq = 1, peak = 1, dd = 0; const curve = [0];
+  T.forEach(t => { eq *= 1 + t.pct / 100; peak = Math.max(peak, eq); dd = Math.min(dd, eq / peak - 1); curve.push((eq - 1) * 100) });
+  const W = T.filter(t => t.pct > 0), Lo = T.filter(t => t.pct <= 0), sum = a => a.reduce((s, t) => s + t.pct, 0);
+  const bh = (c[c.length - 1].close / c[0].open - 1) * 100, sec = c.length > 1 ? c[1].time - c[0].time : 60;
+  return { P, T, openT, n: T.length, win: T.length ? W.length / T.length * 100 : 0, total: (eq - 1) * 100, avg: T.length ? sum(T) / T.length : 0,
+    pf: Lo.length ? sum(W) / Math.abs(sum(Lo)) : W.length ? Infinity : 0, dd: dd * 100, bh, curve, hold: T.length ? T.reduce((s, t) => s + (t.j - t.i), 0) / T.length : 0, sec,
+    from: c[0].time, to: c[c.length - 1].time };
+}
+
+const fP = v => v == null || !isFinite(v) ? '-' : (v > 0 ? '+' : '') + v.toFixed(2) + '%';
+const cls = v => v > 0 ? 'up' : v < 0 ? 'down' : '';
+const kst = (s, o) => new Date(s * 1000).toLocaleString('ko-KR', { timeZone:'Asia/Seoul', hour12:false, ...o });
+const dur = sec => sec >= 86400 ? (sec / 86400).toFixed(1).replace(/\.0$/, '') + '일' : sec >= 3600 ? (sec / 3600).toFixed(1).replace(/\.0$/, '') + '시간' : Math.round(sec / 60) + '분';
+
+const BT = LC.bt = { run, STRATS,
+  res: null, key: '',
+  cfg(){ return Object.assign({ s:'ma', p:{}, side:'both', sl:0, tp:0, fee:0.05, show:true }, store.get('btCfg', {})) },
+  open(){
+    const v = LC.app && LC.app.v; if(!v || !v.candles || v.candles.length < 50) return LC.toast('차트 봉이 아직 다 안 불러와졌어요. 잠시 뒤 다시 눌러 주세요.', '', 3000);
+    const c0 = this.cfg();
+    LC.modal(`백테스트 · ${esc(v.sym)} ${esc((LC.TF.find(x => x[0] === v.tf) || [, v.tf])[1])}`, `<div class="bt">
+      <div class="bt-f"><label>전략<select class="inp" id="btS">${Object.entries(STRATS).map(([k, s]) => `<option value="${k}" ${c0.s === k ? 'selected' : ''}>${s.name}</option>`).join('')}</select></label>
+        <span id="btP" class="bt-p"></span>
+        <label>방향<select class="inp" id="btSd">${[['both','롱·숏 모두'],['long','롱만'],['short','숏만']].map(([k, n]) => `<option value="${k}" ${c0.side === k ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+        <label>손절 %<input class="inp num" type="number" step="0.1" min="0" id="btSl" value="${c0.sl || ''}" placeholder="없음"></label>
+        <label>목표 %<input class="inp num" type="number" step="0.1" min="0" id="btTp" value="${c0.tp || ''}" placeholder="없음"></label>
+        <label title="진입·청산 때 각각 빠지는 수수료">수수료 %<input class="inp num" type="number" step="0.01" min="0" id="btFee" value="${c0.fee}"></label></div>
+      <p class="dim bt-desc" id="btD"></p>
+      <div id="btR"></div>
+      <div class="row-end"><label class="chk"><input type="checkbox" id="btShow" ${c0.show ? 'checked' : ''}> 차트에 진입·청산 표시</label><span style="flex:1"></span><button class="btn" id="btCmp">전략 4개 한 번에 비교</button></div>
+      <p class="muted bt-note">불러온 봉 ${v.candles.length.toLocaleString()}개로 계산해요 (차트를 왼쪽으로 넘기면 더 불러와져요). 레버리지와 미끄러짐은 빼고, 수수료만 넣었어요. 지난 결과가 앞으로도 같다는 뜻은 아니에요.</p></div>`, (mb, close) => {
+      const q = s => mb.querySelector(s);
+      const params = () => { const s = q('#btS').value, saved = (this.cfg().s === s ? this.cfg().p : {}) || {};
+        q('#btP').innerHTML = STRATS[s].params.map(([k, n, d, opts]) => `<label>${n}${opts ? `<select class="inp" data-k="${k}">${opts.map(o => `<option ${(saved[k] ?? d) === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`
+          : `<input class="inp num" type="number" min="1" step="${k === 'k' ? 0.1 : 1}" data-k="${k}" value="${saved[k] ?? d}">`}</label>`).join('');
+        q('#btD').textContent = STRATS[s].desc };
+      const read = () => { const p = {}; mb.querySelectorAll('#btP [data-k]').forEach(x => { p[x.dataset.k] = x.tagName === 'SELECT' ? x.value : (+x.value || STRATS[q('#btS').value].params.find(y => y[0] === x.dataset.k)[2]) });
+        const c = { s: q('#btS').value, p, side: q('#btSd').value, sl: +q('#btSl').value || 0, tp: +q('#btTp').value || 0, fee: Math.max(0, +q('#btFee').value || 0), show: q('#btShow').checked };
+        store.set('btCfg', c); return c };
+      const go = () => { const vv = LC.app.v, c = read(); if(c.s === 'ma' && +c.p.fast >= +c.p.slow){ q('#btR').innerHTML = '<div class="empty">빠른 이평 기간이 느린 이평보다 작아야 해요</div>'; return }
+        this.res = run(vv.candles, c); this.key = vv.sym + '|' + vv.market + '|' + vv.tf; this.show = c.show; q('#btR').innerHTML = this.html(this.res) };
+      let tm; const later = () => { clearTimeout(tm); tm = setTimeout(go, 150) };
+      q('#btS').onchange = () => { params(); go() }; mb.addEventListener('input', e => { if(e.target.id !== 'btS') later() }); mb.addEventListener('change', e => { if(e.target.id !== 'btS') later() });
+      q('#btCmp').onclick = () => { clearTimeout(tm); const vv = LC.app.v, c = read();
+        const rows = Object.keys(STRATS).map(k => ({ k, r: run(vv.candles, { ...c, s: k, p: k === c.s ? c.p : {} }) })).sort((a, b) => b.r.total - a.r.total);
+        q('#btR').innerHTML = `<h6>전략 비교 <small class="dim">각 전략 기본값 (고른 전략은 지금 값) · 같은 방향·손절·목표·수수료</small></h6><div class="jt bt-cmp"><div class="jt-h"><span>전략</span><span>횟수</span><span>승률</span><span>누적</span><span>최대 낙폭</span></div>
+          ${rows.map(({ k, r }) => `<div class="jt-r" data-pick="${k}"><span>${STRATS[k].name}</span><span class="num">${r.n}</span><span class="num">${r.win.toFixed(0)}%</span><span class="num ${cls(r.total)}">${fP(r.total)}</span><span class="num down">${r.dd.toFixed(1)}%</span></div>`).join('')}</div>
+          <p class="dim" style="margin:6px 0 0;font-size:12px">줄을 누르면 그 전략으로 자세히 봐요 · 그냥 들고 있었다면 ${fP(rows[0].r.bh)}</p>` };
+      q('#btR').addEventListener('click', e => { const pk = e.target.closest('[data-pick]'); if(pk){ q('#btS').value = pk.dataset.pick; params(); go(); return }
+        const tr = e.target.closest('[data-t0]'); if(tr) this.goto(+tr.dataset.t0, +tr.dataset.t1) });
+      params(); go();
+    }, 'wide');
+  },
+  html(r){
+    if(!r.n && !r.openT) return '<div class="empty">이 기간에는 신호가 한 번도 안 나왔어요. 기간 값을 바꾸거나 다른 시간 단위로 봐 주세요.</div>';
+    const k = (n, v, c, s) => `<div class="jk"><small>${n}</small><b class="num ${c || ''}">${v}</b>${s ? `<small class="dim">${s}</small>` : ''}</div>`;
+    const W = 300, H = 70, lo = Math.min(0, ...r.curve), hi = Math.max(0, ...r.curve), y = p => (H - (p - lo) / ((hi - lo) || 1) * (H - 6) - 3).toFixed(1);
+    const pts = r.curve.map((p, i) => `${(i / (r.curve.length - 1 || 1) * W).toFixed(1)},${y(p)}`).join(' ');
+    const L = [...r.T, ...(r.openT ? [r.openT] : [])].slice(-40).reverse();
+    return `<div class="jks">${k('누적 결과', fP(r.total), cls(r.total), `그냥 들고 있었다면 ${fP(r.bh)}`)}${k('매매 수', r.n + '번', '', r.openT ? '지금 진행 중 1개 따로' : '')}
+        ${k('승률', r.win.toFixed(0) + '%', '', `평균 ${fP(r.avg)}`)}${k('수익 ÷ 손실', isFinite(r.pf) ? r.pf.toFixed(2) : '∞', r.pf >= 1.3 ? 'up' : r.pf < 1 ? 'down' : '', '1보다 크면 번 쪽이 많아요')}
+        ${k('최대 낙폭', r.dd.toFixed(1) + '%', r.dd < -20 ? 'down' : '', '고점 대비 가장 많이 줄었을 때')}${k('평균 보유', dur(r.hold * r.sec), '', `${kst(r.from, { month:'numeric', day:'numeric' })} ~ ${kst(r.to, { month:'numeric', day:'numeric' })}`)}</div>
+      <h6>누적 결과 <small class="dim">매매가 끝날 때마다 · 수수료 뺀 값</small></h6><svg class="jr-eq" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="0" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line2)" stroke-dasharray="3 3"/><polyline points="${pts}" fill="none" stroke="var(--${r.total >= 0 ? 'up' : 'down'})" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>
+      <h6>매매 목록 <small class="dim">최근 40개 · 누르면 차트에서 그 구간을 보여 줘요</small></h6>
+      <div class="bt-list">${L.map(t => `<div class="bt-row" data-t0="${t.t0}" data-t1="${t.t1}"><i class="jr-side ${t.d > 0 ? 'long' : 'short'}">${t.d > 0 ? '롱' : '숏'}</i>
+        <span class="num dim">${kst(t.t0, { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' })}</span><span class="num">${LC.fmtPx(t.entry)} → ${LC.fmtPx(t.exit)}</span>
+        <small class="dim">${t.open ? '진행 중' : esc(t.why)}</small><b class="num ${cls(t.pct)}">${fP(t.pct)}</b></div>`).join('')}</div>`;
+  },
+  goto(t0, t1){ const v = LC.app.v; if(!v) return; const d = v.drawings, a = d.tToL(t0), b = d.tToL(t1); if(a == null) return; const pad = Math.max(20, (b - a) * 0.8);
+    v.chart.timeScale().setVisibleLogicalRange({ from: a - pad, to: b + pad }) },
+  /* 차트에 진입 ▲▼ · 청산 ● · 잇는 점선 */
+  drawOn(ctx, d, A){
+    const r = this.res, v = d.v; if(!r || !this.show || !v || v.replay || this.key !== v.sym + '|' + v.market + '|' + v.tf) return;
+    const L = [...r.T, ...(r.openT ? [r.openT] : [])]; ctx.save();
+    L.forEach(t => { const x0 = d.tToX(t.t0), y0 = d.pToY(t.entry), x1 = d.tToX(t.t1), y1 = d.pToY(t.exit); if(x0 == null || y0 == null || x1 == null || y1 == null) return;
+      if(Math.max(x0, x1) < 0 || Math.min(x0, x1) > A.w) return;
+      const col = t.open ? '#f0b90b' : t.pct > 0 ? '#5b9cf6' : '#f0616d';
+      ctx.strokeStyle = col; ctx.globalAlpha = .7; ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      ctx.fillStyle = t.d > 0 ? '#26a69a' : '#ef5350'; ctx.beginPath();
+      if(t.d > 0){ ctx.moveTo(x0, y0 + 2); ctx.lineTo(x0 - 5, y0 + 10); ctx.lineTo(x0 + 5, y0 + 10) } else { ctx.moveTo(x0, y0 - 2); ctx.lineTo(x0 - 5, y0 - 10); ctx.lineTo(x0 + 5, y0 - 10) } ctx.fill();
+      if(!t.open){ ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x1, y1, 3.5, 0, 7); ctx.fill() } });
+    ctx.restore();
+  },
+};
+LC.overlays = LC.overlays || []; LC.overlays.push({ draw: (ctx, d, A) => BT.drawOn(ctx, d, A) });
+})();
+
+</script>
+<script>
 /* 하이퍼리퀴드: 고래 포지션, 고래 움직임, 청산 감지, 청산 지도 */
 (() => {
 const { esc, store } = LC;
@@ -4395,6 +4538,7 @@ const app = LC.app = {
     $('btnTheme').onclick = () => this.setTheme(this.theme === 'light' ? 'dark' : 'light');
     $('btnFull').onclick = () => { try{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() }catch(e){} };
     $('btnReplay2').onclick = $('btnReplay').onclick;
+    $('btnBt').onclick = $('btnBt2').onclick = () => LC.bt && LC.bt.open();
     $('btnSym').onclick = () => this.symSearch();
     $('ranges').innerHTML = RANGES.map(([n,tf]) => `<button data-tf="${tf}" title="${n} 보기 (${tf} 봉)">${n}</button>`).join('');
     $('ranges').onclick = e => { const b = e.target.closest('button'); if(b && this.v){ this.v.setTf(b.dataset.tf); this.syncHeader() } };
