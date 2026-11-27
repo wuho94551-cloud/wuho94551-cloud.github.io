@@ -500,6 +500,40 @@ kbd{font:inherit;font-size:11.5px;padding:1px 6px;border:1px solid var(--line2);
 .tour-b{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.tour-b button{padding:6px 12px;border-radius:6px;font-size:13px}
 .tour-skip{color:var(--dim)}.tour-skip:hover{color:var(--ink)}.tour-next{background:var(--accent);color:#fff;font-weight:600}
 @media(max-width:700px){.kh{grid-template-columns:1fr}}
+/* 색 고르기 창 (작도·지표 공통) */
+.cpk{width:272px;padding:12px}
+.ck-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.ck-big{width:64px;height:30px;border-radius:7px;flex:none;overflow:hidden;background:repeating-conic-gradient(#888 0 25%,#ccc 0 50%) 0 0/10px 10px}.ck-big b{display:block;width:100%;height:100%}
+.ck-hex{flex:1;min-width:0;background:transparent!important;border:0!important;border-bottom:1px solid var(--line2)!important;border-radius:0!important;color:var(--ink);text-align:center;font-weight:600;padding:5px 2px!important}
+.ck-eye{display:inline-flex;align-items:center;gap:4px;padding:6px 9px;border:1px solid var(--line2);border-radius:7px;font-size:12.5px;color:var(--ink);font-weight:600;flex:none}.ck-eye:hover{background:var(--panel2)}.ck-eye svg{width:14px;height:14px}
+.ck-sl{margin-bottom:12px}.ck-lb{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--dim);margin-bottom:6px}
+.ck-v{display:flex;align-items:center;gap:2px;font-size:11px}.ck-n{width:40px;background:transparent!important;border:0!important;border-bottom:1px solid var(--line2)!important;border-radius:0!important;padding:1px 2px!important;text-align:right;color:var(--ink);font-size:12px;-moz-appearance:textfield}
+.ck-n::-webkit-inner-spin-button{display:none}
+.ck-tr{position:relative;height:7px;border-radius:4px;cursor:pointer;touch-action:none;background:repeating-conic-gradient(#777 0 25%,#bbb 0 50%) 0 0/7px 7px}
+.ck-bg{position:absolute;inset:0;border-radius:4px}
+.ck-th{position:absolute;top:8px;width:10px;height:8px;background:#fff;transform:translateX(-50%);clip-path:polygon(50% 0,100% 50%,100% 100%,0 100%,0 50%);pointer-events:none}
+.ck-pal{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.ck-pal button{aspect-ratio:1;border-radius:4px;border:1px solid rgba(255,255,255,.1)}.ck-pal button:hover{transform:scale(1.12)}.ck-pal button.on{outline:2px solid var(--ink);outline-offset:1px}
+.ck-rt{font-size:12px;color:var(--dim);margin:12px 0 6px}.ck-none{grid-column:1/-1;font-size:11.5px;color:var(--faint)}
+/* 작도 선택 막대 (사진처럼) */
+.sel-bar{position:absolute;top:8px;right:74px;left:auto;transform:none;z-index:6;display:none;gap:1px;align-items:center;background:var(--panel);border:1px solid var(--line2);border-radius:8px;padding:3px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.sel-bar button{position:relative;height:28px;min-width:28px;padding:0 6px!important;border-radius:5px!important;display:inline-flex;align-items:center;justify-content:center;gap:6px;color:var(--ink)}
+.sel-bar button:hover{background:var(--panel2)!important}.sel-bar button.on{color:var(--accent)}
+.sel-bar svg{width:16px;height:16px}
+.sb-grip{display:grid;place-items:center;width:16px;height:28px;color:var(--faint);cursor:grab}.sb-grip:active{cursor:grabbing}.sb-grip svg{width:8px;height:14px}
+.sb-cu{position:absolute;left:7px;right:7px;bottom:3px;height:3px;border-radius:2px}
+.sb-ln{display:block;width:26px;border-top:1px solid currentColor}.sb-ln.wide{width:34px;border-top-width:2px}
+.sb-px{font-size:12px;font-weight:600}.sb-w{padding:0 8px!important}
+.sb-sep{width:1px;height:18px;background:var(--line2);margin:0 3px}
+.ds .srow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.ds .srow label{display:flex;align-items:center;gap:6px;font-size:13px}.ds .sctl{display:flex;align-items:center;gap:6px}
+.ds .sctl .inp{width:150px}.ds input[type=range]{width:120px;accent-color:var(--accent)}
+.dl{max-height:56vh;overflow:auto;margin:-4px 0 4px}
+.dl-row{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:5px}.dl-row:hover{background:var(--panel2)}.dl-row.off{opacity:.5}
+.dl-c{width:10px;height:10px;border-radius:3px;flex:none}.dl-n{flex:1;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dl-p{font-size:12px}
+.dl-row button{width:26px;height:26px;display:grid;place-items:center;border-radius:5px;color:var(--dim)}.dl-row button:hover{background:var(--hover);color:var(--ink)}.dl-row button.on{color:var(--accent)}.dl-row svg{width:15px;height:15px}
+#tools [data-act="memo"].has{position:relative}#tools [data-act="memo"].has::after{content:'';position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.memo-ta{width:100%;min-height:220px;resize:vertical;line-height:1.6;box-sizing:border-box}
 </style>
 </head>
 <body>
@@ -682,31 +716,65 @@ const HUES = ['#f23645','#ff9800','#ffeb3b','#4caf50','#089981','#00bcd4','#2962
 const mix = (hex, to, k) => { const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16);
   return '#' + [16, 8, 0].map(sh => Math.round(((a >> sh) & 255) * (1 - k) + ((b >> sh) & 255) * k).toString(16).padStart(2, '0')).join('') };
 const PALETTE = [GRAYS, HUES, ...[.8, .6, .4, .2].map(k => HUES.map(h => mix(h, '#ffffff', k))), ...[.25, .5].map(k => HUES.map(h => mix(h, '#000000', k)))];
-const openPicker = sw => {
+/* 색 고르기 창: 색조·채도·밝기·진하기 막대, 색 코드, 스포이드, 팔레트, 최근 쓴 색 */
+const hexToHsl = hex => { const n = parseInt(hex.slice(1), 16), r = (n>>16&255)/255, g = (n>>8&255)/255, b = (n&255)/255;
+  const mx = Math.max(r,g,b), mn = Math.min(r,g,b), l = (mx+mn)/2, d = mx-mn; let h = 0, s = 0;
+  if(d){ s = d/(1-Math.abs(2*l-1)); h = mx === r ? ((g-b)/d) % 6 : mx === g ? (b-r)/d + 2 : (r-g)/d + 4; h *= 60; if(h < 0) h += 360 }
+  return [Math.round(h), Math.round(s*100), Math.round(l*100)] };
+const hslToHex = (h, s, l) => { s /= 100; l /= 100; const k = n => (n + h/30) % 12, a = s*Math.min(l, 1-l), f = n => l - a*Math.max(-1, Math.min(k(n)-3, 9-k(n), 1));
+  return '#' + [f(0), f(8), f(4)].map(x => Math.round(x*255).toString(16).padStart(2, '0')).join('') };
+const PAL3 = [GRAYS, HUES, HUES.map(h => mix(h, '#ffffff', .45))];
+const I_EYE = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5l3 3-1.5 1.5-3-3zM9 4L3.5 9.5 3 13l3.5-.5L12 7"/></svg>';
+const pick = (anchor, val, onInput) => {
   document.querySelectorAll('.cpop').forEach(x => x.remove());
-  const cur = parseColor(sw.dataset.v), custom = LC.store.get('customColors', []);
-  const pop = document.createElement('div'); pop.className = 'cpop';
-  pop.innerHTML = PALETTE.map((row, i) => `<div class="cp-row ${i === 2 ? 'gap' : ''}">${row.map(c => `<button data-c="${c}" class="${c === cur.hex ? 'on' : ''}" style="background:${c}"></button>`).join('')}</div>`).join('')
-    + `<hr><div class="cp-row cp-cust">${custom.map(c => `<button data-c="${c}" style="background:${c}"></button>`).join('')}<label class="cp-add" title="직접 고르기">+<input type="color" value="${cur.hex}"></label></div>
-      <div class="cp-op"><span>불투명도</span><div class="cp-opr"><input type="range" min="0" max="100" value="${Math.round(cur.a*100)}" style="--c:${cur.hex}"><input class="cp-pct" type="number" min="0" max="100" value="${Math.round(cur.a*100)}"><b>%</b></div></div>`;
+  const c0 = parseColor(val); let hex = c0.hex, a = c0.a, [h, s, l] = hexToHsl(hex), changed = false;
+  const SL = [['h','색조',360,'°'],['s','채도',100,'%'],['l','밝기',100,'%'],['a','진하기',100,'%']];
+  const pop = document.createElement('div'); pop.className = 'cpop cpk';
+  pop.innerHTML = `<div class="ck-top"><i class="ck-big"><b></b></i><input class="ck-hex num" maxlength="7" spellcheck="false" aria-label="색 코드">
+      <button class="ck-eye" title="화면에서 색 집기" ${window.EyeDropper ? '' : 'hidden'}>${I_EYE}스포이드</button></div>
+    ${SL.map(([k, n, mx, u]) => `<div class="ck-sl" data-k="${k}"><div class="ck-lb"><span>${n}</span><span class="ck-v"><input class="ck-n num" type="number" min="0" max="${mx}" data-k="${k}">${u}</span></div><div class="ck-tr"><i class="ck-bg"></i><i class="ck-th"></i></div></div>`).join('')}
+    <hr><div class="ck-pal">${PAL3.flat().map(c => `<button data-c="${c}" style="background:${c}" aria-label="색 ${c}"></button>`).join('')}</div>
+    <div class="ck-rt">최근 쓴 색</div><div class="ck-pal ck-rec"></div>`;
   document.body.appendChild(pop);
-  const r = sw.getBoundingClientRect(), pr = pop.getBoundingClientRect();
+  const val4 = () => ({ h, s, l, a: Math.round(a*100) }), MAX = { h:360, s:100, l:100, a:100 };
+  const recent = () => { const R = LC.store.get('recentColors', []); pop.querySelector('.ck-rec').innerHTML = R.map(c => `<button data-c="${c}" style="background:${c}" aria-label="색 ${c}"></button>`).join('') || '<span class="ck-none">아직 없어요</span>';
+    pop.querySelector('.ck-rt').hidden = false };
+  const upd = src => {
+    if(!['hex','init','pal','eye'].includes(src)) hex = hslToHex(h, s, l);
+    const v = mkColor(hex, a), V = val4();
+    pop.querySelector('.ck-big b').style.background = v;
+    if(src !== 'hex') pop.querySelector('.ck-hex').value = hex.toUpperCase();
+    const bg = { h:'linear-gradient(90deg,' + [0,60,120,180,240,300,360].map(x => `hsl(${x},100%,50%)`).join(',') + ')',
+      s:`linear-gradient(90deg,hsl(${h},0%,${l}%),hsl(${h},100%,${l}%))`, l:`linear-gradient(90deg,hsl(${h},${s}%,0%),hsl(${h},${s}%,50%),hsl(${h},${s}%,100%))`,
+      a:`linear-gradient(90deg,transparent,${hex})` };
+    pop.querySelectorAll('.ck-sl').forEach(el => { const k = el.dataset.k; el.querySelector('.ck-bg').style.background = bg[k]; el.querySelector('.ck-th').style.left = (V[k] / MAX[k] * 100) + '%';
+      const n = el.querySelector('.ck-n'); if(src !== 'n' + k) n.value = V[k] });
+    pop.querySelectorAll('.ck-pal [data-c]').forEach(b => b.classList.toggle('on', b.dataset.c.toLowerCase() === hex.toLowerCase() && (b.closest('.ck-rec') ? b.dataset.c === v : true)));
+    if(src !== 'init'){ changed = true; onInput(v) }
+  };
+  const setK = (k, x, src) => { x = Math.max(0, Math.min(MAX[k], Math.round(x))); if(k === 'h') h = x; else if(k === 's') s = x; else if(k === 'l') l = x; else a = x/100; upd(src) };
+  pop.querySelectorAll('.ck-tr').forEach(tr => tr.addEventListener('pointerdown', e => { const k = tr.closest('.ck-sl').dataset.k;
+    const go = ev => { const r = tr.getBoundingClientRect(); setK(k, (ev.clientX - r.left) / r.width * MAX[k], 'drag') };
+    go(e); tr.setPointerCapture(e.pointerId); tr.onpointermove = go; tr.onpointerup = () => { tr.onpointermove = null } }));
+  pop.querySelectorAll('.ck-n').forEach(n => n.oninput = () => setK(n.dataset.k, +n.value || 0, 'n' + n.dataset.k));
+  pop.querySelector('.ck-hex').oninput = e => { let t = e.target.value.trim(); if(!t.startsWith('#')) t = '#' + t;
+    if(/^#[0-9a-f]{6}$/i.test(t)){ hex = t.toLowerCase(); [h, s, l] = hexToHsl(hex); upd('hex') } };
+  pop.querySelector('.ck-eye').onclick = async () => { try{ const r = await new window.EyeDropper().open(); hex = r.sRGBHex.length === 7 ? r.sRGBHex : parseColor(r.sRGBHex).hex; [h, s, l] = hexToHsl(hex); upd('eye') }catch(e){} };
+  pop.addEventListener('click', e => { const b = e.target.closest('[data-c]'); if(!b) return; const c = parseColor(b.dataset.c); hex = c.hex; if(b.closest('.ck-rec')) a = c.a; [h, s, l] = hexToHsl(hex); upd('pal') });
+  recent(); upd('init');
+  const r = anchor.getBoundingClientRect(), pr = pop.getBoundingClientRect();
   pop.style.left = Math.max(6, Math.min(r.left, innerWidth - pr.width - 6)) + 'px';
-  pop.style.top = (r.bottom + pr.height + 6 < innerHeight ? r.bottom + 4 : Math.max(6, r.top - pr.height - 4)) + 'px';
-  let hex = cur.hex, al = cur.a;
-  const rng = pop.querySelector('[type=range]'), pct = pop.querySelector('.cp-pct');
-  const set = () => { const v = mkColor(hex, al); sw.dataset.v = v; sw.querySelector('i').style.background = v; rng.style.setProperty('--c', hex);
-    pop.querySelectorAll('[data-c]').forEach(b => b.classList.toggle('on', b.dataset.c === hex)); sw.dispatchEvent(new Event('input', { bubbles:true })) };
-  pop.addEventListener('click', e => { const b = e.target.closest('[data-c]'); if(b){ hex = b.dataset.c; set() } });
-  pop.querySelector('.cp-add input').oninput = e => { hex = e.target.value; set() };
-  pop.querySelector('.cp-add input').onchange = e => { const c = e.target.value, l = LC.store.get('customColors', []).filter(x => x !== c); l.unshift(c); LC.store.set('customColors', l.slice(0, 10)) };
-  rng.oninput = () => { al = rng.value / 100; pct.value = rng.value; set() };
-  pct.oninput = () => { const v = Math.max(0, Math.min(100, +pct.value || 0)); al = v / 100; rng.value = v; set() };
-  const off = e => { if(!pop.contains(e.target) && e.target.closest('.swatch') !== sw){ pop.remove(); document.removeEventListener('mousedown', off, true) } };
+  pop.style.top = (r.bottom + pr.height + 6 < innerHeight ? r.bottom + 6 : Math.max(6, r.top - pr.height - 6)) + 'px';
+  const close = () => { pop.remove(); document.removeEventListener('mousedown', off, true);
+    if(changed){ const v = mkColor(hex, a), R = LC.store.get('recentColors', []).filter(x => x !== v); R.unshift(v); LC.store.set('recentColors', R.slice(0, 10)) } };
+  const off = e => { if(!pop.contains(e.target) && !anchor.contains(e.target)) close() };
   setTimeout(() => document.addEventListener('mousedown', off, true));
+  pop.close = close;
+  return pop;
 };
+const openPicker = sw => pick(sw, sw.dataset.v, v => { sw.dataset.v = v; sw.querySelector('i').style.background = v; sw.dispatchEvent(new Event('input', { bubbles:true })) });
 document.addEventListener('click', e => { const sw = e.target.closest('.swatch'); if(sw){ e.preventDefault(); document.querySelector('.cpop') && document.querySelector('.cpop').dataset.for === sw.dataset.ck ? document.querySelector('.cpop').remove() : (openPicker(sw), document.querySelector('.cpop').dataset.for = sw.dataset.ck) } });
-LC.color = { parseColor, mkColor, colorField, readColor };
+LC.color = { parseColor, mkColor, colorField, readColor, pick };
 const DASH = [['0','실선'],['1','점선'],['2','파선'],['3','긴 파선']];
 LC.DASH = DASH;
 
@@ -1129,9 +1197,23 @@ LC.IND = { DEFS, META, PARAM_LABEL, sma, ema, smaN, rsiCalc };
 const FIB = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1, 1.272, 1.618];
 const FIB_COL = ['#8a94a6','#f0616d','#f0a33b','#5b9cf6','#2ec4b6','#5b9cf6','#8a94a6','#b38cff','#e05bd6'];
 const COLORS = ['#f0b90b','#5b9cf6','#26c6a0','#f0616d','#e05bd6','#ffffff'];
-const TWO = ['trend','ray','ext','rect','fib','pos','measure'];
+const TWO = ['trend','ray','ext','arrow','rect','ellipse','fib','pos','measure','prange','channel','xabcd','zoom'];
 const ONE = ['hline','hray','vline','text','alert'];
-const DEFAULT_COLOR = {alert:'#ff9f1c', pos:'#5b9cf6', text:'#e6e8ec'};
+const NEED = { channel:3, xabcd:5 };                       /* 몇 번 눌러야 완성되는지 (나머지는 2번) */
+const NAMES = { trend:'추세선', ray:'반직선', ext:'연장선', arrow:'화살표', hline:'수평선', hray:'수평 반직선', vline:'수직선', rect:'사각형', ellipse:'원',
+  fib:'피보나치 되돌림', pos:'포지션', measure:'재기', prange:'가격 범위', channel:'평행 채널', xabcd:'XABCD 패턴', text:'글자', alert:'가격 알림선' };
+const DEFAULT_COLOR = {alert:'#ff9f1c', pos:'#5b9cf6', text:'#e6e8ec', prange:'#5b9cf6'};
+const WIDTHS = [1, 1.5, 2, 3, 4], DASHES = [[], [1.5, 3], [5, 4], [10, 6]], DASH_N = ['실선', '점선', '파선', '긴 파선'], SIZES = [11, 13, 16, 20, 24, 32];
+const FILLED = ['rect','ellipse','channel','prange','xabcd'];
+/* 도구마다 마지막으로 쓴 색·굵기·모양을 기억해서 다음에 그릴 때 그대로 써요 */
+const defOf = t => Object.assign({ color: DEFAULT_COLOR[t] || COLORS[0] }, (LC.store.get('drawDef', {}) || {})[t] || {});
+const SV = p => `<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const BI = { grip: '<svg viewBox="0 0 10 16" fill="currentColor"><circle cx="3" cy="3" r="1.2"/><circle cx="7" cy="3" r="1.2"/><circle cx="3" cy="8" r="1.2"/><circle cx="7" cy="8" r="1.2"/><circle cx="3" cy="13" r="1.2"/><circle cx="7" cy="13" r="1.2"/></svg>',
+  pen: SV('<path d="M3 15l1-4 8-8 3 3-8 8z"/><path d="M10.5 4.5l3 3"/>'), T: SV('<path d="M4 4h10M9 4v10"/>'),
+  lock: SV('<rect x="4" y="8" width="10" height="7.5" rx="1.5"/><path d="M6 8V6a3 3 0 016 0v2"/>'), unlock: SV('<rect x="4" y="8" width="10" height="7.5" rx="1.5"/><path d="M6 8V6a3 3 0 015.6-1.5"/>'),
+  gear: SV('<circle cx="9" cy="9" r="2.3"/><path d="M9 2v2M9 14v2M2 9h2M14 9h2M4 4l1.4 1.4M12.6 12.6L14 14M4 14l1.4-1.4M12.6 5.4L14 4"/>'),
+  trash: SV('<path d="M3.5 5h11M7 5V3h4v2M5 5l.8 10h6.4L13 5"/>'), more: '<svg viewBox="0 0 18 18" fill="currentColor"><circle cx="4" cy="9" r="1.4"/><circle cx="9" cy="9" r="1.4"/><circle cx="14" cy="9" r="1.4"/></svg>',
+  eye: SV('<path d="M1.5 9S4.5 4 9 4s7.5 5 7.5 5-3 5-7.5 5S1.5 9 1.5 9z"/><circle cx="9" cy="9" r="2.2"/>'), eyeOff: SV('<path d="M1.5 9S4.5 4 9 4s7.5 5 7.5 5-3 5-7.5 5S1.5 9 1.5 9z"/><path d="M3 15L15 3"/>') };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 class Drawings {
@@ -1198,6 +1280,7 @@ class Drawings {
   /* 마우스 */
   onDown(e){
     if(e.type === 'touchstart' || e.button > 0) return;
+    if(this.bar.contains(e.target)) return;
     if(e.type === 'pointerdown' && e.pointerType !== 'mouse') return;
     if(e.type === 'mousedown' && this._handled){ this._handled = false; e.stopPropagation(); e.preventDefault(); return }
     const {x, y} = this.pos(e); const A = this.area();
@@ -1207,12 +1290,12 @@ class Drawings {
     const stop = () => { e.stopPropagation(); e.preventDefault(); if(e.type === 'pointerdown') this._handled = true };
     if(tool !== 'cross'){
       const pt = this.ptAt(x, y); if(!pt){ stop(); return }
-      if(this.draft){ this.finishDraft(pt); stop(); return }
+      if(this.draft){ const d = this.draft; d.pts[d.pts.length-1] = pt; if(d.pts.length >= (NEED[d.type] || 2)) this.finishDraft(); else d.pts.push({...pt}); stop(); return }
       if(ONE.includes(tool)){
         if(tool === 'text'){ this.askText(txt => { if(!txt) return; this.add({type:'text', pts:[pt], text:txt}) }); stop(); return }
         this.add({type:tool, pts:[pt]}); stop(); return;
       }
-      this.draft = { id:uid(), type:tool, pts:[pt, {...pt}], color: DEFAULT_COLOR[tool] || COLORS[0] };
+      this.draft = { id:uid(), type:tool, pts:[pt, {...pt}], ...defOf(tool) };
       stop(); return;
     }
     if(this.app && this.app.drawLocked) return;
@@ -1225,7 +1308,7 @@ class Drawings {
   }
   onHover(e){
     const {x, y} = this.pos(e);
-    if(this.draft){ const pt = this.ptAt(x, y); if(pt) this.draft.pts[1] = pt; return }
+    if(this.draft){ const pt = this.ptAt(x, y); if(pt) this.draft.pts[this.draft.pts.length-1] = pt; return }
     if(this.drag) return;
     const tool = this.app ? this.app.tool : 'cross';
     const hit = tool === 'cross' && !(this.app && this.app.drawLocked) ? this.hitTest(x, y) : null;
@@ -1251,14 +1334,15 @@ class Drawings {
   onUp(){ if(this.drag){ if(this.drag.moved) this.save(); else this.undoStack.pop(); this.drag = null } }
   onDbl(e){ const {x, y} = this.pos(e); const hit = this.hitTest(x, y);
     if(hit && hit.item.type === 'text'){ e.stopPropagation(); this.askText(t => { if(t){ this.snapshot(); hit.item.text = t; this.save() } }, hit.item.text) } }
-  finishDraft(pt){
-    const d = this.draft; d.pts[1] = pt; this.draft = null;
+  finishDraft(){
+    const d = this.draft; this.draft = null;
+    if(d.type === 'zoom'){ this.zoomTo(d); this.app && this.app.setTool('cross'); return }
     if(d.type === 'measure'){ this.measure = d; setTimeout(() => { if(this.measure === d) this.measure = null }, 8000); this.app && this.app.setTool('cross'); return }
     if(d.type === 'pos'){ const e = d.pts[0].p, s = d.pts[1].p; d.pts[2] = { t: d.pts[1].t, p: e + 2*(e - s) } }
     this.add(d);
   }
   add(it){
-    this.snapshot(); it.id = it.id || uid(); it.color = it.color || DEFAULT_COLOR[it.type] || COLORS[0];
+    this.snapshot(); it.id = it.id || uid(); Object.assign(it, { ...defOf(it.type), ...it });
     this.items.push(it); this.sel = it; this.save(); this.updateBar();
     if(this.app && !this.app.keepTool) this.app.setTool('cross');
   }
@@ -1270,33 +1354,134 @@ class Drawings {
     });
   }
 
-  /* 선택된 개체 도구 막대 */
+  /* 선택된 개체 도구 막대: 끌어서 옮길 수 있고, 색·굵기·선 모양·설정·잠금·지우기·더보기 */
+  remember(it){ const all = LC.store.get('drawDef', {}) || {}; all[it.type] = { color:it.color, width:it.width, dash:it.dash, ...(it.type === 'text' ? { size:it.size } : {}) }; LC.store.set('drawDef', all) }
+  change(it, f){ if(!this._chg || this._chg !== it){ this.snapshot(); this._chg = it; clearTimeout(this._chgT) } this._chgT = setTimeout(() => this._chg = null, 1200); f(it); this.save(); this.remember(it) }
+  placeBar(){ const b = this.bar, pos = LC.store.get('selBarPos', null), W = this.v.box.clientWidth, H = this.v.box.clientHeight;
+    if(pos){ b.style.right = 'auto'; b.style.left = Math.max(4, Math.min(W - b.offsetWidth - 4, pos.x)) + 'px'; b.style.top = Math.max(4, Math.min(H - b.offsetHeight - 4, pos.y)) + 'px' }
+    else { b.style.left = 'auto'; b.style.right = '74px'; b.style.top = '8px' } }
   updateBar(){
     const it = this.sel;
-    if(!it){ this.bar.style.display = 'none'; return }
+    if(!it || !this.items.includes(it)){ this.bar.style.display = 'none'; document.querySelectorAll('.cpop.for-draw').forEach(p => p.close ? p.close() : p.remove()); return }
+    const txt = it.type === 'text', W = it.width || 1.5, Dd = +it.dash || 0, bs = ['solid','dotted','dashed','dashed'][Dd];
     this.bar.style.display = 'flex';
-    this.bar.innerHTML = COLORS.map(c => `<button class="sw ${it.color===c?'on':''}" data-c="${c}" style="background:${c}" aria-label="색 ${c}"></button>`).join('')
-      + `<button data-a="lock" title="잠그기">${it.locked ? '🔒' : '🔓'}</button><button data-a="del" title="지우기 (Delete)">🗑</button>`;
+    this.bar.innerHTML = `<span class="sb-grip" title="끌어서 옮기기 (두 번 누르면 제자리)">${BI.grip}</span>
+      <button data-a="color" title="색">${txt ? BI.T : BI.pen}<i class="sb-cu" style="background:${LC.esc(it.color)}"></i></button>
+      ${txt ? `<button data-a="size" class="sb-w" title="글자 크기"><span class="sb-px num">${it.size || 13}px</span></button>`
+        : `<button data-a="width" class="sb-w" title="선 굵기"><i class="sb-ln" style="border-top-width:${Math.max(1, Math.round(W))}px"></i><span class="sb-px num">${W}px</span></button>
+      <button data-a="dash" class="sb-w" title="선 모양: ${DASH_N[Dd]}"><i class="sb-ln wide" style="border-top-style:${bs}"></i></button>`}
+      <span class="sb-sep"></span>
+      <button data-a="set" title="설정">${BI.gear}</button>
+      <button data-a="lock" class="${it.locked ? 'on' : ''}" title="${it.locked ? '잠금 풀기' : '잠그기 (움직이지 않게)'}">${it.locked ? BI.lock : BI.unlock}</button>
+      <button data-a="del" title="지우기 (Delete)">${BI.trash}</button>
+      <button data-a="more" title="더 보기">${BI.more}</button>`;
+    this.placeBar();
     this.bar.onmousedown = e => e.stopPropagation();
-    this.bar.onclick = e => { const b = e.target.closest('button'); if(!b) return;
-      if(b.dataset.c){ this.snapshot(); it.color = b.dataset.c; this.save(); this.updateBar() }
-      else if(b.dataset.a === 'lock'){ it.locked = !it.locked; this.save(); this.updateBar() }
-      else if(b.dataset.a === 'del') this.remove(it) };
+    this.bar.onpointerdown = e => { e.stopPropagation(); const g = e.target.closest('.sb-grip'); if(!g) return; e.preventDefault();
+      const br = this.v.box.getBoundingClientRect(), r0 = this.bar.getBoundingClientRect(), dx = e.clientX - r0.left, dy = e.clientY - r0.top;
+      const mv = ev => { LC.store.set('selBarPos', { x: ev.clientX - br.left - dx, y: ev.clientY - br.top - dy }); this.placeBar() };
+      const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up) };
+      addEventListener('pointermove', mv); addEventListener('pointerup', up) };
+    this.bar.ondblclick = e => { if(e.target.closest('.sb-grip')){ LC.store.set('selBarPos', null); this.placeBar() } };
+    this.bar.onclick = e => { const b = e.target.closest('button'); if(!b) return; const r = b.getBoundingClientRect(), a = b.dataset.a;
+      if(a === 'color'){ const open = document.querySelector('.cpop.for-draw'); if(open){ open.close(); return }
+        const pop = LC.color.pick(b, it.color, v => { this.change(it, x => x.color = v); b.querySelector('.sb-cu').style.background = v }); pop.classList.add('for-draw') }
+      else if(a === 'width') LC.ctxMenu(r.left, r.bottom + 4, WIDTHS.map(w => [`${w === W ? '✓ ' : '　'}${w}px`, () => { this.change(it, x => x.width = w); this.updateBar() }]));
+      else if(a === 'dash') LC.ctxMenu(r.left, r.bottom + 4, DASH_N.map((n, k) => [`${k === Dd ? '✓ ' : '　'}${n}`, () => { this.change(it, x => x.dash = k); this.updateBar() }]));
+      else if(a === 'size') LC.ctxMenu(r.left, r.bottom + 4, SIZES.map(z => [`${z === (it.size || 13) ? '✓ ' : '　'}${z}px`, () => { this.change(it, x => x.size = z); this.updateBar() }]));
+      else if(a === 'set') this.settings(it);
+      else if(a === 'lock'){ it.locked = !it.locked; this.save(); this.updateBar() }
+      else if(a === 'del') this.remove(it);
+      else if(a === 'more') LC.ctxMenu(r.right - 190, r.bottom + 4, [['복제', () => this.clone(it)], ['맨 앞으로', () => this.order(it, 1)], ['맨 뒤로', () => this.order(it, -1)],
+        ['숨기기', () => { it.hidden = true; this.sel = null; this.save(); this.updateBar() }], '-', ['작도 목록…', () => this.listModal()], ['이 종목 작도 모두 지우기', () => this.clear()]]);
+    };
+  }
+  clone(it){ const c = JSON.parse(JSON.stringify(it)), sh = 5 * this.tfSec(); c.id = null; c.fired = false; delete c.dir; c.pts.forEach(p => p.t += sh); this.add(c) }
+  order(it, d){ this.snapshot(); this.items = this.items.filter(x => x !== it); d > 0 ? this.items.push(it) : this.items.unshift(it); this.save() }
+  /* 확대 도구: 끌어서 고른 시간만큼 크게. 축소 버튼은 바로 전 화면으로 돌아가요 */
+  zoomTo(d){ const ts = this.v.chart.timeScale(), a = this.tToL(d.pts[0].t), b = this.tToL(d.pts[1].t); if(a == null || b == null || Math.abs(b - a) < 3) return;
+    (this.v.zoomStack = this.v.zoomStack || []).push(ts.getVisibleLogicalRange()); ts.setVisibleLogicalRange({ from:Math.min(a, b), to:Math.max(a, b) }) }
+  zoomOut(){ const ts = this.v.chart.timeScale(), z = this.v.zoomStack && this.v.zoomStack.pop();
+    if(z) return ts.setVisibleLogicalRange(z); const r = ts.getVisibleLogicalRange(); if(r){ const w = r.to - r.from; ts.setVisibleLogicalRange({ from:r.from - w/2, to:r.to + w/2 }) } }
+
+  /* 작도 설정 창: 모양 / 좌표 (바꾸면 바로 보여요, 취소하면 되돌려요) */
+  settings(it){
+    const C = LC.color, snap = JSON.stringify(it), prec = this.v.prec, txt = it.type === 'text', W = it.width || 1.5, Dd = +it.dash || 0;
+    const PN = it.type === 'pos' ? ['진입','손절','목표'] : it.type === 'xabcd' ? ['X','A','B','C','D'] : it.type === 'channel' ? ['점 1','점 2','폭'] : it.pts.length > 1 ? ['시작','끝'] : ['가격'];
+    const tstr = t => new Date(t * 1000).toLocaleString('ko-KR', { timeZone:'Asia/Seoul', hour12:false, month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+    const html = `<div class="sub-tabs st-tabs"><button data-t="0" class="on">모양</button>${it.type === 'vline' ? '' : '<button data-t="1">좌표</button>'}</div>
+      <div class="st-pane ds" data-t="0">
+        <div class="srow"><label>색</label><span class="sctl">${C.colorField('dc', it.color)}</span></div>
+        ${txt ? `<div class="srow"><label>글자</label><span class="sctl"><input class="inp" id="dsTxt" maxlength="120" value="${LC.esc(it.text || '')}"></span></div>
+          <div class="srow"><label>글자 크기</label><span class="sctl"><select id="dsSize">${SIZES.map(z => `<option ${z === (it.size || 13) ? 'selected' : ''}>${z}</option>`).join('')}</select></span></div>
+          <div class="srow"><label><input type="checkbox" id="dsBg" ${it.noBg ? '' : 'checked'}> 글자 뒤 배경</label></div>`
+        : `<div class="srow"><label>선</label><span class="sctl"><select id="dsW" title="굵기">${WIDTHS.map(w => `<option value="${w}" ${w === W ? 'selected' : ''}>${w}px</option>`).join('')}</select>
+            <select id="dsD" title="선 모양">${DASH_N.map((n, k) => `<option value="${k}" ${k === Dd ? 'selected' : ''}>${n}</option>`).join('')}</select></span></div>`}
+        ${FILLED.includes(it.type) ? `<div class="srow"><label>채우기 진하기</label><span class="sctl"><input type="range" id="dsF" min="0" max="60" value="${Math.round((it.fill != null ? it.fill : .12) * 100)}"><b class="num" id="dsFv">${Math.round((it.fill != null ? it.fill : .12) * 100)}%</b></span></div>` : ''}
+        ${['hline','hray'].includes(it.type) ? `<div class="srow"><label><input type="checkbox" id="dsLab" ${it.noLabel ? '' : 'checked'}> 오른쪽에 가격 표시</label></div>` : ''}
+      </div>
+      <div class="st-pane ds" data-t="1" hidden>${it.pts.map((p, i) => `<div class="srow"><label>${PN[i] || '점 ' + (i+1)}${it.type === 'hline' || it.type === 'alert' ? '' : `<small class="dim"> ${tstr(p.t)}</small>`}</label>
+        <span class="sctl"><input class="inp num" type="number" step="any" data-pi="${i}" value="${+p.p.toFixed(prec)}"></span></div>`).join('')}</div>
+      <div class="row-end"><button class="btn" id="dsDef">이 모양을 기본으로</button><button class="btn" id="dsCancel">취소</button><button class="btn pri" id="dsOk">확인</button></div>`;
+    let ok = false; this.snapshot();
+    LC.modal((NAMES[it.type] || '작도') + ' 설정', html, (mb, close) => {
+      mb.querySelector('.st-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return;
+        mb.querySelectorAll('.st-tabs button').forEach(x => x.classList.toggle('on', x === b)); mb.querySelectorAll('.st-pane').forEach(p => p.hidden = p.dataset.t !== b.dataset.t) };
+      const q = s => mb.querySelector(s);
+      const read = () => { it.color = C.readColor(q('[data-ck="dc"]'));
+        if(txt){ it.text = q('#dsTxt').value; it.size = +q('#dsSize').value; it.noBg = !q('#dsBg').checked }
+        else { it.width = +q('#dsW').value; it.dash = +q('#dsD').value }
+        if(q('#dsF')){ it.fill = q('#dsF').value / 100; q('#dsFv').textContent = q('#dsF').value + '%' }
+        if(q('#dsLab')) it.noLabel = !q('#dsLab').checked;
+        mb.querySelectorAll('[data-pi]').forEach(el => { const v = parseFloat(el.value); if(isFinite(v) && v > 0){ const i = +el.dataset.pi; it.pts[i].p = v;
+          if(it.type === 'alert' && Math.abs(v - JSON.parse(snap).pts[i].p) > 1e-12){ it.fired = false; it.id = null; delete it.dir } } });
+        this.save(); this.updateBar() };
+      mb.addEventListener('input', read); mb.addEventListener('change', read);
+      q('#dsDef').onclick = () => { read(); this.remember(it); q('#dsDef').textContent = '기본으로 저장했어요' };
+      q('#dsCancel').onclick = close; q('#dsOk').onclick = () => { ok = true; close() };
+    }, 'mid', () => { document.querySelectorAll('.cpop').forEach(x => x.remove());
+      if(!ok){ const o = JSON.parse(snap); Object.keys(it).forEach(k => delete it[k]); Object.assign(it, o); this.undoStack.pop(); this.save(); this.updateBar() } });
+  }
+  /* 작도 목록: 이 종목에 그린 것들을 한눈에 (숨기기·잠그기·지우기) */
+  listModal(){
+    const prec = this.v.prec;
+    const body = () => this.items.length ? this.items.map((it, i) => `<div class="dl-row ${it.hidden ? 'off' : ''}" data-i="${i}"><i class="dl-c" style="background:${LC.esc(it.color)}"></i>
+        <span class="dl-n">${NAMES[it.type] || it.type}${it.type === 'text' ? ` <small class="dim">${LC.esc((it.text || '').slice(0, 20))}</small>` : ''}</span><span class="dl-p num dim">${LC.fmtN(it.pts[0].p, prec)}</span>
+        <button data-a="eye" title="${it.hidden ? '보이기' : '숨기기'}">${it.hidden ? BI.eyeOff : BI.eye}</button><button data-a="lock" class="${it.locked ? 'on' : ''}" title="잠그기">${it.locked ? BI.lock : BI.unlock}</button><button data-a="del" title="지우기">${BI.trash}</button></div>`).reverse().join('')
+      : '<div class="empty">이 종목에 그린 게 없어요</div>';
+    LC.modal(`작도 목록 · ${this.v.sym}`, `<div class="dl">${body()}</div><div class="row-end"><button class="btn" id="dlShow">모두 보이기</button><button class="btn" id="dlUndo">되돌리기</button></div>`, mb => {
+      const L = mb.querySelector('.dl'), re = () => { L.innerHTML = body() };
+      L.onclick = e => { const r = e.target.closest('.dl-row'); if(!r) return; const it = this.items[+r.dataset.i], a = (e.target.closest('button') || {}).dataset?.a; if(!it) return;
+        if(a === 'eye'){ it.hidden = !it.hidden; if(it.hidden && this.sel === it) this.sel = null; this.save() }
+        else if(a === 'lock'){ it.locked = !it.locked; this.save() }
+        else if(a === 'del') this.remove(it);
+        else if(!it.hidden){ this.sel = it; this.app && this.app.setTool('cross') }
+        this.updateBar(); re() };
+      mb.querySelector('#dlShow').onclick = () => { this.items.forEach(i => i.hidden = false); this.save(); re() };
+      mb.querySelector('#dlUndo').onclick = () => { this.undo(); re() };
+    });
   }
 
   /* 맞춤 검사 */
   hitTest(x, y){
     if(this.app && this.app.drawHidden) return null;
-    const A = this.area(); const TOL = 6;
+    const A = this.area();
     const segD = (px, py, x1, y1, x2, y2) => { const dx = x2-x1, dy = y2-y1; const L = dx*dx+dy*dy; let t = L ? ((px-x1)*dx+(py-y1)*dy)/L : 0; t = Math.max(0, Math.min(1, t)); return Math.hypot(px-x1-t*dx, py-y1-t*dy) };
     const list = this.sel ? [this.sel, ...this.items.filter(i => i !== this.sel).reverse()] : [...this.items].reverse();
     for(const it of list){
+      if(it.hidden) continue;
       const P = it.pts.map(p => ({x: this.tToX(p.t), y: this.pToY(p.p)}));
       if(P.some(p => p.x == null || p.y == null)) continue;
+      const TOL = Math.max(6, (it.width || 1.5) / 2 + 4);
       if(it === this.sel) for(let i=0;i<P.length;i++) if(Math.hypot(P[i].x-x, P[i].y-y) < 8) return {item:it, handle:i};
       const [a, b] = P; let hit = false;
       switch(it.type){
-        case 'trend': case 'measure': hit = segD(x,y,a.x,a.y,b.x,b.y) < TOL; break;
+        case 'trend': case 'measure': case 'arrow': hit = segD(x,y,a.x,a.y,b.x,b.y) < TOL; break;
+        case 'ellipse': { const cx = (a.x+b.x)/2, cy = (a.y+b.y)/2, rx = Math.abs(b.x-a.x)/2 || 1, ry = Math.abs(b.y-a.y)/2 || 1; hit = ((x-cx)/(rx+TOL))**2 + ((y-cy)/(ry+TOL))**2 <= 1; break }
+        case 'prange': { const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x, l+30); hit = x>=l-TOL && x<=r+TOL && y>=Math.min(a.y,b.y)-TOL && y<=Math.max(a.y,b.y)+TOL; break }
+        case 'channel': { const c = P[2] || b, k = (b.y-a.y)/((b.x-a.x)||1e-9), dy = c.y - (a.y + k*(c.x-a.x));
+          hit = segD(x,y,a.x,a.y,b.x,b.y) < TOL || segD(x,y,a.x,a.y+dy,b.x,b.y+dy) < TOL || segD(x,y,a.x,a.y+dy/2,b.x,b.y+dy/2) < TOL; break }
+        case 'xabcd': for(let i = 1; i < P.length; i++) if(segD(x,y,P[i-1].x,P[i-1].y,P[i].x,P[i].y) < TOL) hit = true; break;
         case 'ray': { const k = (b.y-a.y)/((b.x-a.x)||1e-9); const ex = b.x >= a.x ? A.w : 0; hit = segD(x,y,a.x,a.y,ex,a.y+k*(ex-a.x)) < TOL; break }
         case 'ext': { const k = (b.y-a.y)/((b.x-a.x)||1e-9); hit = segD(x,y,0,a.y-k*a.x,A.w,a.y+k*(A.w-a.x)) < TOL; break }
         case 'hline': case 'alert': hit = Math.abs(y-a.y) < TOL; break;
@@ -1305,7 +1490,7 @@ class Drawings {
         case 'rect': { const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x), t = Math.min(a.y,b.y), bo = Math.max(a.y,b.y); hit = x>=l-TOL && x<=r+TOL && y>=t-TOL && y<=bo+TOL; break }
         case 'fib': { const l = Math.min(a.x,b.x); hit = x >= l-TOL && FIB.some(f => Math.abs(y - this.pToY(it.pts[1].p + (it.pts[0].p-it.pts[1].p)*f)) < TOL); break }
         case 'pos': { const c = P[2]; const l = Math.min(a.x,b.x), r = Math.max(a.x,b.x); const ys = [a.y,b.y,c.y]; hit = x>=l && x<=r && y>=Math.min(...ys)-TOL && y<=Math.max(...ys)+TOL; break }
-        case 'text': { this.ctx.font = '13px  "Noto Sans KR", sans-serif'; const w = this.ctx.measureText(it.text||'').width; hit = x>=a.x-4 && x<=a.x+w+8 && y>=a.y-18 && y<=a.y+6; break }
+        case 'text': { const fs = it.size || 13; this.ctx.font = fs + 'px  "Noto Sans KR", sans-serif'; const w = this.ctx.measureText(it.text||'').width; hit = x>=a.x-4 && x<=a.x+w+8 && y>=a.y-fs-5 && y<=a.y+6; break }
       }
       if(hit) return {item:it, handle:null};
     }
@@ -1324,14 +1509,14 @@ class Drawings {
     if(this.v.bubbles) this.v.bubbles.draw(ctx, this, A);
     (LC.overlays || []).forEach(o => { try{ o.draw(ctx, this, A) }catch(e){} });
     const hidden = this.app && this.app.drawHidden;
-    const list = hidden ? [] : [...this.items];
+    const list = hidden ? [] : this.items.filter(i => !i.hidden);
     if(this.draft) list.push(this.draft);
     if(this.measure) list.push(this.measure);
     for(const it of list) this.drawItem(ctx, it, A);
     ctx.restore();
     if(this.sel && !hidden && this.items.includes(this.sel)){
       const a = this.sel.pts.map(p => ({x:this.tToX(p.t), y:this.pToY(p.p)}));
-      a.forEach(p => { if(p.x==null||p.y==null) return; ctx.beginPath(); ctx.arc(p.x,p.y,4.5,0,7); ctx.fillStyle = '#0b0c0f'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = this.sel.color; ctx.stroke() });
+      a.forEach(p => { if(p.x==null||p.y==null) return; ctx.setLineDash([]); ctx.beginPath(); ctx.arc(p.x,p.y,5,0,7); ctx.fillStyle = '#0b0c0f'; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = LC.color.parseColor(this.sel.color).hex; ctx.stroke() });
     }
   }
   label(ctx, txt, x, y, bg, fg = '#0b0c0f', align = 'left'){
@@ -1343,21 +1528,43 @@ class Drawings {
     const P = it.pts.map(p => ({x:this.tToX(p.t), y:this.pToY(p.p)}));
     if(P.some(p => p.x == null || p.y == null)) return;
     const [a, b] = P; const col = it.color || '#f0b90b'; const prec = this.v.prec;
-    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+    const lw = it.width || 1.5, dash = (DASHES[+it.dash || 0] || []).map(v => v * Math.max(1, lw * .8)), fa = it.fill != null ? it.fill : 0.12;
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash);
     const line = (x1,y1,x2,y2) => { ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke() };
+    const lab = (txt, x, y, al) => { if(!it.noLabel) this.label(ctx, txt, x, y, col, '#0b0c0f', al) };
     switch(it.type){
       case 'trend': line(a.x,a.y,b.x,b.y); break;
+      case 'arrow': { line(a.x,a.y,b.x,b.y); const ang = Math.atan2(b.y-a.y, b.x-a.x), hl = 9 + lw*2; ctx.setLineDash([]); ctx.beginPath();
+        ctx.moveTo(b.x - hl*Math.cos(ang-0.45), b.y - hl*Math.sin(ang-0.45)); ctx.lineTo(b.x, b.y); ctx.lineTo(b.x - hl*Math.cos(ang+0.45), b.y - hl*Math.sin(ang+0.45)); ctx.stroke(); break }
+      case 'ellipse': { const cx = (a.x+b.x)/2, cy = (a.y+b.y)/2; ctx.beginPath(); ctx.ellipse(cx, cy, Math.abs(b.x-a.x)/2, Math.abs(b.y-a.y)/2, 0, 0, 7);
+        ctx.globalAlpha = fa; ctx.fill(); ctx.globalAlpha = 1; ctx.stroke(); break }
+      case 'prange': { const l = Math.min(a.x,b.x), w = Math.max(Math.abs(b.x-a.x), 30), cx = l + w/2, up = b.y < a.y, d = it.pts[1].p - it.pts[0].p;
+        ctx.globalAlpha = fa; ctx.fillRect(l, Math.min(a.y,b.y), w, Math.abs(b.y-a.y)); ctx.globalAlpha = 1;
+        line(l,a.y,l+w,a.y); line(l,b.y,l+w,b.y); ctx.setLineDash([]); line(cx,a.y,cx,b.y);
+        ctx.beginPath(); ctx.moveTo(cx-5, b.y + (up?6:-6)); ctx.lineTo(cx, b.y); ctx.lineTo(cx+5, b.y + (up?6:-6)); ctx.stroke();
+        this.label(ctx, `${d >= 0 ? '+' : ''}${LC.fmtN(d, prec)} (${LC.fmtPct(d/it.pts[0].p*100)})`, cx, b.y + (up?-13:13), col, '#0b0c0f', 'center'); break }
+      case 'channel': { const c = P[2]; line(a.x,a.y,b.x,b.y); if(!c) break; const k = (b.y-a.y)/((b.x-a.x)||1e-9), dy = c.y - (a.y + k*(c.x-a.x));
+        line(a.x,a.y+dy,b.x,b.y+dy); ctx.globalAlpha = fa; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.lineTo(b.x,b.y+dy); ctx.lineTo(a.x,a.y+dy); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha = .55; ctx.setLineDash([4,4]); ctx.lineWidth = 1; line(a.x,a.y+dy/2,b.x,b.y+dy/2); ctx.globalAlpha = 1; break }
+      case 'xabcd': { const L = 'XABCD', pp = it.pts;
+        ctx.globalAlpha = fa; [[0,1,2],[2,3,4]].forEach(tr => { if(P[tr[2]]){ ctx.beginPath(); tr.forEach((i, j) => j ? ctx.lineTo(P[i].x,P[i].y) : ctx.moveTo(P[i].x,P[i].y)); ctx.closePath(); ctx.fill() } }); ctx.globalAlpha = 1;
+        ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y)); ctx.stroke();
+        const ratio = (i, j, m, n, txt) => { if(!P[j] || !P[n]) return; const r = Math.abs(pp[j].p - pp[i].p) / (Math.abs(pp[n].p - pp[m].p) || 1e-9);
+          ctx.save(); ctx.globalAlpha = .6; ctx.setLineDash([3,3]); ctx.lineWidth = 1; line(P[j-2].x, P[j-2].y, P[j].x, P[j].y); ctx.restore();
+          const a0 = P[j-2]; this.label(ctx, r.toFixed(3), (a0.x+P[j].x)/2, (a0.y+P[j].y)/2, 'rgba(19,25,34,.9)', '#e6e8ec', 'center') };
+        ratio(1, 2, 0, 1); ratio(2, 3, 1, 2); ratio(3, 4, 2, 3);
+        P.forEach((p, i) => { const nb = P[i+1] || P[i-1], top = !nb || p.y <= nb.y; this.label(ctx, L[i], p.x, p.y + (top ? -14 : 14), col, '#0b0c0f', 'center') }); break }
       case 'ray': { const k = (b.y-a.y)/((b.x-a.x)||1e-9); const ex = b.x >= a.x ? A.w : 0; line(a.x,a.y,ex,a.y+k*(ex-a.x)); break }
       case 'ext': { const k = (b.y-a.y)/((b.x-a.x)||1e-9); line(0,a.y-k*a.x,A.w,a.y+k*(A.w-a.x)); break }
-      case 'hline': line(0,a.y,A.w,a.y); this.label(ctx, LC.fmtN(it.pts[0].p, prec), A.w-2, a.y, col, '#0b0c0f', 'right'); break;
-      case 'hray': line(a.x,a.y,A.w,a.y); this.label(ctx, LC.fmtN(it.pts[0].p, prec), A.w-2, a.y, col, '#0b0c0f', 'right'); break;
+      case 'hline': line(0,a.y,A.w,a.y); lab(LC.fmtN(it.pts[0].p, prec), A.w-2, a.y, 'right'); break;
+      case 'hray': line(a.x,a.y,A.w,a.y); lab(LC.fmtN(it.pts[0].p, prec), A.w-2, a.y, 'right'); break;
       case 'vline': line(a.x,0,a.x,A.h); break;
       case 'alert': { const fired = it.fired; ctx.setLineDash([6,4]); ctx.strokeStyle = fired ? '#5d6069' : col; line(0,a.y,A.w,a.y); ctx.setLineDash([]);
         this.label(ctx, (fired ? '✓ ' : '🔔 ') + LC.fmtN(it.pts[0].p, prec), A.w-2, a.y, fired ? '#5d6069' : col, '#0b0c0f', 'right'); break }
-      case 'rect': { ctx.globalAlpha = 0.12; ctx.fillRect(Math.min(a.x,b.x), Math.min(a.y,b.y), Math.abs(b.x-a.x), Math.abs(b.y-a.y)); ctx.globalAlpha = 1;
+      case 'rect': { ctx.globalAlpha = fa; ctx.fillRect(Math.min(a.x,b.x), Math.min(a.y,b.y), Math.abs(b.x-a.x), Math.abs(b.y-a.y)); ctx.globalAlpha = 1;
         ctx.strokeRect(Math.min(a.x,b.x), Math.min(a.y,b.y), Math.abs(b.x-a.x), Math.abs(b.y-a.y)); break }
       case 'fib': { const l = Math.min(a.x,b.x); const p0 = it.pts[0].p, p1 = it.pts[1].p;
-        ctx.setLineDash([4,3]); ctx.strokeStyle = '#5d6069'; ctx.lineWidth = 1; line(a.x,a.y,b.x,b.y); ctx.setLineDash([]);
+        ctx.setLineDash([4,3]); ctx.strokeStyle = '#5d6069'; ctx.lineWidth = 1; line(a.x,a.y,b.x,b.y); ctx.setLineDash(dash); ctx.lineWidth = lw;
         FIB.forEach((f,i) => { const pr = p1 + (p0-p1)*f; const y = this.pToY(pr); if(y == null) return;
           ctx.strokeStyle = FIB_COL[i]; line(l,y,A.w,y); ctx.font = '11px  "Noto Sans KR", sans-serif'; ctx.fillStyle = FIB_COL[i]; ctx.textBaseline = 'bottom';
           ctx.fillText(`${f} (${LC.fmtN(pr, prec)})`, l+4, y-2) }); break }
@@ -1379,13 +1586,13 @@ class Drawings {
         const secs = Math.abs(it.pts[1].t - it.pts[0].t);
         const dur = secs >= 86400 ? (secs/86400).toFixed(1)+'일' : secs >= 3600 ? (secs/3600).toFixed(1)+'시간' : Math.round(secs/60)+'분';
         this.label(ctx, `${LC.fmtN(p1-p0, prec)} (${LC.fmtPct((p1-p0)/p0*100)}) · ${bars}봉 · ${dur}`, (a.x+b.x)/2, b.y + (up?-14:14), up ? '#5b9cf6' : '#f0616d', '#fff', 'center'); break }
-      case 'text': { ctx.font = '13px  "Noto Sans KR", sans-serif'; ctx.textBaseline = 'alphabetic'; const w = ctx.measureText(it.text||'').width;
-        ctx.globalAlpha = 0.85; ctx.fillStyle = '#131922'; ctx.fillRect(a.x-4, a.y-17, w+8, 22); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillText(it.text||'', a.x, a.y); break }
+      case 'text': { const fs = it.size || 13; ctx.font = fs + 'px  "Noto Sans KR", sans-serif'; ctx.textBaseline = 'alphabetic'; const w = ctx.measureText(it.text||'').width;
+        ctx.globalAlpha = it.noBg ? 0 : 0.85; ctx.fillStyle = '#131922'; ctx.fillRect(a.x-4, a.y-fs-4, w+8, fs+9); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.fillText(it.text||'', a.x, a.y); break }
     }
   }
 }
 LC.Drawings = Drawings;
-LC.DRAW_TOOLS = { TWO, ONE };
+LC.DRAW_TOOLS = { TWO, ONE, NAMES };
 })();
 
 </script>
@@ -1450,7 +1657,7 @@ class ChartView {
     LC.chartStyle.apply(this);
     this.load();
   }
-  cfg(){ return { sym:this.sym, market:this.market, tf:this.tf, type:this.type, inds:this.inds.map(i => ({key:i.key, params:i.params, color:i.color, hidden:i.hidden, style:i.style})) } }
+  cfg(){ return { sym:this.sym, market:this.market, tf:this.tf, type:this.type, inds:this.inds.map(i => ({key:i.key, params:i.params, color:i.color, hidden:i.hidden && !(this._indHid || []).includes(i.id), style:i.style})) } }
   destroy(){ this.closeStreams(); this.replayExit(true); this.drawings.destroy(); this.chart.remove(); this.box.remove() }
 
   makeMain(){
@@ -1599,6 +1806,11 @@ class ChartView {
     if(!silent){ this.computeInd(ind, true); if(def.async) this.fetchAsync(ind); this.renderLegendInds(); this.app.save() }
     return ind;
   }
+  /* 왼쪽 막대의 '지표 모두 숨기기': 켜 둔 지표만 기억했다가 그대로 다시 보여요 (저장은 안 해요) */
+  setIndsHidden(on){
+    if(on){ this._indHid = this.inds.filter(i => !i.hidden).map(i => i.id); this.inds.forEach(i => { if(this._indHid.includes(i.id)){ i.hidden = true; this.applyIndStyle(i) } }) }
+    else { (this._indHid || []).forEach(id => { const i = this.inds.find(x => x.id === id); if(i){ i.hidden = false; this.applyIndStyle(i); i.def.async ? this.fetchAsync(i) : this.computeInd(i, true) } }); this._indHid = null }
+    this.renderLegendInds() }
   applyIndStyle(ind){
     const st = ind.style; ind.color = st.plots[0].color;
     ind.def.series.forEach((s, i) => { const p = st.plots[i], se = ind.series[i], vis = !ind.hidden && p.visible;
@@ -3397,10 +3609,16 @@ const TOOLS = [
   ['hline','수평선 (Alt+H)','<path d="M2 12h20"/><circle cx="12" cy="12" r="1.6"/>'],
   ['hray','수평 반직선','<path d="M8 12h14"/><circle cx="8" cy="12" r="1.6"/>'],
   ['vline','수직선 (Alt+V)','<path d="M12 2v20"/>'],
+  ['arrow','화살표','<path d="M4 20L19 5"/><path d="M11 5h8v8"/>'],
+  ['channel','평행 채널 (점 두 개로 선, 세 번째로 폭)','<path d="M3 14L15 4M9 20L21 10"/><circle cx="3" cy="14" r="1.4"/><circle cx="21" cy="10" r="1.4"/>'],
+  ['xabcd','XABCD 패턴 (다섯 점을 차례로)','<path d="M3 18l5-11 4 7 5-10 4 12"/>'],
+  ['prange','가격 범위','<path d="M12 5v14M8.5 8.5L12 5l3.5 3.5M8.5 15.5L12 19l3.5-3.5M5 4h14M5 20h14"/>'],
+  ['ellipse','원','<ellipse cx="12" cy="12" rx="8.5" ry="6.5"/>'],
+  ['zoom','확대 (끌어서 고른 구간을 크게)','<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M10.5 7.5v6M7.5 10.5h6"/>'],
   ['rect','사각형','<rect x="4" y="6" width="16" height="12" rx="1"/>'],
   ['fib','피보나치 되돌림 (Alt+F)','<path d="M3 5h18M3 9.5h18M3 14h18M3 19h18"/>'],
   ['pos','롱/숏 포지션 (진입 → 손절 순서로 클릭)','<rect x="5" y="4" width="14" height="8" fill="rgba(91,156,246,.35)"/><rect x="5" y="12" width="14" height="7" fill="rgba(240,97,109,.35)"/>'],
-  ['measure','재기 (가격·% ·봉 수)','<path d="M4 20V4M4 20h16M8 16l8-8"/>'],
+  ['measure','재기 (가격·% ·봉 수)','<path d="M3 17L17 3l4 4L7 21z"/><path d="M7.5 12.5l2 2M10.5 9.5l2 2M13.5 6.5l2 2"/>'],
   ['text','글자','<path d="M5 6h14M12 6v13"/>'],
   ['alert','가격 알림선 (Alt+A)','<path d="M6 16V11a6 6 0 0112 0v5l2 2H4zM10 20a2 2 0 004 0"/>']
 ];
@@ -3409,8 +3627,12 @@ const EXTRA = [
   ['keepTool','그리기 유지 (도구가 계속 선택돼 있음)','<path d="M5 19l4-1 10-10-3-3L6 15z"/><path d="M14 5l3 3"/>'],
   ['drawLocked','모든 작도 잠그기','<rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V8a4 4 0 018 0v3"/>'],
   ['drawHidden','모든 작도 숨기기','<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'],
-  ['undo','되돌리기 (Ctrl+Z)','<path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/>'],
-  ['clear','이 종목 작도 모두 지우기','<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/>']
+  ['hideInd','지표 모두 숨기기','<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><path d="M7.5 13l2.5-3 3 3.5 3-4"/>'],
+  ['objList','작도 목록 (숨기기·잠그기·지우기·되돌리기)','<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/>', 1]
+];
+const EXTRA2 = [
+  ['memo','종목 메모','<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h5"/>', 1],
+  ['clear','작도 지우기','<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/>', 1]
 ];
 const CHART_TYPES = [['candle','캔들'],['hollow','속 빈 캔들'],['ha','하이킨 아시'],['bar','바'],['line','라인'],['area','영역']];
 const LAYOUTS = [['1','1칸'],['2h','좌우 2칸'],['2v','위아래 2칸'],['4','4칸']];
@@ -3605,6 +3827,7 @@ const app = LC.app = {
     LC.chartStyle.applyAll();
   },
   syncHeader(){
+    this.syncTools && this.syncTools();
     const v = this.v; if(!v) return;
     $('hSym').textContent = v.market === 'hl' ? (v.sym.split(':')[1] || v.sym) + ' · ' + LC.hlm.label(v.sym) : v.sym + (v.market === 'futures' ? '.P' : '');
     if(v.market === 'hl') LC.hlm.start();
@@ -3638,12 +3861,14 @@ const app = LC.app = {
   /* 작도 도구 막대: 트레이딩뷰처럼 묶음별로, 오른쪽 작은 화살표를 누르면 묶음 안 도구가 펼쳐져요 */
   buildTools(){
     const svg = p => `<svg viewBox="0 0 24 24">${p}</svg>`, T = Object.fromEntries(TOOLS.map(t => [t[0], t]));
-    const GROUPS = [['cross',['cross']], ['line',['trend','ray','ext','hline','hray','vline']], ['fib',['fib']], ['shape',['rect']], ['pos',['pos','measure']], ['text',['text']], ['alert',['alert']]];
+    const GROUPS = [['cross',['cross']], ['line',['trend','ray','ext','arrow','hline','hray','vline']], ['chan',['channel','fib']], ['pat',['xabcd']], ['range',['prange']],
+      ['shape',['rect','ellipse']], ['text',['text']], ['pos',['pos']], ['measure',['measure']], ['zoom',['zoom']], ['zoomOut',[]], ['alert',['alert']]];
     this.groupPick = store.get('toolPick', {});
-    const btn = ([g, list]) => { const k = this.groupPick[g] && list.includes(this.groupPick[g]) ? this.groupPick[g] : list[0], t = T[k];
+    const btn = ([g, list]) => { if(g === 'zoomOut') return `<button data-act="zoomOut" title="축소 (확대 전 화면으로)" aria-label="축소">${svg('<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M7.5 10.5h6"/>')}</button>`; const k = this.groupPick[g] && list.includes(this.groupPick[g]) ? this.groupPick[g] : list[0], t = T[k];
       return `<div class="tg" data-g="${g}"><button data-tool="${k}" title="${t[1]}" aria-label="${t[1]}">${svg(t[2])}</button>${list.length > 1 ? `<button class="fly" data-fly="${g}" title="더 보기" aria-label="${t[1]} 묶음 펼치기"><svg viewBox="0 0 8 8"><path d="M2 1l3 3-3 3"/></svg></button>` : ''}</div>` };
     const draw = () => { $('tools').innerHTML = GROUPS.map(btn).join('')
-      + '<span class="tsep"></span>' + EXTRA.map(([k,t,p]) => `<button data-x="${k}" title="${t}" aria-label="${t}">${svg(p)}</button>`).join(''); this.syncTools() };
+      + '<span class="tsep"></span>' + EXTRA.map(([k,t,p,act]) => `<button data-${act ? 'act' : 'x'}="${k}" title="${t}" aria-label="${t}">${svg(p)}</button>`).join('')
+      + '<span class="tsep"></span>' + EXTRA2.map(([k,t,p]) => `<button data-act="${k}" title="${t}" aria-label="${t}">${svg(p)}</button>`).join(''); this.syncTools() };
     draw();
     $('tools').onclick = e => { const f = e.target.closest('[data-fly]');
       if(f){ const g = f.dataset.fly, list = GROUPS.find(x => x[0] === g)[1], r = f.closest('.tg').getBoundingClientRect();
@@ -3656,15 +3881,29 @@ const app = LC.app = {
         return }
       const b = e.target.closest('button'); if(!b) return;
       if(b.dataset.tool) return this.setTool(this.tool === b.dataset.tool && b.dataset.tool !== 'cross' ? 'cross' : b.dataset.tool);
+      const act = b.dataset.act, D = this.v && this.v.drawings;
+      if(act){ if(!D) return; const r = b.getBoundingClientRect();
+        if(act === 'zoomOut') return D.zoomOut();
+        if(act === 'objList') return D.listModal();
+        if(act === 'memo') return this.memo();
+        if(act === 'clear') return LC.ctxMenu(r.right + 6, r.top, [['이 종목 작도 모두 지우기', () => D.clear()],
+          ['알림선은 남기고 지우기', () => { D.snapshot(); D.items = D.items.filter(i => i.type === 'alert'); D.sel = null; D.save(); D.updateBar() }],
+          ['되돌리기  Ctrl+Z', () => D.undo()]]);
+        return }
       const x = b.dataset.x;
-      if(x === 'undo') return this.v && this.v.drawings.undo();
-      if(x === 'clear') return this.v && this.v.drawings.clear();
-      this[x] = !this[x]; if(x === 'magnet') store.set('magnet', this.magnet); this.syncTools() };
+      this[x] = !this[x]; if(x === 'magnet') store.set('magnet', this.magnet);
+      if(x === 'hideInd') this.views.forEach(v => v.setIndsHidden(this.hideInd));
+      this.syncTools() };
   },
   syncTools(){ document.querySelectorAll('#tools [data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === this.tool));
-    document.querySelectorAll('#tools [data-x]').forEach(b => b.classList.toggle('on', !!this[b.dataset.x])) },
+    document.querySelectorAll('#tools [data-x]').forEach(b => b.classList.toggle('on', !!this[b.dataset.x]));
+    const mb = document.querySelector('#tools [data-act="memo"]'); if(mb && this.v) mb.classList.toggle('has', !!store.get('memo_' + this.v.sym, '')) },
+  /* 종목 메모: 종목마다 한 장씩, 적어 두면 버튼에 점이 생겨요 */
+  memo(){ const v = this.v; if(!v) return; const k = 'memo_' + v.sym;
+    LC.modal(`메모 · ${v.sym}`, `<textarea class="inp memo-ta" id="memoTa" maxlength="4000" placeholder="이 종목에 대한 생각, 진입 계획, 주의할 점…">${esc(store.get(k, ''))}</textarea><p class="muted" style="margin:6px 0 0">적는 대로 저장돼요. 동기화를 켜 두면 다른 기기에서도 보여요.</p>`, mb => {
+      const ta = mb.querySelector('#memoTa'); ta.focus(); ta.oninput = () => { store.set(k, ta.value); this.syncTools() } }, 'mid') },
   setTool(t){
-    const G = {trend:'line',ray:'line',ext:'line',hline:'line',hray:'line',vline:'line',pos:'pos',measure:'pos'};
+    const G = {trend:'line',ray:'line',ext:'line',arrow:'line',hline:'line',hray:'line',vline:'line',channel:'chan',fib:'chan',rect:'shape',ellipse:'shape'};
     if(G[t] && this.groupPick && this.groupPick[G[t]] !== t && document.querySelector(`#tools .tg[data-g="${G[t]}"]`)){ this.groupPick[G[t]] = t; store.set('toolPick', this.groupPick); this.buildTools() }
     this.tool = t; this.views.forEach(v => { v.drawings.draft = null; v.box.classList.toggle('tool-on', t !== 'cross') }); this.syncTools() },
 
