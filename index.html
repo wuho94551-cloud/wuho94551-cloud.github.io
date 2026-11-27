@@ -544,6 +544,8 @@ kbd{font:inherit;font-size:11.5px;padding:1px 6px;border:1px solid var(--line2);
 .jr-top .btn.sm{padding:5px 10px;font-size:12.5px}.jr-more{width:28px;height:28px;display:grid;place-items:center;border-radius:6px;color:var(--dim)}.jr-more:hover{background:var(--panel2);color:var(--ink)}.jr-more svg{width:16px;height:16px}
 .jr-body{flex:1;min-height:0;overflow:auto;padding:0 12px 14px}
 .jr-f{display:flex;align-items:center;gap:10px;margin:2px 0 8px}.jr-f select{padding:4px 26px 4px 8px;font-size:12.5px}.jr-n{margin-left:auto;font-size:12px}
+.jr-brk{margin:0 0 10px;padding:10px 12px;border-radius:10px;background:rgba(240,163,59,.12);border:1px solid rgba(240,163,59,.35);display:flex;flex-direction:column;gap:3px}.jr-brk b{color:#f0a33b;font-size:13px}.jr-brk small{color:var(--dim);line-height:1.45}.jr-brk.soft{background:transparent;border-style:dashed;padding:6px 10px}
+.jf-rules{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}.jf .jf-rules label.chk{display:inline-flex;flex-direction:row;align-items:center;gap:6px;font-size:12.5px;color:var(--text);margin:0}.jf .jf-rules label.chk input{width:15px;margin:0}.jf-rs{margin-left:auto;font-size:12px}.jf h6 .jf-now{margin-left:8px;vertical-align:middle}
 .jr-row{display:flex;align-items:center;gap:8px;padding:9px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}.jr-row:hover{background:var(--panel2)}
 .jr-l{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.jr-l>div{display:flex;align-items:center;gap:6px}.jr-l small{font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .jr-side{font-style:normal;font-size:10.5px;font-weight:600;padding:1px 5px;border-radius:3px;background:rgba(var(--acc-rgb),.15);color:var(--up)}.jr-side.short{background:rgba(240,97,109,.15);color:var(--down)}
@@ -3068,14 +3070,26 @@ const calc = r => {
 };
 
 /* 기록 하나를 안전한 모양으로: 숫자 칸은 숫자 아니면 비우고, 상태·방향·태그도 정해진 값만 */
-const NUMK = ['entry', 'stop', 'target', 'exit', 'size', 'lev', 'rating', 'at', 'openAt', 'closeAt', 'upd'];
+const NUMK = ['entry', 'stop', 'target', 'exit', 'size', 'lev', 'rating', 'at', 'openAt', 'closeAt', 'upd', 'ruleN'];
 const cleanRec = r => { const o = { ...r };
   NUMK.forEach(k => { if(o[k] == null || o[k] === '') { o[k] = null; return } const n = +o[k]; o[k] = isFinite(n) ? n : null });
   if(!o.at) o.at = o.openAt || o.upd || 0;
   o.side = o.side === 'short' ? 'short' : 'long'; if(!['plan', 'open', 'closed', 'cancel'].includes(o.status)) o.status = o.exit != null ? 'closed' : 'open';
-  ['reasons', 'mistakes', 'inds'].forEach(k => { o[k] = Array.isArray(o[k]) ? o[k].filter(x => typeof x === 'string').map(x => x.slice(0, 40)) : [] });
+  ['reasons', 'mistakes', 'inds', 'rules'].forEach(k => { o[k] = Array.isArray(o[k]) ? o[k].filter(x => typeof x === 'string').map(x => x.slice(0, 40)) : [] });
   o.sym = String(o.sym || '').slice(0, 40); o.note = typeof o.note === 'string' ? o.note.slice(0, 4000) : '';
   return o };
+/* 진입 전 체크리스트: 내 매매 규칙을 적어 두고, 기록할 때 지킨 것만 체크해요 */
+const DEF_RULES = ['추세 방향과 같은 쪽', '손절가를 먼저 정함', '손익비 1.5 이상', '위험 1% 이하', '큰 경제 일정 확인'];
+const rules = () => { const L = store.get('jrRules', null); return Array.isArray(L) ? L.filter(x => typeof x === 'string' && x.trim()).slice(0, 12) : DEF_RULES };
+/* 연속 손실 브레이크: 오늘(한국 시간) 연달아 n번 잃으면 정한 시간 동안 쉬어 가요 */
+const brkCfg = () => Object.assign({ on:true, n:2, mins:60 }, store.get('jrBrk', {}));
+const dayKST = ms => new Date(ms + 9 * 36e5).toISOString().slice(0, 10);
+const brkState = list => { const c = brkCfg(); if(!c.on) return null;
+  const today = dayKST(Date.now()), C = list.filter(r => r.status === 'closed' && r.entry && r.exit && r.closeAt && dayKST(r.closeAt) === today).sort((a, b) => b.closeAt - a.closeAt);
+  let n = 0; for(const r of C){ if(calc(r).pct <= 0) n++; else break }
+  if(n < c.n) return { n, need:c.n, active:false };
+  const until = C[0].closeAt + c.mins * 6e4; return { n, need:c.n, until, active: Date.now() < until, left: until - Date.now() } };
+const fmtLeft = ms => { const m = Math.max(1, Math.ceil(ms / 6e4)); return m >= 60 ? Math.floor(m / 60) + '시간' + (m % 60 ? ' ' + m % 60 + '분' : '') : m + '분' };
 const J = {
   id:'journal', label:'매매 일지', tab:'list', filter:'all', onlySym:false, period:'all',
   get list(){ const L = store.get('journal', []); return Array.isArray(L) ? L.filter(r => r && typeof r === 'object' && r.id).map(cleanRec) : [] },
@@ -3092,7 +3106,10 @@ const J = {
     el.querySelector('.jr-more').onclick = e => { const r = e.currentTarget.getBoundingClientRect();
       LC.ctxMenu(r.right - 220, r.bottom + 4, [[(this.show ? '✓ ' : '　') + '차트에 진입·청산 표시', () => { this.show = !this.show; store.set('jrShow', this.show) }],
         [(store.get('jrTg', true) ? '✓ ' : '　') + '진행 중 손절·목표 텔레그램 알림', () => { store.set('jrTg', !store.get('jrTg', true)); LC.srv && LC.srv.pushAlerts && LC.srv.pushAlerts() }],
+        '-', ['내 매매 규칙 고치기…', () => this.rulesModal()], ['연속 손실 브레이크 설정…', () => this.brkModal()], '-',
         ['가상 매매 기록 가져오기', () => this.importPaper()], ['CSV로 내보내기', () => this.csv()]]) };
+    /* 쉬어 가기 남은 시간을 1분마다 고쳐 그려요 */
+    setInterval(() => { if(!document.hidden && this.el && !this.el.hidden && this.tab === 'list' && (this._brk || {}).active) this.render() }, 60000);
     el.querySelector('.jr-body').addEventListener('click', e => this.onClick(e));
     el.querySelector('.jr-body').addEventListener('change', e => { const t = e.target;
       if(t.dataset.f){ this.filter = t.value; this.render() } if(t.id === 'jrOnly'){ this.onlySym = t.checked; this.render() } if(t.dataset.per){ this.period = t.value; this.render() } });
@@ -3112,7 +3129,10 @@ const J = {
     const v = this.app && this.app.v; let L = this.list.slice().sort((a, b) => (b.openAt || b.at) - (a.openAt || a.at));
     if(this.filter !== 'all') L = L.filter(r => r.status === this.filter);
     if(this.onlySym && v) L = L.filter(r => r.sym === v.sym);
-    const head = `<div class="jr-f"><select data-f="1">${[['all','전체'], ...STATUS].map(([k, n]) => `<option value="${k}" ${this.filter === k ? 'selected' : ''}>${n}</option>`).join('')}</select>
+    const bs = this._brk = brkState(this.list);
+    const banner = bs && bs.active ? `<div class="jr-brk"><b>쉬어 가는 중 · ${fmtLeft(bs.left)} 남음</b><small>오늘 연속 ${bs.n}번 손실이에요. 다음 진입은 잠깐 쉬고, 규칙대로인지 다시 보고 들어가요.</small></div>`
+      : bs && bs.n > 0 && bs.n === bs.need - 1 ? `<div class="jr-brk soft"><small>오늘 연속 ${bs.n}번 손실 · 한 번 더 잃으면 ${brkCfg().mins}분 쉬어 가요</small></div>` : '';
+    const head = banner + `<div class="jr-f"><select data-f="1">${[['all','전체'], ...STATUS].map(([k, n]) => `<option value="${k}" ${this.filter === k ? 'selected' : ''}>${n}</option>`).join('')}</select>
       <label class="chk"><input type="checkbox" id="jrOnly" ${this.onlySym ? 'checked' : ''}>이 종목만</label><span class="dim jr-n">${L.length}개</span></div>`;
     if(!L.length) return head + `<div class="empty">아직 기록이 없어요.<br>차트에서 <b>롱/숏 포지션</b> 도구로 진입·손절·목표를 그린 뒤<br>위쪽 막대의 <b>일지</b>를 누르거나, <b>+ 새 기록</b>으로 적어 보세요.</div>`;
     const IM = imgsAll();
@@ -3145,7 +3165,9 @@ const J = {
       openAt:Date.now(), reasons:[], mistakes:[], inds: v ? v.inds.filter(i => !i.hidden).map(i => i.def.label) : [] }, pre || {});
     const custom = store.get('jrTags', []), chips = (all, sel, k) => all.map(t => `<button type="button" class="jr-chip ${sel.includes(t) ? 'on' : ''}" data-${k}="${esc(t)}">${esc(t)}</button>`).join('');
     const num = (id, val, ph) => `<input class="inp num" type="number" step="any" min="0" id="${id}" value="${val == null ? '' : val}" placeholder="${ph || ''}">`;
+    const RU = rules(), bs = brkState(this.list);
     const html = `<div class="jf">
+      ${isNew && bs && bs.active ? `<div class="jr-brk"><b>쉬어 가는 시간이에요 · ${fmtLeft(bs.left)} 남음</b><small>오늘 연속 ${bs.n}번 손실 뒤예요. 이 진입이 내 규칙에 맞는지 아래 체크리스트로 한 번 더 보세요.</small></div>` : ''}
       <div class="jf-g3"><label>종목<input class="inp" id="jfSym" value="${esc(r.sym)}" maxlength="30"></label>
         <label>방향<div class="seg jf-side"><button type="button" data-s="long" class="${r.side !== 'short' ? 'on' : ''}">롱</button><button type="button" data-s="short" class="${r.side === 'short' ? 'on' : ''}">숏</button></div></label>
         <label>상태<select class="inp" id="jfSt">${STATUS.map(([k, n]) => `<option value="${k}" ${r.status === k ? 'selected' : ''}>${n}</option>`).join('')}</select></label></div>
@@ -3156,6 +3178,8 @@ const J = {
       <div class="jf-g4 jf-risk"><label>내 계좌 (USDT)${num('jfAc', riskCfg().acct, '위험 계산용')}</label><label>한 번에 잃어도 되는 %${num('jfRk', riskCfg().pct, '1')}</label>
         <div class="jf-sug" id="jfSug"></div></div>
       <div class="jf-calc" id="jfCalc"></div>
+      <h6>진입 전 체크 <small class="dim">내 규칙 중 지킨 것만 체크해요 · 분석에서 지킨 매매와 못 지킨 매매를 비교해요</small><button type="button" class="jf-now" id="jfRuEd">규칙 고치기</button></h6>
+      <div class="jf-rules" id="jfRu">${RU.map((t, i) => `<label class="chk"><input type="checkbox" data-ru="${i}" ${(r.rules || []).includes(t) ? 'checked' : ''}>${esc(t)}</label>`).join('')}<span class="jf-rs dim" id="jfRs"></span></div>
       <h6>차트 그림 <small class="dim">새 기록은 지금 차트를 자동으로 담고, 청산할 때 한 장 더 담아요 · 그림은 용량이 커서 이 기기에만 저장돼요</small></h6><div class="jf-imgs" id="jfImgs"></div>
       <h6>진입 근거 <small class="dim">무엇을 보고 들어갔나요</small></h6><div class="jf-chips" id="jfR">${chips([...REASONS, ...custom], r.reasons, 'r')}<input class="inp jf-add" id="jfAdd" placeholder="+ 직접 추가 (Enter)" maxlength="20"></div>
       <h6>아쉬운 점 <small class="dim">해당하면 골라 두면 분석에 쓰여요</small></h6><div class="jf-chips" id="jfM">${chips(MISTAKES, r.mistakes, 'k')}</div>
@@ -3179,6 +3203,8 @@ const J = {
       const read = () => { r.sym = q('#jfSym').value.trim().toUpperCase() || r.sym; r.status = q('#jfSt').value;
         r.entry = val('#jfE'); r.stop = val('#jfS'); r.target = val('#jfT'); r.exit = val('#jfX'); r.size = val('#jfSz'); r.lev = val('#jfLv') || 1;
         r.openAt = fromLocal(q('#jfO').value); r.closeAt = fromLocal(q('#jfC').value); r.mood = q('#jfMd').value; r.tf = q('#jfTf').value.trim(); r.rating = +q('#jfRt').value || null; r.note = q('#jfN').value;
+        r.rules = [...mb.querySelectorAll('#jfRu [data-ru]:checked')].map(x => RU[+x.dataset.ru]); r.ruleN = RU.length;
+        q('#jfRs').innerHTML = RU.length ? `<b class="${r.rules.length === RU.length ? 'up' : r.rules.length < RU.length / 2 ? 'down' : ''}">${r.rules.length} / ${RU.length}</b> 지킴` : '';
         r.reasons = [...mb.querySelectorAll('#jfR .on')].map(b => b.dataset.r); r.mistakes = [...mb.querySelectorAll('#jfM .on')].map(b => b.dataset.k);
         if(r.exit && r.status === 'open') r.status = 'closed';
         const ac = val('#jfAc'), rk = val('#jfRk'); store.set('riskCfg', { acct:ac, pct:rk || 1 });
@@ -3201,16 +3227,33 @@ const J = {
       q('.jf-now').onclick = () => { const vv = this.app.views.find(x => x.sym === q('#jfSym').value.trim().toUpperCase() && x.last) || (this.app.v && this.app.v.sym === r.sym ? this.app.v : null);
         const px = vv && vv.last ? vv.last.close : ((this.app.tickers[r.m || 'futures'] || {})[r.sym] || {}).c; if(px){ q('#jfX').value = +(+px).toFixed(vv && vv.prec != null ? vv.prec : 6); q('#jfC').value = toLocal(Date.now()); q('#jfSt').value = 'closed'; read() } };
       if(!isNew) q('#jfDel').onclick = () => { this.list = this.list.filter(x => x.id !== r.id); const o = imgsAll(); delete o[r.id]; imgsSave(o); close() };
+      q('#jfRuEd').onclick = () => this.rulesModal();
       q('#jfCancel').onclick = close;
       q('#jfOk').onclick = () => { read(); const L = this.list.filter(x => x.id !== r.id); r.upd = Date.now(); L.push(r);
         const wasClosed = !isNew && (this.list.find(x => x.id === r.id) || {}).status === 'closed';
         if(isNew && !IMG[0] && !pre?.noShot){ const d = snap(r.sym); if(d){ IMG[0] = d; imgDirty = true } }
         if(r.status === 'closed' && !wasClosed && !IMG[1] && (!isNew || IMG[0])){ const d = snap(r.sym); if(d && d !== IMG[0]){ IMG[1] = d; imgDirty = true } }
-        this.list = L; if(imgDirty){ const o = imgsAll(); if(IMG[0] || IMG[1]) o[r.id] = IMG; else delete o[r.id]; imgsSave(o) } close();
+        const b0 = brkState(this.list);
+        this.list = L; const b1 = brkState(this.list);
+        if(b1 && b1.active && !(b0 && b0.active)) setTimeout(() => LC.toast(`오늘 연속 ${b1.n}번 손실이에요. ${brkCfg().mins}분 쉬어 가요. 차트에서 잠깐 떨어져 보세요.`, 'alert', 9000), 400);
+        if(imgDirty){ const o = imgsAll(); if(IMG[0] || IMG[1]) o[r.id] = IMG; else delete o[r.id]; imgsSave(o) } close();
         LC.toast(isNew ? '매매 일지에 기록했어요' : '저장했어요', 'ok', 2500); if(isNew && this.app) this.app.showPanel && this.app.showPanel('journal') };
       read();
     }, 'wide');
   },
+  rulesModal(){
+    LC.modal('내 매매 규칙', `<p class="muted" style="margin:0 0 8px">한 줄에 하나씩, 진입 전에 꼭 확인할 것을 적어요 (12개까지). 기록 창에서 지킨 것만 체크하면 분석에서 지킨 매매와 못 지킨 매매를 비교해 줘요.</p>
+      <textarea class="inp" id="ruTa" rows="8" maxlength="600">${esc(rules().join('\n'))}</textarea><div class="row-end"><button class="btn" id="ruDef">기본으로</button><span style="flex:1"></span><button class="btn pri" id="ruOk">저장</button></div>`, (mb, close) => {
+      mb.querySelector('#ruDef').onclick = () => { mb.querySelector('#ruTa').value = DEF_RULES.join('\n') };
+      mb.querySelector('#ruOk').onclick = () => { const L = [...new Set(mb.querySelector('#ruTa').value.split('\n').map(x => x.trim().slice(0, 40)).filter(Boolean))].slice(0, 12);
+        store.set('jrRules', L); close(); LC.toast('규칙을 저장했어요. 새로 여는 기록 창부터 보여요', 'ok', 2500) } }, 'mid') },
+  brkModal(){ const c = brkCfg();
+    LC.modal('연속 손실 브레이크', `<p class="muted" style="margin:0 0 10px">오늘(한국 시간) 연달아 정한 횟수만큼 손실로 끝나면, 마지막 청산부터 정한 시간 동안 일지와 기록 창에 "쉬어 가기"를 띄워요. 감정 매매를 막는 장치예요.</p>
+      <label class="chk"><input type="checkbox" id="bkOn" ${c.on ? 'checked' : ''}> 켜기</label>
+      <div class="jf-g3" style="margin-top:10px"><label>연속 손실<select class="inp" id="bkN">${[2, 3, 4, 5].map(n => `<option ${c.n === n ? 'selected' : ''} value="${n}">${n}번</option>`).join('')}</select></label>
+      <label>쉬는 시간<select class="inp" id="bkM">${[15, 30, 60, 120, 240].map(n => `<option ${c.mins === n ? 'selected' : ''} value="${n}">${n >= 60 ? n / 60 + '시간' : n + '분'}</option>`).join('')}</select></label></div>
+      <div class="row-end"><span style="flex:1"></span><button class="btn pri" id="bkOk">저장</button></div>`, (mb, close) => {
+      mb.querySelector('#bkOk').onclick = () => { store.set('jrBrk', { on: mb.querySelector('#bkOn').checked, n: +mb.querySelector('#bkN').value, mins: +mb.querySelector('#bkM').value }); close(); this.render() } }, 'mid') },
   /* 포지션 작도에서 바로 기록 */
   fromPos(it, v){
     const e = it.pts[0].p, s = it.pts[1].p, t = it.pts[2] ? it.pts[2].p : e + 2 * (e - s);
@@ -3253,7 +3296,8 @@ const J = {
       ${kpi('손익비', T.aw != null && T.al ? (T.aw / Math.abs(T.al)).toFixed(2) : '-', '', '평균 수익 ÷ 평균 손실')}
       ${kpi(T.usd != null ? '총 손익' : '총 손익 %', T.usd != null ? (T.usd >= 0 ? '+$' : '-$') + Math.abs(T.usd).toFixed(1) : fmtP(C.reduce((s, x) => s + x.c.pct, 0)), cls(T.usd != null ? T.usd : T.avgP))}
       ${kpi('최대 연속 손실', worst + '번')}${kpi('손절 지킨 비율', kept.toFixed(0) + '%', kept >= 90 ? 'up' : kept < 70 ? 'down' : '')}
-      ${planAvg != null ? kpi('계획 손익비 평균', '1 : ' + planAvg.toFixed(2)) : ''}</div>`;
+      ${planAvg != null ? kpi('계획 손익비 평균', '1 : ' + planAvg.toFixed(2)) : ''}
+      ${(() => { const W = C.filter(x => x.r.ruleN); if(!W.length) return ''; const f = W.filter(x => x.r.rules.length >= x.r.ruleN).length / W.length * 100; return kpi('규칙 모두 지킨 비율', f.toFixed(0) + '%', f >= 80 ? 'up' : f < 50 ? 'down' : '', `체크한 매매 ${W.length}개 중`) })()}</div>`;
     /* 누적 손익 곡선 */
     let acc = 0; const pts = [0, ...C.map(x => acc += (x.c.R != null && T.rN === C.length ? x.c.R : x.c.pct))], lo = Math.min(...pts), hi = Math.max(...pts), W = 300, H = 70;
     const xy = pts.map((p, i) => `${(i / (pts.length - 1 || 1) * W).toFixed(1)},${(H - (p - lo) / ((hi - lo) || 1) * (H - 6) - 3).toFixed(1)}`).join(' '), z = H - (0 - lo) / ((hi - lo) || 1) * (H - 6) - 3;
@@ -3264,7 +3308,9 @@ const J = {
     const HOUR = r => { const h = +kst(r.openAt || r.closeAt || r.at, { hour:'2-digit' }).replace(/\D/g, '') % 24; return h < 6 ? '새벽 (0~6시)' : h < 12 ? '오전 (6~12시)' : h < 18 ? '오후 (12~18시)' : '저녁 (18~24시)' };
     const DAY = r => '일월화수목금토'[new Date(new Date(r.openAt || r.closeAt || r.at).toLocaleString('en-US', { timeZone:'Asia/Seoul' })).getDay()] + '요일';
     const G = { '진입 근거': grp(r => r.reasons), '아쉬운 점': grp(r => r.mistakes && r.mistakes.length ? r.mistakes : ['없음']), '방향': grp(r => r.side === 'short' ? '숏' : '롱'),
-      '시간대': grp(HOUR), '요일': grp(DAY), '종목': grp(r => (r.sym || '').replace(/USDT$/, '')), '시간 단위': grp(r => r.tf), '그때 마음': grp(r => r.mood) };
+      '시간대': grp(HOUR), '요일': grp(DAY), '종목': grp(r => (r.sym || '').replace(/USDT$/, '')), '시간 단위': grp(r => r.tf), '그때 마음': grp(r => r.mood),
+      '진입 전 체크': grp(r => !r.ruleN ? null : r.rules.length >= r.ruleN ? '규칙 모두 지킴' : '규칙 일부 못 지킴'),
+      '빠뜨린 규칙': grp(r => !r.ruleN ? null : rules().filter(t => !r.rules.includes(t))) };
     const metric = g => g.avgR != null && g.rN === g.n ? g.avgR : g.avgP, mfmt = g => g.avgR != null && g.rN === g.n ? fmtR(g.avgR) : fmtP(g.avgP);
     const table = (name, rows) => rows.length ? `<h6>${name}</h6><div class="jt"><div class="jt-h"><span></span><span>횟수</span><span>승률</span><span>평균</span></div>${rows.slice(0, 8).map(g => `<div class="jt-r"><span>${esc(g.k)}</span><span class="num">${g.n}</span><span class="num">${g.win.toFixed(0)}%</span><span class="num ${cls(metric(g))}">${mfmt(g)}</span></div>`).join('')}</div>` : '';
     /* 장점 · 단점 짚어 주기 */
@@ -3277,6 +3323,10 @@ const J = {
     if(mk) tips.push(`<li class="bad"><b>반복되는 실수</b> '${esc(mk.k)}' ${mk.n}번, 그때 평균 ${mfmt(mk)}${clean ? `. 실수 없이 한 매매는 평균 ${mfmt(clean)}이에요` : ''}</li>`);
     if(T.aw != null && T.al && T.win < 50 && T.aw / Math.abs(T.al) < 1) tips.push('<li class="bad"><b>구조</b> 승률도 50%가 안 되고 손익비도 1보다 낮아요. 목표를 더 멀리 두거나 진입을 더 골라 보세요.</li>');
     if(planAvg != null && T.aw != null && T.al && T.aw / Math.abs(T.al) < planAvg * 0.6) tips.push(`<li class="bad"><b>계획과 실제</b> 계획 손익비는 1:${planAvg.toFixed(2)}인데 실제는 ${(T.aw / Math.abs(T.al)).toFixed(2)}이에요. 목표 전에 일찍 나오거나 손절을 늦게 하고 있을 수 있어요.</li>`);
+    { const g = G['진입 전 체크'], ok = g.find(x => x.k === '규칙 모두 지킴'), no = g.find(x => x.k === '규칙 일부 못 지킴');
+      if(ok && no && ok.n >= 3 && no.n >= 3) tips.push(`<li class="${metric(ok) > metric(no) ? 'good' : ''}"><b>규칙</b> 규칙을 다 지킨 매매는 평균 ${mfmt(ok)} (승률 ${ok.win.toFixed(0)}%), 못 지킨 매매는 평균 ${mfmt(no)} (승률 ${no.win.toFixed(0)}%)예요.${metric(ok) > metric(no) ? ' 규칙이 돈을 벌어 주고 있어요.' : ' 규칙 자체를 다시 볼 때일 수 있어요.'}</li>`);
+      const miss = G['빠뜨린 규칙'].filter(x => x.n >= 3 && metric(x) < 0).sort((a, b) => metric(a) - metric(b))[0];
+      if(miss) tips.push(`<li class="bad"><b>자주 빠뜨리는 규칙</b> '${esc(miss.k)}' 규칙을 빠뜨린 매매가 ${miss.n}번이고, 그때 평균 ${mfmt(miss)}예요.</li>`) }
     if(C.length < 10) tips.push(`<li><b>참고</b> 끝난 매매가 ${C.length}개예요. 10개, 30개가 넘을수록 분석이 믿을 만해져요. 같은 묶음이 3번 넘게 나와야 키울 점·고칠 점에 떠요.</li>`);
     return per + kpis + curve + (tips.length ? `<h6>짚어 주기</h6><ul class="jr-tips">${tips.join('')}</ul>` : '') + Object.entries(G).map(([n, rows]) => table(n, rows)).join('');
   },
