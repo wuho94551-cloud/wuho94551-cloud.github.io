@@ -3641,7 +3641,6 @@ if(S.on){ S.check().catch(() => {}); S.autoPull(); if(LC.Drawings){ setTimeout((
    내 서버가 켜져 있으면 서버에서, 아니면 공개 일정 파일에서 바로 받아요. */
 (() => {
 const { esc, store } = LC;
-const SRC = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
 const KO = [
   [/^Core CPI/i, '근원 소비자물가 (CPI)'], [/^CPI/i, '소비자물가 (CPI)'], [/^Core PPI/i, '근원 생산자물가 (PPI)'], [/^PPI/i, '생산자물가 (PPI)'],
   [/^Core PCE/i, '근원 PCE 물가'], [/^PCE Price/i, 'PCE 물가'], [/^Non-Farm Employment Change/i, '비농업 고용'], [/^ADP Non-Farm/i, 'ADP 민간 고용'],
@@ -3666,7 +3665,7 @@ const CAL = {
     if(!force && this.list.length && Date.now() - this.at < 30 * 6e4) return this.list;
     let rows = null;
     if(LC.srv && LC.srv.on){ try{ const d = await LC.srv.api('/calendar'); if(d && Array.isArray(d.list)) rows = d.list }catch(e){} }
-    if(!rows){ try{ rows = await LC.getJSON(SRC) }catch(e){} }
+    this.need = !rows && !this.list.length;
     if(rows){ this.list = rows.filter(x => x.country === 'USD' && ['High','Medium','Holiday'].includes(x.impact))
         .map(x => ({ t: Date.parse(x.date), title: x.title, ko: ko(x.title), imp: x.impact === 'High' ? 3 : x.impact === 'Medium' ? 2 : 0, fc: x.forecast || '', pv: x.previous || '', act: x.actual || '' }))
         .filter(x => isFinite(x.t)).sort((a, b) => a.t - b.t);
@@ -3678,7 +3677,7 @@ const CAL = {
   /* 날짜별 목록 */
   html(opt = {}){
     const now = Date.now(), L = this.list.filter(x => x.imp >= (opt.min || 2));
-    if(!L.length) return `<div class="empty">${this.at ? '이번 주 큰 일정이 없어요' : '일정을 불러오는 중이에요'}</div>`;
+    if(!L.length) return `<div class="empty">${this.at ? '이번 주 큰 일정이 없어요' : this.need ? '경제 일정은 우호 서버(v1.3 이상)를 거쳐 받아와요. 서버 코드를 새 버전으로 바꾸면 보여요.' : '일정을 불러오는 중이에요'}</div>`;
     let day = '';
     return L.map(x => { const d = kst(x.t, { month:'numeric', day:'numeric', weekday:'short' }), past = x.t < now - 30 * 6e4, soon = !past && x.t - now < 3 * 36e5;
       const h = d !== day ? `<div class="cal-d">${esc(d)}</div>` : ''; day = d;
