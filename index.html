@@ -149,7 +149,7 @@ header>*{flex:none}
 .views.multi .cv.active{box-shadow:inset 0 0 0 1px var(--accent)}
 .cv-chart{position:absolute;inset:0}
 .draw-layer{position:absolute;left:0;top:0;pointer-events:none;z-index:2}
-.cv.tool-on .cv-chart{cursor:crosshair}.cv.hover-draw .cv-chart{cursor:move}
+.cv.tool-on .cv-chart{cursor:crosshair}.cv.hover-draw .cv-chart{cursor:move}.cv.erase-hit .cv-chart{cursor:pointer}
 .lg{position:absolute;left:8px;top:6px;z-index:4;font-size:12px;line-height:1.55;pointer-events:none;max-width:calc(100% - 90px)}
 .lg1{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
 .lg1 b{font-weight:600}.lg1 i{font-style:normal;color:var(--dim);margin-right:2px}
@@ -204,7 +204,7 @@ header>*{flex:none}
 .views.multi .cv.active{box-shadow:inset 0 0 0 1px var(--accent)}
 .cv-chart{position:absolute;inset:0}
 .draw-layer{position:absolute;left:0;top:0;pointer-events:none;z-index:2}
-.cv.tool-on .cv-chart{cursor:crosshair}.cv.hover-draw .cv-chart{cursor:move}
+.cv.tool-on .cv-chart{cursor:crosshair}.cv.hover-draw .cv-chart{cursor:move}.cv.erase-hit .cv-chart{cursor:pointer}
 .lg{position:absolute;left:8px;top:6px;z-index:4;font-size:12px;line-height:1.55;pointer-events:none;max-width:calc(100% - 90px)}
 .lg1{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
 .lg1 b{font-weight:600}.lg1 i{font-style:normal;color:var(--dim);margin-right:2px}
@@ -1303,10 +1303,11 @@ class Drawings {
     const cap = {capture:true};
     ['pointerdown','mousedown','touchstart'].forEach(ev => view.box.addEventListener(ev, e => this.onDown(e), { capture:true, passive:false }));
     /* 손가락: 끌어서 그리기·옮기기 */
-    window.addEventListener('pointermove', e => { if(e.pointerType === 'mouse') return;
+    /* 마우스: pointerdown을 막으면 브라우저가 mousemove·mouseup을 안 보내요. 그래서 끌기·지우개는 pointer로도 받아요 */
+    window.addEventListener('pointermove', e => { if(e.pointerType === 'mouse'){ if(this.drag || this._erase) this.onMove(e); return }
       if(this.draft){ const {x, y} = this.pos(e), pt = this.ptAt(x, y); if(pt) this.draft.pts[this.draft.pts.length-1] = pt; if(this._tDraft && Math.hypot(e.clientX - this._tDraft.x, e.clientY - this._tDraft.y) > 12) this._tDraft.moved = true }
       else this.onMove(e) });
-    window.addEventListener('pointerup', e => { if(e.pointerType === 'mouse') return;
+    window.addEventListener('pointerup', e => { if(e.pointerType === 'mouse'){ this.onUp(e); return }
       if(this.draft && this._tDraft && this._tDraft.moved){ const d = this.draft; if(d.pts.length >= (NEED[d.type] || 2)) this.finishDraft(); else d.pts.push({...d.pts[d.pts.length-1]}) }
       this._tDraft = null; this.onUp() });
     view.box.addEventListener('mousemove', e => this.onHover(e));
@@ -1365,6 +1366,7 @@ class Drawings {
   onDown(e){
     if(this.bar.contains(e.target)) return;
     if(e.type === 'touchstart'){ if(this._tStop){ this._tStop = false; e.stopPropagation(); if(e.cancelable) e.preventDefault() } return }
+    if(e.type === 'pointerdown') this._handled = false;
     if(e.button > 0) return;
     const touch = e.type === 'pointerdown' && e.pointerType !== 'mouse'; this._tStop = false;
     if(e.type === 'mousedown' && this._handled){ this._handled = false; e.stopPropagation(); e.preventDefault(); return }
@@ -1373,6 +1375,8 @@ class Drawings {
     this.app && this.app.setActive(this.v);
     const tool = this.app ? this.app.tool : 'cross';
     const stop = () => { e.stopPropagation(); e.preventDefault(); if(e.type === 'pointerdown') this._handled = true; if(touch) this._tStop = true };
+    /* 지우개: 누른 작도를 지우고, 누른 채 끌면 지나가는 작도도 지워요 */
+    if(tool === 'eraser'){ const h = this.hitTest(x, y); if(h) this.remove(h.item); this._erase = true; stop(); return }
     if(tool !== 'cross'){
       const pt = this.ptAt(x, y); if(!pt){ stop(); return }
       if(this.draft){ const d = this.draft; d.pts[d.pts.length-1] = pt; if(d.pts.length >= (NEED[d.type] || 2)) this.finishDraft(); else { d.pts.push({...pt}); if(touch) this._tDraft = { x:e.clientX, y:e.clientY, moved:false } } stop(); return }
@@ -1396,11 +1400,12 @@ class Drawings {
     if(this.draft){ const pt = this.ptAt(x, y); if(pt) this.draft.pts[this.draft.pts.length-1] = pt; return }
     if(this.drag) return;
     const tool = this.app ? this.app.tool : 'cross';
-    const hit = tool === 'cross' && !(this.app && this.app.drawLocked) ? this.hitTest(x, y) : null;
-    this.v.box.classList.toggle('hover-draw', !!hit);
+    const er = tool === 'eraser', hit = (tool === 'cross' && !(this.app && this.app.drawLocked)) || er ? this.hitTest(x, y) : null;
+    this.v.box.classList.toggle('hover-draw', !!hit && !er); this.v.box.classList.toggle('erase-hit', !!hit && er); this.hoverErase = er && hit ? hit.item : null;
     this.v.box.classList.toggle('tool-on', tool !== 'cross');
   }
   onMove(e){
+    if(this._erase){ if(!e.buttons && e.pointerType !== 'touch'){ this._erase = false; return } const {x, y} = this.pos(e), h = this.hitTest(x, y); if(h) this.remove(h.item); return }
     if(!this.drag) return;
     const {x, y} = this.pos(e); const pt = this.ptAt(x, y); if(!pt || !this.drag.start) return;
     const d = this.drag, it = d.item; d.moved = true;
@@ -1416,9 +1421,11 @@ class Drawings {
       if(it.type === 'pos' && d.handle === 0){ const dp = pt.p - d.orig[0].p; it.pts[1].p = d.orig[1].p + dp; it.pts[2].p = d.orig[2].p + dp }
     }
   }
-  onUp(){ if(this.drag){ if(this.drag.moved) this.save(); else this.undoStack.pop(); this.drag = null } }
+  onUp(){ this._erase = false; if(this.drag){ if(this.drag.moved) this.save(); else this.undoStack.pop(); this.drag = null } }
   onDbl(e){ const {x, y} = this.pos(e); const hit = this.hitTest(x, y);
-    if(hit && hit.item.type === 'text'){ e.stopPropagation(); this.askText(t => { if(t){ this.snapshot(); hit.item.text = t; this.save() } }, hit.item.text) } }
+    if(!hit) return; e.stopPropagation(); e.preventDefault();
+    if(hit.item.type === 'text') this.askText(t => { if(t){ this.snapshot(); hit.item.text = t; this.save() } }, hit.item.text);
+    else { this.sel = hit.item; this.updateBar(); this.settings(hit.item) } }
   finishDraft(){
     const d = this.draft; this.draft = null;
     if(d.type === 'zoom'){ this.zoomTo(d); this.app && this.app.setTool('cross'); return }
@@ -1736,9 +1743,12 @@ class ChartView {
     this.lgCol = LC.store.get('lgCol', false);
     /* 아래 칸 지표 이름은 각 칸 왼쪽 위에 붙여요. 칸 높이가 바뀌면 다시 맞춰요 */
     this.lgTimer = setInterval(() => this.placePaneLegends(), 700);
+    box.addEventListener('dblclick', e => { if(e.target.closest('.lg,.cv-replay,.sel-bar,button') || (this.app.tool && this.app.tool !== 'cross')) return; this.resetView(true) });
     box.addEventListener('contextmenu', e => { if(e.target.closest('.lg,.cv-replay')) return; e.preventDefault(); this.app.setActive(this);
-      LC.ctxMenu(e.clientX, e.clientY, [['차트 설정…', () => LC.chartStyle.modal(), '모양·색'], ['지표 추가…', () => this.app.indModal()], '-',
-        ['차트 그림 저장', () => this.screenshot()], ['리플레이', () => this.replayBegin()], ['오른쪽 끝으로', () => this.chart.timeScale().scrollToRealTime()], ['가격 눈금 자동 맞춤', () => this.chart.priceScale('right').applyOptions({autoScale:true})], '-',
+      const D = this.drawings, rc = D.cv.getBoundingClientRect(), hit = D.hitTest(e.clientX - rc.left, e.clientY - rc.top);
+      const top = hit ? [[`이 작도 지우기`, () => D.remove(hit.item), ''], ['이 작도 설정…', () => { D.sel = hit.item; D.updateBar(); D.settings(hit.item) }], '-'] : [];
+      LC.ctxMenu(e.clientX, e.clientY, [...top, ['차트 설정…', () => LC.chartStyle.modal(), '모양·색'], ['지표 추가…', () => this.app.indModal()], '-',
+        ['차트 그림 저장', () => this.screenshot()], ['리플레이', () => this.replayBegin()], ['처음 화면으로', () => this.resetView(true), '더블클릭'], ['오른쪽 끝으로', () => this.scrollNow()], ['가격 눈금 자동 맞춤', () => this.chart.priceScale('right').applyOptions({autoScale:true})], '-',
         ['이 종목 작도 모두 지우기', () => this.drawings.clear()]]) });
     /* 예전에 따로 넣은 이동평균선 여러 개는 '이동평균선 묶음' 하나로 합쳐요 */
     let inds = cfg.inds || [{key:'VOL'}, {key:'MAS'}]; const mas = inds.filter(x => x.key === 'MA');
@@ -1804,7 +1814,9 @@ class ChartView {
         this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5], tbv:+k[9]})) }
       this.autoPrec = null; this.prec = this.app.precOf(this.sym, this.market) ?? LC.autoPrec(this.candles.length ? this.candles[this.candles.length-1].close : 1);
       this.series.applyOptions({ priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec} }); LC.chartStyle.apply(this);
-      this.shown = this.candles; this.renderAll(); this.chart.timeScale().scrollToRealTime(); this.loadedSym = this.sym;
+      this.shown = this.candles; this.renderAll();
+      /* 종목이 바뀌면 가격 눈금을 새 종목에 맞추고 지금 봉이 보이게 해요 (시간 단위만 바뀌면 확대 정도는 그대로) */
+      if(this._vSym !== this.sym + this.market) this.resetView(false); else this.scrollNow(); this._vSym = this.sym + this.market; this.loadedSym = this.sym;
       ld.hidden = true;
     }catch(e){ ld.textContent = '데이터를 못 불러왔어요. 종목이나 인터넷 연결을 확인해 주세요.'; return }
     this.prevPrice = this.last && this.last.close;
@@ -1822,6 +1834,11 @@ class ChartView {
     clearInterval(this.asyncTimer); this.asyncTimer = setInterval(() => this.inds.filter(i => i.def.async).forEach(i => this.fetchAsync(i)), 60000);
     this.app.onViewLoaded(this);
   }
+  scrollNow(){ this.chart.timeScale().scrollToRealTime() }
+  /* 처음 화면: 가격 눈금 자동, 지금 봉이 오른쪽에 보이게. full이면 봉 간격도 기본으로 */
+  resetView(full){ try{ this.chart.priceScale('right').applyOptions({ autoScale:true }); this.chart.priceScale('left') && this.chart.priceScale('left').applyOptions({ autoScale:true }) }catch(e){}
+    const ts = this.chart.timeScale(); if(full){ ts.applyOptions({ barSpacing: 6 }) } else { const bs = ts.options().barSpacing; if(!(bs >= 2.5 && bs <= 40)) ts.applyOptions({ barSpacing: 6 }) }
+    ts.applyOptions({ rightOffset: 8 }); ts.scrollToRealTime(); this.zoomStack = [] }
   closeStreams(){ this.kws && this.kws.close(); this.kws = null; clearInterval(this.asyncTimer); clearTimeout(this.bkT); this.bkT = null; this.stopBackup() }
   /* 예비 실시간 시세: 바이낸스 봉 스트림이 8초 넘게 끊기면 바이비트 봉으로 잠시 이어 그려요 */
   startBackup(tok){
@@ -4109,7 +4126,7 @@ const EXTRA = [
 ];
 const EXTRA2 = [
   ['memo','종목 메모','<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h5"/>', 1],
-  ['clear','작도 지우기','<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/>', 1]
+  ['clear','지우개 (누른 작도 지우기 · 오른쪽 클릭: 모두 지우기)','<path d="M15.5 4.5l4 4L10 18H6l-2-2z"/><path d="M10.5 9.5l4 4M6 18h14"/>', 1]
 ];
 const CHART_TYPES = [['candle','캔들'],['hollow','속 빈 캔들'],['ha','하이킨 아시'],['bar','바'],['line','라인'],['area','영역']];
 const LAYOUTS = [['1','1칸'],['2h','좌우 2칸'],['2v','위아래 2칸'],['4','4칸']];
@@ -4353,6 +4370,7 @@ const app = LC.app = {
       + '<span class="tsep"></span>' + EXTRA.map(([k,t,p,act]) => `<button data-${act ? 'act' : 'x'}="${k}" title="${t}" aria-label="${t}">${svg(p)}</button>`).join('')
       + '<span class="tsep"></span>' + EXTRA2.map(([k,t,p]) => `<button data-act="${k}" title="${t}" aria-label="${t}">${svg(p)}</button>`).join(''); this.syncTools() };
     draw();
+    $('tools').oncontextmenu = e => { const b = e.target.closest('[data-act="clear"]'); if(!b) return; e.preventDefault(); const r = b.getBoundingClientRect(); this.clearMenu(r.right + 6, r.top) };
     $('tools').onclick = e => { const f = e.target.closest('[data-fly]');
       if(f){ const g = f.dataset.fly, list = GROUPS.find(x => x[0] === g)[1], r = f.closest('.tg').getBoundingClientRect();
         document.querySelectorAll('.tfly').forEach(m => m.remove());
@@ -4369,9 +4387,7 @@ const app = LC.app = {
         if(act === 'zoomOut') return D.zoomOut();
         if(act === 'objList') return D.listModal();
         if(act === 'memo') return this.memo();
-        if(act === 'clear') return LC.ctxMenu(r.right + 6, r.top, [['이 종목 작도 모두 지우기', () => D.clear()],
-          ['알림선은 남기고 지우기', () => { D.snapshot(); D.items = D.items.filter(i => i.type === 'alert'); D.sel = null; D.save(); D.updateBar() }],
-          ['되돌리기  Ctrl+Z', () => D.undo()]]);
+        if(act === 'clear') return this.eraser(this.tool !== 'eraser');
         return }
       const x = b.dataset.x;
       this[x] = !this[x]; if(x === 'magnet') store.set('magnet', this.magnet);
@@ -4391,7 +4407,7 @@ const app = LC.app = {
       const sh = document.createElement('div'); sh.className = 'msheet';
       sh.innerHTML = `<div class="ms-in"><div class="ms-h"><b>그리기</b><small class="dim">고른 뒤 차트를 눌러 점을 찍거나 끌어서 그려요</small></div>
         <div class="ms-g">${LIST.map(k => `<button data-k="${k}">${svg(T[k][2])}<span>${esc(T[k][1].replace(/ \(.*$/, ''))}</span></button>`).join('')}</div>
-        <div class="ms-f"><button data-a="magnet" class="${this.magnet ? 'on' : ''}">자석 ${this.magnet ? '켬' : '끔'}</button><button data-a="undo">되돌리기</button><button data-a="list">작도 목록</button><button data-a="close">닫기</button></div></div>`;
+        <div class="ms-f"><button data-a="magnet" class="${this.magnet ? 'on' : ''}">자석 ${this.magnet ? '켬' : '끔'}</button><button data-a="erase">지우개</button><button data-a="undo">되돌리기</button><button data-a="list">작도 목록</button><button data-a="close">닫기</button></div></div>`;
       document.body.appendChild(sh);
       sh.onclick = e => { const k = e.target.closest('[data-k]'), a = e.target.closest('[data-a]');
         if(e.target === sh || (a && a.dataset.a === 'close')) return sh.remove();
@@ -4399,6 +4415,7 @@ const app = LC.app = {
         if(!a || !this.v) return; const D = this.v.drawings;
         if(a.dataset.a === 'magnet'){ this.magnet = !this.magnet; store.set('magnet', this.magnet); this.syncTools(); a.classList.toggle('on', this.magnet); a.textContent = '자석 ' + (this.magnet ? '켬' : '끔') }
         if(a.dataset.a === 'undo') D.undo();
+        if(a.dataset.a === 'erase'){ sh.remove(); this.eraser(true); this.hint('지울 작도를 누르거나 손가락으로 지나가세요') }
         if(a.dataset.a === 'list'){ sh.remove(); D.listModal() } };
     };
     this.mDrawSync();
@@ -4406,11 +4423,19 @@ const app = LC.app = {
   syncTools(){
     this.mDrawSync && this.mDrawSync(); document.querySelectorAll('#tools [data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === this.tool));
     document.querySelectorAll('#tools [data-x]').forEach(b => b.classList.toggle('on', !!this[b.dataset.x]));
+    const eb = document.querySelector('#tools [data-act="clear"]'); if(eb) eb.classList.toggle('on', this.tool === 'eraser');
+    if(this.tool !== 'eraser' && this._erOn) this.hint(''); this._erOn = this.tool === 'eraser';
     const mb = document.querySelector('#tools [data-act="memo"]'); if(mb && this.v) mb.classList.toggle('has', !!store.get('memo_' + this.v.sym, '')) },
   /* 종목 메모: 종목마다 한 장씩, 적어 두면 버튼에 점이 생겨요 */
   memo(){ const v = this.v; if(!v) return; const k = 'memo_' + v.sym;
     LC.modal(`메모 · ${v.sym}`, `<textarea class="inp memo-ta" id="memoTa" maxlength="4000" placeholder="이 종목에 대한 생각, 진입 계획, 주의할 점…">${esc(store.get(k, ''))}</textarea><p class="muted" style="margin:6px 0 0">적는 대로 저장돼요. 동기화를 켜 두면 다른 기기에서도 보여요.</p>`, mb => {
       const ta = mb.querySelector('#memoTa'); ta.focus(); ta.oninput = () => { store.set(k, ta.value); this.syncTools() } }, 'mid') },
+  /* 지우개: 켜면 누르는 작도가 지워져요. 다시 누르거나 Esc로 꺼요 */
+  eraser(on){ this.setTool(on ? 'eraser' : 'cross'); if(on){ this.hint('지울 작도를 누르거나 끌어서 지나가세요 · 다 지우려면 지우개를 오른쪽 클릭 · Esc 끝') } else this.hint('') },
+  clearMenu(x, y){ const D = this.v && this.v.drawings; if(!D) return;
+    LC.ctxMenu(x, y, [[this.tool === 'eraser' ? '지우개 끄기' : '지우개 켜기', () => this.eraser(this.tool !== 'eraser'), '누른 작도만 지워요'], '-', ['이 종목 작도 모두 지우기', () => D.clear()],
+      ['알림선은 남기고 지우기', () => { D.snapshot(); D.items = D.items.filter(i => i.type === 'alert'); D.sel = null; D.save(); D.updateBar() }],
+      ['되돌리기  Ctrl+Z', () => D.undo()]]) },
   setTool(t){
     const G = {trend:'line',ray:'line',ext:'line',arrow:'line',hline:'line',hray:'line',vline:'line',channel:'chan',fib:'chan',rect:'shape',ellipse:'shape'};
     if(G[t] && this.groupPick && this.groupPick[G[t]] !== t && document.querySelector(`#tools .tg[data-g="${G[t]}"]`)){ this.groupPick[G[t]] = t; store.set('toolPick', this.groupPick); this.buildTools() }
