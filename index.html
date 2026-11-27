@@ -357,7 +357,7 @@ input[type=range]{accent-color:var(--accent);width:100%}
   #ctabs,#ctabAdd,#clock{display:none}.topbar{gap:6px}.pnav a{padding:4px 7px}
   header .right #laySel,header .right #btnShot,header .right #btnFull,header .right #btnSync{display:none}
   .pn[data-p=list] .detail,.pn[data-p=list] .lgrip{display:none}
-  .lg{max-width:calc(100% - 70px)}.lg-o{font-size:11px}
+  .lg{max-width:calc(100% - 70px)}.lg-o{font-size:11px;display:block;margin-top:1px}.lg-o i:first-child{margin-left:0}
   .modal{max-height:92dvh}.modal-bg{padding:8px}
 }
 
@@ -483,9 +483,11 @@ label{color:var(--dim);font-size:12.5px}
 .cv-sk i{width:11px;border-radius:2px;background:var(--panel2);animation:skp 1.3s ease-in-out infinite}
 .cv-sk i:nth-child(1){height:38%}.cv-sk i:nth-child(2){height:55%}.cv-sk i:nth-child(3){height:46%}.cv-sk i:nth-child(4){height:72%}.cv-sk i:nth-child(5){height:60%}.cv-sk i:nth-child(6){height:88%}.cv-sk i:nth-child(7){height:76%}
 .cv-sk i:nth-child(2n){animation-delay:.15s}.cv-sk i:nth-child(3n){animation-delay:.3s}
-#hLast{border-radius:4px;padding:0 3px}#hLast.fl-up{animation:hfu .7s}#hLast.fl-dn{animation:hfd .7s}
-@keyframes hfu{0%{background:rgba(var(--acc-rgb),.3)}100%{background:transparent}}
-@keyframes hfd{0%{background:rgba(240,97,109,.3)}100%{background:transparent}}
+#hLast.fl-up{animation:hfu .9s}#hLast.fl-dn{animation:hfd .9s}
+@keyframes hfu{0%,35%{color:var(--up)}}
+@keyframes hfd{0%,35%{color:var(--down)}}
+.wrow .px.fx-up{animation:hfu .9s}.wrow .px.fx-dn{animation:hfd .9s}
+.wrow{content-visibility:auto;contain-intrinsic-size:auto 50px}
 .dot.bk{background:#f0b90b;box-shadow:0 0 6px #f0b90b}.conn{cursor:default}#connTxt:empty{display:none}
 .lhead .col4{display:flex;justify-content:flex-end;align-items:center;gap:1px;white-space:nowrap}
 .lhead [data-col4]{cursor:pointer}.lhead [data-col4]:hover{color:var(--ink)}.c4b{padding:0 2px;color:var(--faint)}
@@ -567,6 +569,8 @@ kbd{font:inherit;font-size:11.5px;padding:1px 6px;border:1px solid var(--line2);
 .jf-full textarea{resize:vertical;line-height:1.55}.jf-inds{margin:0;font-size:11.5px}
 .sb-jr.on{color:var(--accent)}
 @media(max-width:700px){.jf-g4{grid-template-columns:1fr 1fr}.jf-g3{grid-template-columns:1fr 1fr}}
+/* 범례 시·고·저·종 간격, 캔들 위에서도 읽히게 */
+.lg-o i{font-style:normal;color:var(--dim);margin:0 2px 0 7px}.lg{text-shadow:0 0 3px var(--bg),0 0 6px var(--bg)}
 </style>
 </head>
 <body>
@@ -2138,7 +2142,7 @@ LC.session = {
 const { esc, store } = LC;
 const cap = v => { const f = (x, u) => (x >= 100 ? Math.round(x) : x >= 10 ? x.toFixed(1) : x.toFixed(2)) + u; return v >= 1e12 ? f(v/1e12, 'T') : v >= 1e9 ? f(v/1e9, 'B') : v >= 1e6 ? f(v/1e6, 'M') : v >= 1e3 ? f(v/1e3, 'K') : String(Math.round(v)) };
 const P = {
-  id:'list', label:'목록', tab:'fav', market:null, ws:null, sortKey:'q', sortDir:-1, col4:store.get('lsCol4', 'cap'),
+  id:'list', label:'목록', tab:'fav', market:null, ws:null, sortKey:'q', sortDir:-1, col4:store.get('lsCol4', 'cap'), lastFl:{}, CH:60, nShow:60,
   mount(el, app){
     this.el = el; this.app = app; this.top = store.get('lsTop', 'fav'); this.cat = store.get('lsCat', 'coin'); this.sub = store.get('lsSub', {});
     if(store.get('lsSort2', null) == null){ this.sortKey = 'q'; this.sortDir = -1 } else Object.assign(this, store.get('lsSort2'));
@@ -2168,7 +2172,10 @@ const P = {
       if(st){ const r = st.closest('.wrow'), m = r.dataset.m, sy = r.dataset.s, f = this.favs(m); store.set('favs_'+m, f.includes(sy) ? f.filter(x => x !== sy) : [...f, sy]); this.render(); return }
       const r = e.target.closest('.wrow'); if(r) app.openSymbol(r.dataset.s, r.dataset.m);
     };
-    this.list.onscroll = () => { this.scrolled = Date.now() };
+    this.list.onscroll = () => { this.scrolled = Date.now(); const L = this.list, all = this.rowsAll || [];
+      if(this.nShow < all.length && L.scrollTop + L.clientHeight > L.scrollHeight - 400){ const from = this.nShow; this.nShow = Math.min(all.length, from + this.CH);
+        const html = all.slice(from, this.nShow).map(([x, m]) => this.row(x, m)).join(''), mb = L.querySelector('.ls-more');
+        mb ? mb.insertAdjacentHTML('beforebegin', html) : L.insertAdjacentHTML('beforeend', html); if(this.col4 === 'spark') this.sparkWatch() } };
     LC.bus.on('assets', () => this.render()); LC.bus.on('info', () => this.render());
     LC.bus.on('hlTick', () => { if(!this.el.hidden && (this.top === 'fav' || this.cat !== 'coin') && (!this.scrolled || Date.now() - this.scrolled > 1500)) this.render() });
   },
@@ -2278,7 +2285,10 @@ const P = {
     el.querySelector('.ls-n').textContent = s.length + '개';
     const loading = all && this.cat !== 'coin' && !LC.hlm.ready ? '<div class="ls-note">하이퍼리퀴드 종목도 불러오는 중…</div>' : '';
     const more = this.thinN || this.showThin ? `<button class="ls-more">${this.showThin ? '거래 적은 종목 접기' : `하루 거래대금 $300K 안 되는 ${this.thinN}개 더 보기`}</button>` : '';
-    this.list.innerHTML = loading + (s.length ? s.map(([x, m]) => this.row(x, m)).join('') : `<div class="empty">${this.top === 'fav' ? '전체 종목에서 ☆을 눌러 내 목록에 담아 보세요' : '종목이 없어요'}</div>`) + more;
+    const key = [this.top, this.cat, this.subOf ? this.subOf(this.cat) : '', this.market, (el.querySelector('#q') || {}).value, this.showThin].join('|');
+    if(key !== this.lkey){ this.lkey = key; this.nShow = this.CH; this.list.scrollTop = 0 }
+    this.rowsAll = s;
+    this.list.innerHTML = loading + (s.length ? s.slice(0, this.nShow).map(([x, m]) => this.row(x, m)).join('') : `<div class="empty">${this.top === 'fav' ? '전체 종목에서 ☆을 눌러 내 목록에 담아 보세요' : '종목이 없어요'}</div>`) + more;
     if(this.col4 === 'spark') this.sparkWatch() },
   markSel(){ this.list.querySelectorAll('.wrow').forEach(r => r.classList.toggle('sel', !!this.app.v && r.dataset.s === this.app.v.sym)) },
   patch(ch){
@@ -2288,7 +2298,8 @@ const P = {
     ch.forEach(([s, dir]) => { const r = map[s]; if(!r) return; const t = T[s], cls = t.P >= 0 ? 'up' : 'down';
       const px = r.querySelector('.px'), pc = r.querySelector('.pc');
       px.textContent = LC.fmtPx(t.c); pc.textContent = LC.fmtChg(t.P); pc.className = 'pc num ' + cls;
-      r.classList.remove('flash-up','flash-down'); void r.offsetWidth; r.classList.add(dir > 0 ? 'flash-up' : 'flash-down') });
+      const now = Date.now(), lf = this.lastFl[s] || 0; if(now - lf < 1000) return; this.lastFl[s] = now;
+      px.classList.remove('fx-up','fx-dn'); void px.offsetWidth; px.classList.add(dir > 0 ? 'fx-up' : 'fx-dn') });
   },
   onShow(on){ if(on) this.render() }
 };
@@ -2868,7 +2879,7 @@ const PF = {
     el.innerHTML = `<div class="pp-scroll"><div class="pp-acc"><div><small>평가 금액</small><b class="num pf-val">-</b></div><div><small>매수 금액</small><b class="num pf-cost">-</b></div><div><small>손익</small><b class="num pf-pnl">-</b></div></div>
       <form class="pf-form"><input class="inp" id="pfCoin" placeholder="코인 (예: BTC)" autocomplete="off" aria-label="코인"><input class="inp num" id="pfQty" type="number" step="any" placeholder="수량" aria-label="수량">
         <input class="inp num" id="pfAvg" type="number" step="any" placeholder="평단가 (USDT)" aria-label="평단가"><button class="btn pri">추가</button></form>
-      <p class="muted small pad">바이낸스 현물 가격으로 5초마다 계산해요. 같은 코인을 다시 넣으면 평단가를 합쳐 줘요. 이 브라우저에만 저장돼요.</p>
+      <p class="muted small pad">바이낸스 현물 가격으로 5초마다 계산해요. 같은 코인을 다시 넣으면 평단가를 합쳐 줘요. 이 브라우저에 저장되고, 서버 동기화를 켜 두면 다른 기기에도 같이 올라가요.</p>
       <div class="pf-list"></div></div>`;
     el.querySelector('.pf-form').onsubmit = e => { e.preventDefault();
       const c = el.querySelector('#pfCoin').value.trim().toUpperCase().replace(/USDT$/, ''), qn = +el.querySelector('#pfQty').value, a = +el.querySelector('#pfAvg').value;
@@ -3554,7 +3565,7 @@ const SECTIONS = [
 ];
 const BIG = /SEC\b|FOMC|금리\s?(인상|인하|동결)|rate (cut|hike)|ETF\s?(승인|거부|approv|reject)|해킹|hack|exploit|폭락|폭등|급락|급등|crash|plunge|surge|사상\s?최고|역대\s?최고|all-time high|record high|파산|bankrupt|트럼프|Trump|CPI|비상|emergency|전쟁|war\b|폭발|explosion/i;
 const MID = /비트코인|이더리움|Bitcoin|Ethereum|BTC|ETH|ETF|고래|whale|청산|liquidat|상장|listing|연준|Fed\b|관세|tariff|규제|regulat|SEC/i;
-const STOP = new Set('the a an of to in on for and or with by is are at as from its it this that be was were will has have after over new says said than into up out more amid how why what 등 및 위해 대한 관련 통해 이후 지난 올해 오늘 기자 뉴스 대해 가장 위한 것으로 있는 없는 한다 했다 밝혀 전망 분석 기대 경신 가능성 예상 소식 오전 오후 하루 이번 지금 최근 사상 최대 역대 까지 just new daily week report price prices market markets crypto happened today here whats could would should about'.split(' '));
+const STOP = new Set('the a an of to in on for and or with by is are at as from its it this that be was were will has have after over new says said than into up out more amid how why what 등 및 위해 대한 관련 통해 이후 지난 올해 오늘 기자 뉴스 대해 가장 위한 것으로 있는 없는 한다 했다 밝혀 전망 분석 기대 경신 가능성 예상 소식 오전 오후 하루 이번 지금 최근 사상 최대 역대 까지 just new daily week report price prices market markets crypto happened today here whats could would should about january february march april may june july august september october november december jan feb mar apr jun jul aug sep sept oct nov dec monday tuesday wednesday thursday friday saturday sunday group first second third year years month months million billion trillion record top big high low back still set plans plan now may deal update updates latest live users firm firms company companies inc ltd ceo amid against while before during despite since under within week weeks day days hours time times other another some many most much very also been being had does did get gets got make makes made take takes took see sees one two three four five next last early late major key global news analysis exclusive breaking 이날 지난해 내년 이달 다음 처음 당시 현재 이상 이하 가운데 따르면 따라 경우 정도 위원 관계자 업계'.split(' '));
 const JOSA = /(으로|에서|에게|까지|부터|보다|이며|이고|에도|으로써|하고|했다|한다|하며|된|될|하는|했던|이다|에|의|은|는|이|가|을|를|로|와|과|도|만)$/;
 const words = t => (t.match(/[A-Za-z][A-Za-z0-9.]{2,}|[가-힣]{2,}/g) || []).map(w => { w = w.toLowerCase(); if(/[가-힣]/.test(w) && w.length > 2) w = w.replace(JOSA, ''); return w }).filter(w => w.length >= 2 && !STOP.has(w));
 
@@ -4119,7 +4130,7 @@ const app = LC.app = {
   updateHeader(){
     const v = this.v; if(!v) return;
     const t = (this.tickers[v.market] || {})[v.sym], last = v.last, pr = v.prec;
-    if(last && v.loadedSym === v.sym){ const hl = $('hLast'), nv = last.close; if(this._hlv != null && this._hlsym === v.sym && nv !== this._hlv){ hl.classList.remove('fl-up','fl-dn'); void hl.offsetWidth; hl.classList.add(nv > this._hlv ? 'fl-up' : 'fl-dn') } this._hlv = nv; this._hlsym = v.sym; hl.textContent = LC.fmtN(nv, pr); document.title = `${v.sym} ${LC.fmtN(last.close, pr)} · 우호` }
+    if(last && v.loadedSym === v.sym){ const hl = $('hLast'), nv = last.close; if(this._hlv != null && this._hlsym === v.sym && nv !== this._hlv && Date.now() - (this._hlT || 0) > 1000){ this._hlT = Date.now(); hl.classList.remove('fl-up','fl-dn'); void hl.offsetWidth; hl.classList.add(nv > this._hlv ? 'fl-up' : 'fl-dn') } this._hlv = nv; this._hlsym = v.sym; hl.textContent = LC.fmtN(nv, pr); document.title = `${v.sym} ${LC.fmtN(last.close, pr)} · 우호` }
     if(t && v.market === 'hl' && v.loadedSym === v.sym && last){ const d = v.candles.filter(b => b.time >= Date.now()/1000 - 86400); if(d.length){ t.h = Math.max(...d.map(b => b.high)); t.l = Math.min(...d.map(b => b.low)) } }
     if(t){ const cls = t.P >= 0 ? 'up' : 'down'; $('hLast').classList.remove('up','down'); $('hLast').classList.add('last','num',cls); $('hChg').textContent = LC.fmtChg(t.P); $('hChg').className = 'chg num ' + cls;
       $('sHigh').textContent = LC.fmtN(t.h, pr); $('sLow').textContent = LC.fmtN(t.l, pr); $('sVol').textContent = LC.fmtBig(t.q) + ' USDT' }

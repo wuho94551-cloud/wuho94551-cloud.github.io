@@ -44,7 +44,7 @@ a{color:inherit;text-decoration:none}
 .tbar .ttl{font-weight:600;display:flex;align-items:center;gap:6px}.tbar .ttl i{font-style:normal;font-size:10px;padding:1px 5px;border-radius:3px;background:var(--accent);color:#111}
 .tbar .sep{width:1px;height:18px;background:var(--line)}.tbar .right{margin-left:auto;display:flex;align-items:center;gap:8px}
 
-.main{display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:0}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 340px;min-height:0}
 .panes{display:grid;gap:1px;background:var(--line);min-height:0}
 .panes.s1{grid-template:minmax(0,1fr)/minmax(0,1fr)}.panes.s2{grid-template:minmax(0,1fr)/repeat(2,minmax(0,1fr))}
 .panes.s3{grid-template:repeat(2,minmax(0,1fr))/repeat(2,minmax(0,1fr))}.panes.s3 .pane:first-child{grid-row:span 2}
@@ -59,7 +59,7 @@ a{color:inherit;text-decoration:none}
 #ranks h4{margin:0;padding:8px 10px;font-size:12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
 #ranks h4:first-of-type{border-right:1px solid var(--line)}#rkTf{font-weight:400}
 .rkl{overflow:auto;min-height:0}.rkl:first-of-type{border-right:1px solid var(--line)}
-.rk{display:grid;grid-template-columns:18px 6px minmax(0,1fr) auto;gap:6px;align-items:center;padding:4px 8px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--line)}
+.rk{display:grid;grid-template-columns:16px 5px minmax(0,1fr) auto;gap:5px;align-items:center;padding:4px 7px;font-size:11.5px;cursor:pointer;border-bottom:1px solid var(--line)}
 .rk:hover{background:var(--panel2)}.rk.sel{background:var(--panel2);box-shadow:inset 2px 0 0 var(--accent)}.rk i{width:6px;height:12px;border-radius:2px}.rk b{font-weight:500;overflow:hidden;text-overflow:ellipsis}
 
 .sbar{display:flex;align-items:center;gap:14px;padding:0 10px;font-size:11px;color:var(--dim);border-top:1px solid var(--line);background:var(--panel)}
@@ -268,8 +268,10 @@ const S = LC.scalp = {
       const work = async () => { while(i < list.length){ const s = list[i++];
         try{ const k = await LC.getJSON(`${FUT}/klines?symbol=${s}&interval=${tf}&limit=${n}`);
           if(k.length > 2) D.map[s] = { t:k.map(x => +x[0]), o:+k[0][1], c:k.map(x => +x[4]) } }catch(e){ await sleep(500) }
-        done++; this.panes.forEach(p => p.tf === tf && p.n === n && p.progress(done, list.length)) } };
-      await Promise.all(Array.from({length:8}, work)); D.ready = true; D.loading = null; return D })();
+        done++; this.panes.forEach(p => { if(p.tf !== tf || p.n !== n) return; p.progress(done, list.length);
+          if(done % 8 === 0 && Object.keys(D.map).length){ p.D = D; p.draw() } });
+        if(done % 8 === 0) try{ this.ranks() }catch(e){} } };
+      await Promise.all(Array.from({length:12}, work)); D.ready = true; D.loading = null; return D })();
     return D.loading;
   },
   openStream(){
@@ -317,7 +319,7 @@ const S = LC.scalp = {
   },
   ranks(){
     const p = this.panes[0]; if(!p) return; const L = p.values(); if(!L.length) return;
-    const row = (x, i) => `<div class="rk ${x.s === this.sel ? 'sel' : ''}" data-s="${esc(x.s)}"><span class="dim num">${i+1}</span><i style="background:${p.color(x.v, p.maxAbs)}"></i><b>${esc(short(x.s))}</b><span class="num ${x.v >= 0 ? 'up' : 'down'}">${pct(x.v)}</span></div>`;
+    const row = (x, i) => `<div class="rk ${x.s === this.sel ? 'sel' : ''}" data-s="${esc(x.s)}"><span class="dim num">${i+1}</span><i style="background:${p.color(x.v, p.maxAbs)}"></i><b title="${esc(x.s)}">${esc(short(x.s))}</b><span class="num ${x.v >= 0 ? 'up' : 'down'}">${pct(x.v)}</span></div>`;
     const sorted = [...L].sort((a, b) => b.v - a.v);
     $('rkUp').innerHTML = sorted.filter(x => x.v > 0).slice(0, 40).map(row).join('') || '<div class="empty">없음</div>';
     $('rkDn').innerHTML = sorted.reverse().filter(x => x.v < 0).slice(0, 40).map(row).join('') || '<div class="empty">없음</div>';
@@ -392,14 +394,14 @@ class Pane {
     P.sort((a, b) => Math.abs(a.last) - Math.abs(b.last)).forEach(p => { if(p.s === focus) return; this.path(p, X, Y, n); c.strokeStyle = this.color(p.last, this.maxAbs); c.globalAlpha = focus ? .25 : .8; c.lineWidth = 1; c.stroke() });
     c.globalAlpha = 1;
     /* 오른쪽 이름표: 위아래 강한 종목, 겹치지 않게 */
-    const fit = Math.max(2, Math.min(9, Math.floor((G.y1 - G.y0) / 13 / 2) - 1)), tops = [...P].sort((a, b) => b.last - a.last), lab = [...tops.slice(0, fit), ...tops.slice(-fit)].filter((x, i, a) => a.indexOf(x) === i);
+    const LH = 15, fit = Math.max(2, Math.min(9, Math.floor((G.y1 - G.y0) / LH / 2) - 1)), tops = [...P].sort((a, b) => b.last - a.last), lab = [...tops.slice(0, fit), ...tops.slice(-fit)].filter((x, i, a) => a.indexOf(x) === i);
     if(focus && !lab.find(x => x.s === focus)){ const f = P.find(x => x.s === focus); if(f) lab.push(f) }
     lab.sort((a, b) => Y(a.last) - Y(b.last)); const ys = []; let lastY = -1e9;
-    lab.forEach(p => { lastY = Math.max(Y(p.last), lastY + 13, 6); ys.push(lastY) }); for(let k = ys.length - 1, lim = H - 8; k >= 0; k--){ if(ys[k] > lim) ys[k] = lim; lim = ys[k] - 13 }
+    lab.forEach(p => { lastY = Math.max(Y(p.last), lastY + LH, 8); ys.push(lastY) }); for(let k = ys.length - 1, lim = H - 10; k >= 0; k--){ if(ys[k] > lim) ys[k] = lim; lim = ys[k] - LH }
     lab.forEach((p, k) => { const y = ys[k]; const sel = p.s === focus, txt = `${short(p.s)} ${pct(p.last)}`, col = sel ? '#f0b90b' : this.color(p.last, this.maxAbs);
       c.font = (sel ? '600 ' : '') + '10.5px ' + LC.FONT; const w = c.measureText(txt).width + 8;
       c.strokeStyle = col; c.beginPath(); c.moveTo(G.x1, Y(p.last)); c.lineTo(G.x1 + 44, y); c.stroke();
-      c.fillStyle = col; c.fillRect(G.x1 + 44, y - 6, w, 12); c.fillStyle = sel ? '#111' : '#fff'; c.fillText(txt, G.x1 + 48, y + 3.5) });
+      c.fillStyle = col; c.fillRect(G.x1 + 44, y - 6.5, w, 13); c.fillStyle = sel ? '#111' : '#fff'; c.fillText(txt, G.x1 + 48, y + 3.5) });
     if(focus){ const p = P.find(x => x.s === focus); if(p){ this.path(p, X, Y, n); c.strokeStyle = '#f0b90b'; c.lineWidth = 2.2; c.stroke(); c.lineWidth = 1 } }
   }
   path(p, X, Y, n){ const c = this.ctx, off = n - p.v.length; c.beginPath(); p.v.forEach((v, i) => i ? c.lineTo(X(i + off), Y(v)) : c.moveTo(X(i + off), Y(v))) }
