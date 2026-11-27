@@ -87,6 +87,17 @@ input[type=checkbox]:checked{background:var(--accent) url("data:image/svg+xml,%3
 .skel-wrap.tall .skel-row{height:30px}.empty .skel-wrap{padding:0}
 .hb.ic{display:inline-flex;align-items:center;justify-content:center;width:28px;height:26px;padding:0!important}.hb.ic .hi{width:16px;height:16px;opacity:.85}
 .topbar{gap:10px!important}.pnav a{padding:4px 9px!important}
+/* 경제 일정 */
+.cal-list{display:flex;flex-direction:column}.cal-box{max-height:260px;overflow:auto;padding:0 8px}
+.cal-d{font-size:11.5px;color:var(--dim);padding:10px 4px 4px;font-weight:600}
+.cal-r{display:grid;grid-template-columns:42px 34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 4px;border-bottom:1px solid var(--line);font-size:12.5px}
+.cal-r.past{opacity:.45}.cal-r.soon{background:rgba(240,185,11,.08);border-radius:6px}
+.cal-t{color:var(--dim)}.cal-i{font-size:10px;color:var(--faint);letter-spacing:-1px}.cal-i.i3{color:#f0b90b}.cal-i.i2{color:var(--dim)}
+.cal-n{display:flex;flex-direction:column;min-width:0}.cal-n b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cal-n small{font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-v{display:flex;flex-direction:column;align-items:flex-end;font-size:11px;gap:1px}.cal-v small{font-size:10.5px}.cal-l{color:#f0b90b}
+.cal-top{display:flex;align-items:center;gap:14px;margin-bottom:6px}.cal-top+.cal-list{max-height:62vh;overflow:auto}
+.cal-chip{display:inline-flex;align-items:center;gap:5px;max-width:260px;white-space:nowrap;overflow:hidden}.cal-chip b{font-weight:500;overflow:hidden;text-overflow:ellipsis}.cal-chip.soon{color:#f0b90b}
+.cal-more{background:none;border:0;cursor:pointer}.cal-more:hover{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -120,6 +131,8 @@ input[type=checkbox]:checked{background:var(--accent) url("data:image/svg+xml,%3
       <div id="wire"><div class="empty">뉴스를 모으는 중이에요…</div></div>
     </main>
     <aside class="col rcol">
+      <div class="rh"><b>경제 일정 · 미국</b><button class="dim cal-more" onclick="LC.cal.modal()" style="font-size:11px">한국 시간 · 크게 보기</button></div>
+      <div id="calBox" class="cal-list cal-box"></div>
       <div class="rh"><b>레포트</b><span class="dim" style="font-size:11px">새 창으로 열려요</span></div>
       <div id="reports"></div>
       <div class="rh"><b>뉴스룸 · 거래소 공지</b><span class="dim num" id="nAt" style="font-size:11px"></span></div>
@@ -234,7 +247,7 @@ Object.assign(LC, { skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fm
 (() => {
 const { store, esc } = LC;
 LC.bus = LC.bus || { h:{}, on(k, f){ (this.h[k] = this.h[k] || []).push(f) }, emit(k, d){ (this.h[k] || []).forEach(f => { try{ f(d) }catch(e){ console.error(e) } }) } };
-const NOSYNC = /^lc_(newsSeen|cgMeta|trCache|srv)/;
+const NOSYNC = /^lc_(newsSeen|cgMeta|trCache|srv|jrImg)/;   /* 일지 그림은 커서 이 기기에만 */
 const S = LC.srv = {
   get url(){ return (store.get('srvUrl', '') || '').replace(/\/+$/, '') },
   get code(){ return store.get('srvCode', '') },
@@ -290,7 +303,13 @@ const S = LC.srv = {
     return out },
   get conds(){ return store.get('condAlerts', []) },
   set conds(v){ store.set('condAlerts', v); this.pushAlerts() },
-  collectAlerts(){ return [...this.lineAlerts().filter(a => !a.fired && a.dir), ...this.conds.filter(c => c.on !== false)].map(({ fired, line, on, ...a }) => a) },
+  /* 매매 일지에서 진행 중인 기록의 손절가·목표가도 서버 알림으로 */
+  journalAlerts(){ if(!store.get('jrTg', true)) return [];
+    return (store.get('journal', []) || []).filter(r => r.status === 'open' && r.entry && r.sym).flatMap(r => { const long = r.side !== 'short', m = r.m || 'futures', nm = LC.assets ? LC.assets.base(r.sym) : r.sym, o = [];
+      if(r.stop) o.push({ id:'j' + r.id + 's', sym:r.sym, m, kind:'price', lv:r.stop, dir: long ? 'dn' : 'up', name:nm, alt:this.altOf(r.sym, m), note:`📒 일지 ${long ? '롱' : '숏'} 손절가 도달 (진입 ${r.entry})` });
+      if(r.target) o.push({ id:'j' + r.id + 't', sym:r.sym, m, kind:'price', lv:r.target, dir: long ? 'up' : 'dn', name:nm, alt:this.altOf(r.sym, m), note:`📒 일지 ${long ? '롱' : '숏'} 목표가 도달 (진입 ${r.entry})` });
+      return o }) },
+  collectAlerts(){ return [...this.lineAlerts().filter(a => !a.fired && a.dir), ...this.conds.filter(c => c.on !== false), ...this.journalAlerts()].map(({ fired, line, on, ...a }) => a) },
   pushAlerts(){ if(!this.on || !this.code || !store.get('srvTg', false)) return; clearTimeout(this._at);
     this._at = setTimeout(() => this.api('/alerts/' + this.code, { method: 'PUT', body: { list: this.collectAlerts() } }).then(d => d.done && this.markFired(d.done)).catch(e => console.warn('알림 올리기 실패', e)), 1500) },
   /* 서버에서 울린 가격 알림을 차트의 선에도 반영해요 */
@@ -376,14 +395,14 @@ const S = LC.srv = {
         <div class="row"><label><input type="checkbox" id="sv-auto" ${store.get('srvAuto', true) ? 'checked' : ''}> 자동 동기화 (바꾸면 1분 안에 올리고, 열 때 다른 기기 설정을 받아요)</label></div><div id="sv-sy" class="st"></div></section>
       <section><h4>텔레그램 가격 알림</h4><p class="dim">차트에 그은 가격 알림선(Alt+A)이 서버로 올라가서, 사이트를 꺼 둬도 1분마다 확인하고 텔레그램으로 알려 줘요.</p>
         <div class="row"><label><input type="checkbox" id="sv-tg" ${store.get('srvTg', false) ? 'checked' : ''}> 알림선을 서버로 보내기</label></div>
-        <div class="row"><label><input type="checkbox" id="sv-up1"> 업비트 상장·유의 공지</label><label><input type="checkbox" id="sv-nw"> ★★★ 중요 뉴스</label><button class="btn" id="sv-al">알림 목록 열기</button></div>
+        <div class="row"><label><input type="checkbox" id="sv-up1"> 업비트 상장·유의 공지</label><label><input type="checkbox" id="sv-nw"> ★★★ 중요 뉴스</label><label title="매주 월요일 오전 9시, 지난 7일 매매 일지 요약"><input type="checkbox" id="sv-wk"> 주간 복기</label><label title="FOMC·CPI 같은 큰 발표 30분 전"><input type="checkbox" id="sv-cal"> 경제 발표 30분 전</label><button class="btn" id="sv-al">알림 목록 열기</button></div>
         <div class="row"><a class="btn" id="sv-link" target="_blank" rel="noopener">텔레그램 연결하기 ↗</a><button class="btn" id="sv-test">시험 알림</button><span id="sv-tgst" class="st"></span></div></section>
       <section><h4>뉴스 번역</h4><div class="row"><label><input type="checkbox" id="sv-tr" ${store.get('srvTr', true) ? 'checked' : ''}> 영어 뉴스 제목을 한국어로 보기</label><span id="sv-trst" class="st"></span></div></section>
     </div>`, (mb) => {
       const $ = s => mb.querySelector(s), say = (id, t, bad) => { const e = $(id); e.textContent = t; e.classList.toggle('bad', !!bad) };
       const paint = () => { const i = this.info; $('#sv-code').textContent = this.code || '아직 없음';
         say('#sv-st', !this.on ? '주소를 넣고 연결 확인을 눌러 주세요' : !i ? '확인 전' : `연결됨 · 텔레그램 ${i.tg ? '✓' : '✗ (TG_TOKEN 없음)'} · 번역 ${i.ai ? '✓' : '✗ (ANTHROPIC_API_KEY 없음)'} · 저장소 ${i.kv ? '✓' : '✗'}`, this.on && i && !(i.kv && i.tg));
-        say('#sv-trst', this.info && !this.info.ai ? '서버에 번역 키가 없어서 꺼져 있어요' : '');
+        say('#sv-trst', this.info && !this.info.ai ? '서버에 번역이 아직 꺼져 있어요. Cloudflare 워커 설정 → 바인딩에서 Workers AI 를 이름 AI 로 넣으면 키 없이 무료로 켜져요' : this.info && this.info.aiKind === 'workers-ai' ? 'Cloudflare 무료 번역 모델을 쓰는 중이에요' : '');
         const a = $('#sv-link'); if(i && i.bot && this.code){ a.href = `https://t.me/${i.bot}?start=${this.code}`; a.classList.remove('off') } else { a.removeAttribute('href'); a.classList.add('off') } };
       const tgStatus = async () => { if(!this.on || !this.code) return say('#sv-tgst', '먼저 동기화 코드를 만들어 주세요(“이 기기 설정 올리기”)');
         try{ const d = await this.api('/tg/status/' + this.code); say('#sv-tgst', d.linked ? `연결됨 · 서버에 알림 ${d.alerts}개` : '아직 연결 안 됨: 위 버튼으로 봇을 열고 시작(Start)을 눌러 주세요') }catch(e){ say('#sv-tgst', e.message, true) } };
@@ -396,10 +415,10 @@ const S = LC.srv = {
       $('#sv-link').onclick = e => { if(!$('#sv-link').href){ e.preventDefault(); say('#sv-tgst', !this.code ? '먼저 “이 기기 설정 올리기”로 코드를 만들어 주세요' : '먼저 연결 확인을 눌러 주세요', true) } else { store.set('srvTg', true); $('#sv-tg').checked = true; this.pushAlerts(); let n = 0; const t = setInterval(async () => { if(!document.body.contains(mb) || ++n > 20) return clearInterval(t); await tgStatus(); if(/^연결됨/.test($('#sv-tgst').textContent)) clearInterval(t) }, 4000) } };
       $('#sv-auto').onchange = e => store.set('srvAuto', e.target.checked);
       $('#sv-al').onclick = () => { this.alerts() };
-      const opt = () => this.code && this.api('/opt/' + this.code, { method: 'PUT', body: { upbit: $('#sv-up1').checked, news: $('#sv-nw').checked } }).catch(e => say('#sv-tgst', e.message, true));
-      $('#sv-up1').onchange = $('#sv-nw').onchange = opt;
-      if(this.on && this.code) this.pull().then(d => { const o = (d && d.opt) || {}; $('#sv-up1').checked = o.upbit !== false; $('#sv-nw').checked = o.news !== false });
-      else { $('#sv-up1').checked = $('#sv-nw').checked = true }
+      const opt = () => this.code && this.api('/opt/' + this.code, { method: 'PUT', body: { upbit: $('#sv-up1').checked, news: $('#sv-nw').checked, weekly: $('#sv-wk').checked, cal: $('#sv-cal').checked } }).catch(e => say('#sv-tgst', e.message, true));
+      $('#sv-up1').onchange = $('#sv-nw').onchange = $('#sv-wk').onchange = $('#sv-cal').onchange = opt;
+      if(this.on && this.code) this.pull().then(d => { const o = (d && d.opt) || {}; $('#sv-up1').checked = o.upbit !== false; $('#sv-nw').checked = o.news !== false; $('#sv-wk').checked = o.weekly !== false; $('#sv-cal').checked = o.cal !== false });
+      else { $('#sv-up1').checked = $('#sv-nw').checked = $('#sv-wk').checked = $('#sv-cal').checked = true }
       $('#sv-test').onclick = run('#sv-tgst', async () => { await this.api('/tg/test', { method: 'POST', body: { code: this.code } }); return '보냈어요. 텔레그램을 확인해 보세요' });
       $('#sv-tr').onchange = e => { store.set('srvTr', e.target.checked); LC.news && LC.news.items.length && (e.target.checked ? this.translate(LC.news.items, () => LC.bus && LC.bus.emit && LC.bus.emit('newsTr')) : (LC.news.items.forEach(x => delete x.ko), LC.bus && LC.bus.emit && LC.bus.emit('newsTr'))) };
       paint(); if(this.on) this.check().then(paint, () => say('#sv-st', '서버에 닿지 않아요. 주소를 확인해 주세요', true)).then(tgStatus);
@@ -409,6 +428,97 @@ const S = LC.srv = {
 if(LC.Drawings){ const o = LC.Drawings.prototype.save; LC.Drawings.prototype.save = function(){ this.items.forEach(x => { if(x.type === 'alert' && !x.id) x.id = S.newId() }); o.call(this); if(this.items.some(x => x.type === 'alert') || this._hadAlert) S.pushAlerts(); this._hadAlert = this.items.some(x => x.type === 'alert') } }
 { const set0 = store.set.bind(store); store.set = (k, v) => { set0(k, v); if(!/^(srv|newsSeen|cgMeta|trCache)/.test(k)) S.autoQueue(k) } }
 if(S.on){ S.check().catch(() => {}); S.autoPull(); if(LC.Drawings){ setTimeout(() => S.pull(), 4000); setInterval(() => S.pull(), 60000) } } else S.ready = true;
+})();
+
+</script>
+<script>
+/* 경제 일정: 이번 주·다음 주 미국 주요 지표 발표 (FOMC, CPI, 고용…)
+   내 서버가 켜져 있으면 서버에서, 아니면 공개 일정 파일에서 바로 받아요. */
+(() => {
+const { esc, store } = LC;
+const SRC = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
+const KO = [
+  [/^Core CPI/i, '근원 소비자물가 (CPI)'], [/^CPI/i, '소비자물가 (CPI)'], [/^Core PPI/i, '근원 생산자물가 (PPI)'], [/^PPI/i, '생산자물가 (PPI)'],
+  [/^Core PCE/i, '근원 PCE 물가'], [/^PCE Price/i, 'PCE 물가'], [/^Non-Farm Employment Change/i, '비농업 고용'], [/^ADP Non-Farm/i, 'ADP 민간 고용'],
+  [/^ADP Weekly/i, 'ADP 주간 고용'], [/^Unemployment Rate/i, '실업률'], [/^Unemployment Claims/i, '신규 실업수당 청구'], [/^Average Hourly Earnings/i, '시간당 임금'],
+  [/^Federal Funds Rate/i, '기준금리 발표 (FOMC)'], [/^FOMC Statement/i, 'FOMC 성명'], [/^FOMC Press Conference/i, 'FOMC 기자회견'], [/^FOMC Meeting Minutes/i, 'FOMC 의사록'],
+  [/^FOMC Economic Projections/i, 'FOMC 경제 전망'], [/^Fed Chair .* Speaks/i, '연준 의장 연설'], [/^FOMC Member (.+) Speaks/i, (m) => `FOMC 위원 연설 (${m[1]})`],
+  [/GDP q\/q/i, 'GDP 성장률'], [/^Retail Sales/i, '소매판매'], [/^Core Retail Sales/i, '근원 소매판매'], [/^ISM Manufacturing PMI/i, 'ISM 제조업 지수'],
+  [/^ISM Services PMI/i, 'ISM 서비스업 지수'], [/^Flash Manufacturing PMI/i, '제조업 PMI 예비치'], [/^Flash Services PMI/i, '서비스업 PMI 예비치'],
+  [/^JOLTS Job Openings/i, '구인 건수 (JOLTS)'], [/^CB Consumer Confidence/i, '소비자신뢰지수'], [/UoM Consumer Sentiment/i, '미시간대 소비자심리'],
+  [/UoM Inflation Expectations/i, '미시간대 기대 인플레이션'], [/^Durable Goods Orders/i, '내구재 주문'], [/^Core Durable Goods/i, '근원 내구재 주문'],
+  [/^Pending Home Sales/i, '미결 주택 판매'], [/^New Home Sales/i, '신규 주택 판매'], [/^Existing Home Sales/i, '기존 주택 판매'], [/^Building Permits/i, '건축 허가'],
+  [/^Crude Oil Inventories/i, '원유 재고'], [/^Empire State Manufacturing/i, '뉴욕 제조업 지수'], [/^Philly Fed Manufacturing/i, '필라델피아 제조업 지수'],
+  [/^Trade Balance/i, '무역수지'], [/^Prelim GDP/i, 'GDP 잠정치'], [/^Bank Holiday/i, '미국 휴장']];
+const ko = t => { for(const [re, k] of KO){ const m = t.match(re); if(m) return typeof k === 'function' ? k(m) : k } return t };
+const kst = (ms, o) => new Date(ms).toLocaleString('ko-KR', { timeZone:'Asia/Seoul', hour12:false, ...o });
+const left = ms => { const d = ms - Date.now(), a = Math.abs(d), mins = Math.round(a / 6e4), h = Math.floor(mins / 60), m = mins % 60;
+  if(d < 0) return a < 30 * 6e4 ? '방금 발표' : '발표됨'; if(a < 6e4) return '곧 발표'; return (h >= 24 ? Math.floor(h / 24) + '일 ' + (h % 24) + '시간' : h ? h + '시간 ' + m + '분' : m + '분') + ' 뒤' };
+
+const CAL = {
+  list: (store.get('calCache', null) || {}).list || [], at: (store.get('calCache', null) || {}).at || 0,
+  async load(force){
+    if(!force && this.list.length && Date.now() - this.at < 30 * 6e4) return this.list;
+    let rows = null;
+    if(LC.srv && LC.srv.on){ try{ const d = await LC.srv.api('/calendar'); if(d && Array.isArray(d.list)) rows = d.list }catch(e){} }
+    if(!rows){ try{ rows = await LC.getJSON(SRC) }catch(e){} }
+    if(rows){ this.list = rows.filter(x => x.country === 'USD' && ['High','Medium','Holiday'].includes(x.impact))
+        .map(x => ({ t: Date.parse(x.date), title: x.title, ko: ko(x.title), imp: x.impact === 'High' ? 3 : x.impact === 'Medium' ? 2 : 0, fc: x.forecast || '', pv: x.previous || '', act: x.actual || '' }))
+        .filter(x => isFinite(x.t)).sort((a, b) => a.t - b.t);
+      this.at = Date.now(); store.set('calCache', { at:this.at, list:this.list }) }
+    LC.bus && LC.bus.emit('cal', this.list); return this.list;
+  },
+  next(minImp = 3){ const now = Date.now(); return this.list.find(x => x.imp >= minImp && x.t > now - 30 * 6e4) },
+  left, kst,
+  /* 날짜별 목록 */
+  html(opt = {}){
+    const now = Date.now(), L = this.list.filter(x => x.imp >= (opt.min || 2));
+    if(!L.length) return `<div class="empty">${this.at ? '이번 주 큰 일정이 없어요' : '일정을 불러오는 중이에요'}</div>`;
+    let day = '';
+    return L.map(x => { const d = kst(x.t, { month:'numeric', day:'numeric', weekday:'short' }), past = x.t < now - 30 * 6e4, soon = !past && x.t - now < 3 * 36e5;
+      const h = d !== day ? `<div class="cal-d">${esc(d)}</div>` : ''; day = d;
+      return h + `<div class="cal-r ${past ? 'past' : ''} ${soon ? 'soon' : ''}"><span class="num cal-t">${kst(x.t, { hour:'2-digit', minute:'2-digit' })}</span>
+        <span class="cal-i i${x.imp}" title="${x.imp === 3 ? '영향 큼' : x.imp === 2 ? '영향 중간' : '휴장'}">${x.imp === 3 ? '★★★' : x.imp === 2 ? '★★' : '휴장'}</span>
+        <span class="cal-n"><b>${esc(x.ko)}</b>${x.ko !== x.title ? `<small class="dim">${esc(x.title)}</small>` : ''}</span>
+        <span class="cal-v num">${x.act ? `<b>${esc(x.act)}</b>` : ''}${x.fc ? `<small>예상 ${esc(x.fc)}</small>` : ''}${x.pv ? `<small class="dim">이전 ${esc(x.pv)}</small>` : ''}${!past ? `<small class="cal-l">${left(x.t)}</small>` : ''}</span></div>` }).join('');
+  },
+  modal(){
+    LC.modal('경제 일정 · 미국', `<div class="cal-top"><label class="chk"><input type="checkbox" id="calHi" ${store.get('calHi', false) ? 'checked' : ''}> 영향 큰 것만</label>
+      ${LC.app ? `<label class="chk"><input type="checkbox" id="calLn" ${store.get('calLines', true) ? 'checked' : ''}> 차트에 세로선 표시</label>` : ''}<span class="dim" style="margin-left:auto;font-size:11.5px">한국 시간 · 이번 주</span></div><div class="cal-list" id="calL"></div>`, mb => {
+      const draw = () => { mb.querySelector('#calL').innerHTML = this.html({ min: store.get('calHi', false) ? 3 : 2 }) };
+      mb.querySelector('#calHi').onchange = e => { store.set('calHi', e.target.checked); draw() };
+      const ln = mb.querySelector('#calLn'); if(ln) ln.onchange = e => store.set('calLines', e.target.checked);
+      draw(); this.load().then(draw) }, 'mid');
+  },
+  /* 차트: 영향 큰 일정에 세로 점선 */
+  drawOn(ctx, d, A){
+    if(!store.get('calLines', true) || !d.v || d.v.replay || (LC.TFMS[d.v.tf] || 0) > 4 * 36e5) return;
+    const c = d.bars(); if(!c.length) return; const t0 = c[0].time, t1 = c[c.length - 1].time + 50 * d.tfSec();
+    ctx.save(); ctx.font = '10.5px ' + (LC.FONT || 'sans-serif');
+    this.list.filter(x => x.imp === 3 && x.t / 1000 >= t0 && x.t / 1000 <= t1).forEach(x => { const X = d.tToX(x.t / 1000); if(X == null || X < 0 || X > A.w) return;
+      ctx.strokeStyle = 'rgba(240,185,11,.55)'; ctx.setLineDash([3, 4]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X, 18); ctx.lineTo(X, A.h); ctx.stroke(); ctx.setLineDash([]);
+      const txt = x.ko.replace(/ \(.*\)$/, ''), w = ctx.measureText(txt).width + 8; ctx.fillStyle = 'rgba(240,185,11,.9)'; ctx.fillRect(X - w / 2, A.h - 18, w, 15);
+      ctx.fillStyle = '#111'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center'; ctx.fillText(txt, X, A.h - 10.5); ctx.textAlign = 'left' });
+    ctx.restore();
+  },
+  /* 차트 아래 막대: 다음 큰 일정까지 남은 시간 */
+  chip(){
+    const b = document.getElementById('calChip'); if(!b) return; const n = this.next();
+    b.innerHTML = n ? `<span>📅</span><b>${esc(n.ko.replace(/ \(.*\)$/, ''))}</b><span class="num">${left(n.t)}</span>` : '<span>📅</span>경제 일정';
+    b.title = n ? `${n.ko} · ${kst(n.t, { month:'numeric', day:'numeric', weekday:'short', hour:'2-digit', minute:'2-digit' })} (한국 시간)${n.fc ? ' · 예상 ' + n.fc : ''}` : '이번 주 미국 경제 일정';
+    b.classList.toggle('soon', !!n && n.t - Date.now() < 36e5 && n.t > Date.now() - 30 * 6e4);
+  },
+  init(){
+    LC.overlays = LC.overlays || []; LC.overlays.push({ draw:(ctx, d, A) => this.drawOn(ctx, d, A) });
+    const b = document.getElementById('calChip'); if(b) b.onclick = () => this.modal();
+    const box = document.getElementById('calBox'), draw = () => { if(box) box.innerHTML = this.html({ min:2 }) };
+    this.load().then(() => { this.chip(); draw() }).catch(() => {});
+    setInterval(() => { this.chip(); draw() }, 30000); setInterval(() => this.load(true).then(() => { this.chip(); draw() }), 30 * 6e4);
+    this.chip(); draw();
+  }
+};
+LC.cal = CAL;
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(() => CAL.init(), 1200)); else setTimeout(() => CAL.init(), 1200);
 })();
 
 </script>

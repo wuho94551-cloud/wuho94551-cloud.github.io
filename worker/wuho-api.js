@@ -6,16 +6,19 @@
  *  2) 영어 뉴스 제목 한국어 번역        POST /translate   {titles:[...]}
  *  3) 설정 동기화 (코드로)              POST /sync/new · GET|PUT /sync/:code
  *  4) 텔레그램 알림                  PUT  /alerts/:code (가격·변동률·펀딩비·거래대금) · PUT /opt/:code · 1분마다 확인(cron)
+ *  6) 경제 일정                       GET /calendar (이번 주·다음 주 미국 지표, 1시간 보관) · 영향 큰 발표 30분 전 텔레그램
+ *  5) 주간 복기                       매주 월요일 오전 9시(한국)에 지난 7일 매매 일지 요약을 텔레그램으로 · /week 로 바로 받기
  *     업비트 상장 공지와 ★★★ 뉴스도 텔레그램으로 보내고, 봇 명령어(/btc, /list, /help)에 답해요
  *
  * 필요한 설정 (대시보드 > Settings)
  *  - KV 바인딩 이름: WUHO
- *  - 비밀값(Secret): TG_TOKEN (텔레그램 봇 토큰), ANTHROPIC_API_KEY (번역용, 없으면 번역만 꺼짐)
+ *  - 비밀값(Secret): TG_TOKEN (텔레그램 봇 토큰), ANTHROPIC_API_KEY (번역용, 선택)
+ *  - 바인딩(선택): Workers AI 를 이름 AI 로 넣으면 키 없이도 무료 번역이 켜져요
  *  - 변수(Variable, 선택): ALLOW_ORIGIN·SITE_URL (기본 https://wuho94551-cloud.github.io), MODEL (기본 claude-opus-5-5)
  *  - Cron 트리거: * * * * *  (1분마다)
  */
 
-const VERSION = '1.2';
+const VERSION = '1.3';
 const DEFAULT_ORIGIN = 'https://wuho94551-cloud.github.io';
 const UA = { 'user-agent': 'Mozilla/5.0 (wuho-api)', accept: 'application/json,text/html' };
 
@@ -56,8 +59,21 @@ const NOTICE = {
 };
 
 /* ---------- 2) 번역 ---------- */
+/* 키 없이도: Cloudflare Workers AI(무료 사용량)의 번역 모델로 옮겨요. 대시보드에서 Workers AI 바인딩을 이름 AI 로 넣어 주면 켜져요 */
+async function translateCF(env, titles){
+  const out = {}, need = [];
+  titles.forEach(t => { const h = MEM.get('tr:' + t); if(h) out[t] = h.v; else need.push(t) });
+  const one = async t => { for(const [a, b] of [['en', 'ko'], ['english', 'korean']]){ try{
+      const r = await env.AI.run('@cf/meta/m2m100-1.2b', { text: t, source_lang: a, target_lang: b }), v = r && (r.translated_text || (r.result && r.result.translated_text));
+      if(v && v.trim() && v.trim() !== t) return v.trim() }catch(e){} } return null };
+  for(let i = 0; i < need.length; i += 8){ const part = need.slice(i, i + 8), res = await Promise.all(part.map(one));
+    part.forEach((t, k) => { if(res[k]){ out[t] = res[k]; MEM.set('tr:' + t, { at: Date.now(), v: res[k] }) } }) }
+  if(MEM.size > 3000) [...MEM.keys()].slice(0, 1000).forEach(k => MEM.delete(k));
+  return out;
+}
 async function translate(env, titles){
-  const key = env.ANTHROPIC_API_KEY; if(!key) throw Object.assign(new Error('번역 키가 아직 없어요'), { code: 503 });
+  const key = env.ANTHROPIC_API_KEY; if(!key && env.AI) return translateCF(env, titles);
+  if(!key) throw Object.assign(new Error('번역 키가 아직 없어요'), { code: 503 });
   const out = {}, need = [];
   titles.forEach(t => { const h = MEM.get('tr:' + t); if(h) out[t] = h.v; else need.push(t) });
   if(need.length){
@@ -83,7 +99,7 @@ async function translate(env, titles){
 }
 
 /* ---------- 3) 동기화 ---------- */
-const MAX_SYNC = 200 * 1024;
+const MAX_SYNC = 1024 * 1024;   /* 매매 일지가 길어져도 들어가게 1MB */
 
 /* ---------- 4) 텔레그램 ---------- */
 const SITE = env => (env.SITE_URL || DEFAULT_ORIGIN).replace(/\/+$/, '');
@@ -233,8 +249,62 @@ async function pushFeeds(env, recs){
     } }catch(e){} }
 }
 
+/* ---------- 주간 복기: 동기화로 올라온 매매 일지(lc_journal)로 지난 7일을 요약해요 ---------- */
+async function journalOf(env, code){ try{ const s = JSON.parse(await env.WUHO.get('sy:' + code) || 'null'); return JSON.parse((s && s.data && s.data.lc_journal) || '[]') }catch(e){ return [] } }
+function weekText(list, days = 7){
+  const since = Date.now() - days * 864e5, C = list.filter(r => r.status === 'closed' && r.entry && r.exit && (r.closeAt || r.openAt || r.at || 0) >= since).map(r => {
+    const d = r.side === 'short' ? -1 : 1, pct = (r.exit - r.entry) / r.entry * d * 100, R = r.stop && r.stop !== r.entry ? (r.exit - r.entry) * d / Math.abs(r.entry - r.stop) : null;
+    return { r, pct, R, usd: r.size ? r.size * pct / 100 : null } });
+  const open = list.filter(r => r.status === 'open').length;
+  if(!C.length) return `📒 지난 ${days}일 매매 복기\n끝난 매매가 없어요.${open ? `\n진행 중인 기록 ${open}개` : ''}`;
+  const avg = a => a.reduce((s, x) => s + x, 0) / a.length, f2 = v => (v > 0 ? '+' : '') + v.toFixed(2);
+  const W = C.filter(x => x.pct > 0), Rs = C.filter(x => x.R != null), allR = Rs.length === C.length;
+  const score = x => allR ? x.R : x.pct, unit = allR ? 'R' : '%';
+  const usd = C.some(x => x.usd != null) ? C.reduce((s, x) => s + (x.usd || 0), 0) : null;
+  const best = [...C].sort((a, b) => score(b) - score(a))[0], worst = [...C].sort((a, b) => score(a) - score(b))[0];
+  const grp = key => { const m = {}; C.forEach(x => [].concat(key(x.r) || []).forEach(k => { (m[k] = m[k] || []).push(x) })); return Object.entries(m).map(([k, l]) => ({ k, n: l.length, v: avg(l.map(score)) })) };
+  const rs = grp(r => r.reasons).filter(g => g.n >= 2).sort((a, b) => b.v - a.v), mk = grp(r => r.mistakes).sort((a, b) => b.n - a.n);
+  const nm = x => (x.r.sym || '').replace(/USDT$/, '') + ' ' + (x.r.side === 'short' ? '숏' : '롱');
+  const L = [`📒 지난 ${days}일 매매 복기`, `끝난 매매 ${C.length}개 · 승률 ${(W.length / C.length * 100).toFixed(0)}% (${W.length}승 ${C.length - W.length}패)`,
+    `평균 ${f2(avg(C.map(score)))}${unit}${Rs.length ? ` · 합계 ${f2(Rs.reduce((s, x) => s + x.R, 0))}R` : ''}${usd != null ? ` · 손익 ${usd >= 0 ? '+' : '-'}$${Math.abs(usd).toFixed(1)}` : ''}`,
+    `가장 좋았던 매매: ${nm(best)} ${f2(score(best))}${unit}`, `가장 아팠던 매매: ${nm(worst)} ${f2(score(worst))}${unit}`];
+  if(rs.length && rs[0].v > 0) L.push(`👍 잘 된 근거: ${rs[0].k} (${rs[0].n}번, 평균 ${f2(rs[0].v)}${unit})`);
+  if(rs.length > 1 && rs[rs.length - 1].v < 0) L.push(`👎 손해 본 근거: ${rs[rs.length - 1].k} (${rs[rs.length - 1].n}번, 평균 ${f2(rs[rs.length - 1].v)}${unit})`);
+  if(mk.length) L.push(`⚠️ 반복된 실수: ${mk[0].k} ${mk[0].n}번 (그때 평균 ${f2(mk[0].v)}${unit})`);
+  if(open) L.push(`진행 중인 기록 ${open}개`);
+  return L.join('\n');
+}
+async function weekly(env, recs){
+  const k = new Date(Date.now() + 9 * 36e5); if(k.getUTCDay() !== 1 || k.getUTCHours() < 9) return;   /* 한국 시간 월요일 9시 이후 한 번 */
+  const wk = k.toISOString().slice(0, 10);
+  for(const [code, r] of recs){ if((r.opt || {}).weekly === false) continue;
+    const key = 'wk:' + code; if(await env.WUHO.get(key) === wk) continue; await env.WUHO.put(key, wk, { expirationTtl: 8 * 864e2 });
+    const list = await journalOf(env, code); if(!list.length) continue;
+    await say(env, r.chat, weekText(list), { reply_markup: { inline_keyboard: [[{ text: '📒 일지 열기', url: SITE(env) + '/?panel=journal' }]] } }) }
+}
+
+/* ---------- 경제 일정 ---------- */
+const CAL_SRC = ['https://nfs.faireconomy.media/ff_calendar_thisweek.json', 'https://nfs.faireconomy.media/ff_calendar_nextweek.json'];
+async function calendar(env){
+  const c = JSON.parse(await env.WUHO.get('cal') || 'null'); if(c && Date.now() - c.at < 36e5) return c;
+  const rows = []; for(const u of CAL_SRC){ try{ rows.push(...await getJ(u)) }catch(e){} }
+  if(!rows.length) return c || { at: 0, list: [] };
+  const list = rows.filter(x => x.country === 'USD' && ['High', 'Medium', 'Holiday'].includes(x.impact)).map(x => ({ country: x.country, date: x.date, title: x.title, impact: x.impact, forecast: x.forecast || '', previous: x.previous || '', actual: x.actual || '' }));
+  const d = { at: Date.now(), list }; await env.WUHO.put('cal', JSON.stringify(d)); return d;
+}
+async function calAlerts(env, recs){
+  const want = recs.filter(([, r]) => (r.opt || {}).cal !== false); if(!want.length) return;
+  const { list } = await calendar(env), now = Date.now();
+  const soon = list.filter(x => x.impact === 'High' && Date.parse(x.date) - now <= 30 * 6e4 && Date.parse(x.date) - now > 20 * 6e4); if(!soon.length) return;
+  const seen = JSON.parse(await env.WUHO.get('cl:seen') || '[]'), fresh = soon.filter(x => !seen.includes(x.date + x.title)); if(!fresh.length) return;
+  await env.WUHO.put('cl:seen', JSON.stringify([...fresh.map(x => x.date + x.title), ...seen].slice(0, 100)));
+  const kst = ms => new Date(ms + 9 * 36e5).toISOString().slice(11, 16);
+  const txt = '⏰ 30분 뒤 미국 경제 발표\n' + fresh.map(x => `· ${kst(Date.parse(x.date))} ${x.title}${x.forecast ? ` (예상 ${x.forecast}, 이전 ${x.previous || '-'})` : ''}`).join('\n') + '\n변동성이 커질 수 있어요.';
+  for(const [, r] of want) await say(env, r.chat, txt);
+}
+
 /* ---------- 봇 메시지 ---------- */
-const HELP = '쓸 수 있는 명령어\n/btc, /eth 처럼 종목 이름: 지금 가격\n/list: 걸어 둔 알림\n/upbit on|off: 업비트 상장 공지 받기\n/news on|off: ★★★ 뉴스 받기\n/help: 이 안내';
+const HELP = '쓸 수 있는 명령어\n/btc, /eth 처럼 종목 이름: 지금 가격\n/list: 걸어 둔 알림\n/upbit on|off: 업비트 상장 공지 받기\n/news on|off: ★★★ 뉴스 받기\n/week: 지난 7일 매매 일지 복기\n/weekly on|off: 월요일 아침 주간 복기 받기\n/cal on|off: 큰 경제 발표 30분 전 알림\n/help: 이 안내';
 async function onMessage(env, msg){
   if(!msg || !msg.text) return; const chat = msg.chat.id, t = msg.text.trim();
   let m = t.match(/^\/start\s+([A-Za-z2-9]{10})$/);
@@ -246,9 +316,11 @@ async function onMessage(env, msg){
   if(/^\/help/.test(t)) return say(env, chat, HELP);
   if(/^\/list/.test(t)){ if(!code) return say(env, chat, '아직 연결되지 않았어요.'); const r = await rec(env, code), L = r.list || [];
     return say(env, chat, L.length ? '🔔 걸어 둔 알림 ' + L.length + '개\n' + L.slice(0, 40).map(a => `· ${a.name || a.sym} ${describe(a)}`).join('\n') : '걸어 둔 알림이 없어요.') }
-  m = t.match(/^\/(upbit|news)\s*(on|off)?$/i);
+  if(/^\/week$/i.test(t)){ if(!code) return say(env, chat, '아직 연결되지 않았어요.'); const list = await journalOf(env, code);
+    return say(env, chat, list.length ? weekText(list) : '서버에 올라온 매매 일지가 없어요. 사이트의 서버 설정에서 자동 동기화를 켜 주세요.') }
+  m = t.match(/^\/(upbit|news|weekly|cal)\s*(on|off)?$/i);
   if(m){ if(!code) return say(env, chat, '아직 연결되지 않았어요.'); const r = await rec(env, code); r.opt = r.opt || {}; const k = m[1].toLowerCase(), v = (m[2] || 'on').toLowerCase() === 'on';
-    r.opt[k] = v; await putRec(env, code, r); return say(env, chat, `${k === 'upbit' ? '업비트 상장 공지' : '★★★ 뉴스'} 알림을 ${v ? '켰어요' : '껐어요'}`) }
+    r.opt[k] = v; await putRec(env, code, r); return say(env, chat, `${k === 'upbit' ? '업비트 상장 공지' : k === 'news' ? '★★★ 뉴스' : k === 'cal' ? '경제 발표 30분 전' : '월요일 주간 복기'} 알림을 ${v ? '켰어요' : '껐어요'}`) }
   m = t.match(/^\/?([A-Za-z0-9]{2,12})$/);
   if(m){ const b = m[1].toUpperCase(), f = { sym: b + 'USDT', m: 'futures', alt: 'xyz:' + b }, h = { sym: b, m: 'hl' };
     const px = await prices([f, h]); const p = priceOf(px, f) ?? px['h:' + b];
@@ -270,7 +342,7 @@ async function cron(env){
   const recs = (await Promise.all(idx.map(async c => [c, JSON.parse(await env.WUHO.get('al:' + c) || 'null')]))).filter(([, r]) => r && r.chat);
   if(!recs.length) return;
   recs.forEach(([, r]) => r.list = r.list || []);
-  await Promise.allSettled([checkAlerts(env, recs.filter(([, r]) => r.list.length)), pushFeeds(env, recs)]);
+  await Promise.allSettled([checkAlerts(env, recs.filter(([, r]) => r.list.length)), pushFeeds(env, recs), weekly(env, recs), calAlerts(env, recs)]);
 }
 
 /* ---------- 라우터 ---------- */
@@ -288,7 +360,7 @@ export default {
         const u = await req.json().catch(() => ({})); ctx.waitUntil(onMessage(env, u.message).catch(() => {})); return new Response('ok');
       }
       if(env.TG_TOKEN && env.WUHO) ctx.waitUntil(ensureWebhook(env, url.origin).catch(() => {}));
-      if(p === '/' || p === '/health') return J({ ok: true, v: VERSION, kv: !!env.WUHO, tg: !!env.TG_TOKEN, ai: !!env.ANTHROPIC_API_KEY, bot: env.TG_TOKEN ? await memo('bot', 36e5, async () => { const r = await tg(env, 'getMe', {}); return r.ok ? r.result.username : null }) : null });
+      if(p === '/' || p === '/health') return J({ ok: true, v: VERSION, kv: !!env.WUHO, tg: !!env.TG_TOKEN, ai: !!(env.ANTHROPIC_API_KEY || env.AI), aiKind: env.ANTHROPIC_API_KEY ? 'claude' : env.AI ? 'workers-ai' : '', bot: env.TG_TOKEN ? await memo('bot', 36e5, async () => { const r = await tg(env, 'getMe', {}); return r.ok ? r.result.username : null }) : null });
 
       if(p === '/notices'){
         const ex = (url.searchParams.get('ex') || 'upbit,okx').split(',').filter(x => NOTICE[x]);
@@ -334,8 +406,9 @@ export default {
           await putRec(env, code, r); if(r.chat) await addIndex(env, code); return J({ ok: true, n: r.list.length, linked: !!r.chat, done: r.done }) }
         if(req.method === 'DELETE'){ await env.WUHO.delete('al:' + code); return J({ ok: true }) }
       }
+      if(p === '/calendar' && req.method === 'GET'){ if(!env.WUHO) return J({ error: 'KV 없음' }, 500); return J(await calendar(env)) }
       m = p.match(/^\/opt\/([A-Z2-9]{10})$/);
-      if(m && req.method === 'PUT'){ const r = await rec(env, m[1]), b = await req.json(); r.opt = { upbit: b.upbit !== false, news: b.news !== false }; await putRec(env, m[1], r); return J({ ok: true, opt: r.opt }) }
+      if(m && req.method === 'PUT'){ const r = await rec(env, m[1]), b = await req.json(); r.opt = { upbit: b.upbit !== false, news: b.news !== false, weekly: b.weekly !== false, cal: b.cal !== false }; await putRec(env, m[1], r); return J({ ok: true, opt: r.opt }) }
       if(p === '/tg/test' && req.method === 'POST'){
         const b = await req.json(); if(!CODE_RE.test(b.code || '')) return J({ error: '코드가 이상해요' }, 400);
         const r = await rec(env, b.code); if(!r.chat) return J({ error: '아직 텔레그램이 연결되지 않았어요' }, 409);
