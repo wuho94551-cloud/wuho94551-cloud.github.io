@@ -1901,7 +1901,9 @@ class ChartView {
     if(!this.hovering) this.setLegend(b);
   }
   renderAll(){
-    this.series.setData(this.toMain(this.shown)); this.lastPL = null; this.lastLabel();
+    /* 현재가 선은 새로 그리기 전에 꼭 떼요. 안 떼면 분봉을 바꿀 때마다 쌓여요 */
+    if(this.lastPL){ try{ this.series.removePriceLine(this.lastPL) }catch(e){} this.lastPL = null }
+    this.series.setData(this.toMain(this.shown)); this.lastLabel();
     this.updateInds(true);
     this.setLegend(this.shown[this.shown.length-1]);
   }
