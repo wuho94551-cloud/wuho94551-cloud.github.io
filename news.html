@@ -187,7 +187,15 @@ const fmtDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms/36e5), m = 
 /* 응답이 멈춰도 로딩이 끝없이 이어지지 않게 시간 제한을 둬요 */
 function fetchT(u, opt = {}, ms = 12000){ const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
   return fetch(u, { ...opt, signal: c.signal }).catch(e => { throw e && e.name === 'AbortError' ? new Error('응답이 너무 늦어요') : e }).finally(() => clearTimeout(t)) }
-async function getJSON(u, ms){ const r = await fetchT(u, {}, ms); if(!r.ok) throw new Error(r.status); return r.json() }
+/* 거래소가 요청이 너무 많다고(429) 하거나 잠깐 막으면(418), 그 거래소에는 정한 시간 동안 요청을 쉬어요 */
+const coolUntil = {}, coolMsg = {};
+async function getJSON(u, ms){ let host = ''; try{ host = new URL(u).host }catch(e){}
+  if(coolUntil[host] > Date.now()) throw new Error('요청을 잠시 쉬는 중이에요');
+  const r = await fetchT(u, {}, ms);
+  if(r.status === 429 || r.status === 418){ const ra = +r.headers.get('retry-after'); const wait = (ra > 0 ? ra * 1000 : r.status === 418 ? 5 * 6e4 : 6e4); coolUntil[host] = Date.now() + Math.min(wait, 30 * 6e4);
+    if(!coolMsg[host] || Date.now() - coolMsg[host] > 5 * 6e4){ coolMsg[host] = Date.now(); setTimeout(() => LC.toast && LC.toast(`${host.split('.').slice(-2, -1)[0] || host} 요청이 너무 많아서 ${Math.ceil(Math.min(wait, 30 * 6e4) / 6e4)}분 쉬어요. 실시간 시세는 계속 들어와요.`, 'alert', 8000)) }
+    throw new Error('요청을 잠시 쉬는 중이에요') }
+  if(!r.ok) throw new Error(r.status); return r.json() }
 
 /* 자동 재연결 웹소켓. onOpen(ws)에서 구독 메시지를 보낼 수 있어요 */
 let visAt = 0; document.addEventListener('visibilitychange', () => { if(!document.hidden) visAt = Date.now() });
@@ -226,9 +234,27 @@ function toast(msg, cls = '', ms = 5000){
   box.prepend(t); setTimeout(() => t.remove(), ms);
   while(box.children.length > 6) box.lastChild.remove();
 }
-function notify(title, body){
-  toast(title + ' · ' + body, 'alert', 10000); beep(990, 0.18); setTimeout(() => beep(1320, 0.18), 200);
-  try{ if('Notification' in window && Notification.permission === 'granted') new Notification(title, {body}) }catch(e){}
+/* 큰 페이지 알림: 위에 작은 꼬리표, 가운데 굵은 제목, 아래 한 줄 설명. 소리도 같이 내요.
+   사이트를 안 보고 있을 땐(다른 탭·다른 프로그램) 윈도우 알림도 띄워요. 탭이 열려 있으면 소리는 나요 */
+const TONES = { up:[[660, .12], [880, .16]], down:[[880, .12], [620, .18]], pull:[[740, .07], [740, .07], [520, .16]], alert:[[990, .16], [1320, .18]] };
+function chime(tone = 'alert'){ const v = Math.max(0, Math.min(1, +(store.get('alertVol', 0.6)))); if(!v) return; let t = 0;
+  (TONES[tone] || TONES.alert).forEach(([f, d]) => { setTimeout(() => beep(f, d + .05, .22 * v), t * 1000); t += d + .04 }) }
+let bigQ = [], bigOn = false;
+function bigAlert(o){
+  chime(o.tone || 'alert');
+  try{ if(document.hidden && 'Notification' in window && Notification.permission === 'granted') new Notification(`${o.tag ? '[' + o.tag + '] ' : ''}${o.title}`, { body: `${o.dirText ? o.dirText + ' · ' : ''}${o.sub || ''}`, tag: 'wuho-' + (o.tag || 'a'), renotify: true }) }catch(e){}
+  bigQ.push(o); if(!bigOn) bigNext() }
+function bigNext(){
+  const o = bigQ.shift(); if(!o){ bigOn = false; return } bigOn = true;
+  const host = document.querySelector('.main') || document.body, el = document.createElement('div'); el.className = 'bigal ' + (o.dir || '');
+  el.innerHTML = `${o.tag ? `<span class="ba-tag">${esc(o.tag)}</span>` : ''}<b class="ba-t">${esc(o.title)}</b><span class="ba-s">${o.dirText ? `<i class="ba-d">${esc(o.dirText)}</i>` : ''}${esc(o.sub || '')}</span>`;
+  el.title = '누르면 닫혀요'; host.appendChild(el); requestAnimationFrame(() => el.classList.add('in'));
+  const end = () => { if(!el.isConnected) return; el.classList.remove('in'); setTimeout(() => { el.remove(); bigNext() }, 250) };
+  el.onclick = end; setTimeout(end, o.ms || 6500) }
+/* 브라우저는 사용자가 한 번 누른 뒤에야 소리를 허락해요. 첫 클릭 때 소리 장치를 깨워 두면, 다른 탭을 볼 때도 알림 소리가 나요 */
+['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { try{ actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if(actx.state === 'suspended') actx.resume() }catch(e){} }, { capture:true, passive:true }));
+function notify(title, body, o = {}){
+  bigAlert({ tag: o.tag || '알림', title, sub: body, dir: o.dir || '', dirText: o.dirText || '', tone: o.tone || 'alert' });
 }
 /* 공용 모달 */
 function modal(title, html, onMount, wide, onClose){
@@ -254,7 +280,7 @@ LC.LG_ICON = { eye: ic('<path d="M1.5 9S4.3 4 9 4s7.5 5 7.5 5-2.8 5-7.5 5S1.5 9 
   up: ic('<path d="M5 11l4-4 4 4"/>'), down: ic('<path d="M5 7l4 4 4-4"/>') };
 /* 불러오는 동안 보여 줄 회색 줄 */
 const skel = (n = 6, cls = '') => `<div class="skel-wrap ${cls}">${'<div class="skel-row"></div>'.repeat(n)}</div>`;
-Object.assign(LC, { idb, fetchT, skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
+Object.assign(LC, { idb, fetchT, bigAlert, chime, skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
 })();
 
 </script>

@@ -549,6 +549,14 @@ kbd{font:inherit;font-size:11.5px;padding:1px 6px;border:1px solid var(--line2);
 .bt-list{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px}.bt-row{display:grid;grid-template-columns:34px 96px 1fr 70px 72px;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);font-size:12.5px;cursor:pointer}.bt-row:hover{background:var(--panel2)}.bt-row b{text-align:right}.bt-row:last-child{border-bottom:0}
 .bt-cmp .jt-h,.bt-cmp .jt-r{grid-template-columns:1.6fr .6fr .7fr .9fr .9fr}.bt-cmp .jt-r{cursor:pointer}.bt-cmp .jt-r:hover{background:var(--panel2)}
 @media(max-width:700px){.bt-row{grid-template-columns:30px 1fr 64px;}.bt-row .dim,.bt-row small{display:none}}
+.bigal{position:absolute;left:50%;top:14%;transform:translate(-50%,-8px);z-index:40;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 26px 14px;border-radius:14px;pointer-events:auto;cursor:pointer;opacity:0;transition:opacity .22s,transform .22s;background:radial-gradient(ellipse at center,rgba(11,12,15,.72) 0%,rgba(11,12,15,.45) 60%,rgba(11,12,15,0) 100%);text-align:center;max-width:96%;font-family:"Noto Sans KR",system-ui,sans-serif}
+.bigal.in{opacity:1;transform:translate(-50%,0)}
+.ba-tag{font-size:12px;font-weight:700;color:#0b0c0f;background:#e8eaee;border-radius:4px;padding:2px 9px;letter-spacing:.02em}
+.ba-t{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.01em;line-height:1.2;text-shadow:0 2px 10px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9)}
+.ba-s{font-size:13.5px;font-weight:500;color:#d9dce2;text-shadow:0 1px 6px rgba(0,0,0,.9);line-height:1.5;white-space:nowrap}@media(max-width:900px){.ba-s{white-space:normal}}
+.ba-d{font-style:normal;font-weight:700;margin-right:8px}.bigal.down .ba-d{color:#f0616d}.bigal.up .ba-d{color:#26c6da}
+@media(max-width:700px){.ba-t{font-size:21px}.ba-s{font-size:12px}.bigal{top:10%;padding:10px 14px}}
+.wl-set{display:flex;flex-direction:column;gap:10px}.wl-set label:not(.chk){display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--dim)}.wl-n{width:64px!important;display:inline-block;padding:3px 6px!important;margin:0 4px}
 .jr-brk{margin:0 0 10px;padding:10px 12px;border-radius:10px;background:rgba(240,163,59,.12);border:1px solid rgba(240,163,59,.35);display:flex;flex-direction:column;gap:3px}.jr-brk b{color:#f0a33b;font-size:13px}.jr-brk small{color:var(--dim);line-height:1.45}.jr-brk.soft{background:transparent;border-style:dashed;padding:6px 10px}
 .jf-rules{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}.jf .jf-rules label.chk{display:inline-flex;flex-direction:row;align-items:center;gap:6px;font-size:12.5px;color:var(--text);margin:0}.jf .jf-rules label.chk input{width:15px;margin:0}.jf-rs{margin-left:auto;font-size:12px}.jf h6 .jf-now{margin-left:8px;vertical-align:middle}
 .jr-row{display:flex;align-items:center;gap:8px;padding:9px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}.jr-row:hover{background:var(--panel2)}
@@ -676,7 +684,8 @@ window.addEventListener("unhandledrejection",function(e){var b=document.getEleme
   <aside><div id="asideGrip" title="끌어서 너비 조절"></div><div id="asideHead"></div><div id="asideTabs" hidden></div><div id="asideBody"></div></aside>
   <nav id="rail" aria-label="오른쪽 창"></nav>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"></script>
+<script src="lib/lightweight-charts-5.0.9.js"></script>
+<script>if(!window.LightweightCharts) document.write('<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"><\/script>');</script>
 <script>if(!window.LightweightCharts){var b=document.getElementById("errBar");b.style.display="block";b.textContent="차트 라이브러리를 못 불러왔어요. 인터넷 연결을 확인하고 새로 고침(F5) 해 주세요.";}</script>
 <script>
 /* 공용 도구: 저장소, 포맷, 거래소 주소, 웹소켓, 소리, 알림창 */
@@ -723,7 +732,15 @@ const fmtDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms/36e5), m = 
 /* 응답이 멈춰도 로딩이 끝없이 이어지지 않게 시간 제한을 둬요 */
 function fetchT(u, opt = {}, ms = 12000){ const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
   return fetch(u, { ...opt, signal: c.signal }).catch(e => { throw e && e.name === 'AbortError' ? new Error('응답이 너무 늦어요') : e }).finally(() => clearTimeout(t)) }
-async function getJSON(u, ms){ const r = await fetchT(u, {}, ms); if(!r.ok) throw new Error(r.status); return r.json() }
+/* 거래소가 요청이 너무 많다고(429) 하거나 잠깐 막으면(418), 그 거래소에는 정한 시간 동안 요청을 쉬어요 */
+const coolUntil = {}, coolMsg = {};
+async function getJSON(u, ms){ let host = ''; try{ host = new URL(u).host }catch(e){}
+  if(coolUntil[host] > Date.now()) throw new Error('요청을 잠시 쉬는 중이에요');
+  const r = await fetchT(u, {}, ms);
+  if(r.status === 429 || r.status === 418){ const ra = +r.headers.get('retry-after'); const wait = (ra > 0 ? ra * 1000 : r.status === 418 ? 5 * 6e4 : 6e4); coolUntil[host] = Date.now() + Math.min(wait, 30 * 6e4);
+    if(!coolMsg[host] || Date.now() - coolMsg[host] > 5 * 6e4){ coolMsg[host] = Date.now(); setTimeout(() => LC.toast && LC.toast(`${host.split('.').slice(-2, -1)[0] || host} 요청이 너무 많아서 ${Math.ceil(Math.min(wait, 30 * 6e4) / 6e4)}분 쉬어요. 실시간 시세는 계속 들어와요.`, 'alert', 8000)) }
+    throw new Error('요청을 잠시 쉬는 중이에요') }
+  if(!r.ok) throw new Error(r.status); return r.json() }
 
 /* 자동 재연결 웹소켓. onOpen(ws)에서 구독 메시지를 보낼 수 있어요 */
 let visAt = 0; document.addEventListener('visibilitychange', () => { if(!document.hidden) visAt = Date.now() });
@@ -762,9 +779,27 @@ function toast(msg, cls = '', ms = 5000){
   box.prepend(t); setTimeout(() => t.remove(), ms);
   while(box.children.length > 6) box.lastChild.remove();
 }
-function notify(title, body){
-  toast(title + ' · ' + body, 'alert', 10000); beep(990, 0.18); setTimeout(() => beep(1320, 0.18), 200);
-  try{ if('Notification' in window && Notification.permission === 'granted') new Notification(title, {body}) }catch(e){}
+/* 큰 페이지 알림: 위에 작은 꼬리표, 가운데 굵은 제목, 아래 한 줄 설명. 소리도 같이 내요.
+   사이트를 안 보고 있을 땐(다른 탭·다른 프로그램) 윈도우 알림도 띄워요. 탭이 열려 있으면 소리는 나요 */
+const TONES = { up:[[660, .12], [880, .16]], down:[[880, .12], [620, .18]], pull:[[740, .07], [740, .07], [520, .16]], alert:[[990, .16], [1320, .18]] };
+function chime(tone = 'alert'){ const v = Math.max(0, Math.min(1, +(store.get('alertVol', 0.6)))); if(!v) return; let t = 0;
+  (TONES[tone] || TONES.alert).forEach(([f, d]) => { setTimeout(() => beep(f, d + .05, .22 * v), t * 1000); t += d + .04 }) }
+let bigQ = [], bigOn = false;
+function bigAlert(o){
+  chime(o.tone || 'alert');
+  try{ if(document.hidden && 'Notification' in window && Notification.permission === 'granted') new Notification(`${o.tag ? '[' + o.tag + '] ' : ''}${o.title}`, { body: `${o.dirText ? o.dirText + ' · ' : ''}${o.sub || ''}`, tag: 'wuho-' + (o.tag || 'a'), renotify: true }) }catch(e){}
+  bigQ.push(o); if(!bigOn) bigNext() }
+function bigNext(){
+  const o = bigQ.shift(); if(!o){ bigOn = false; return } bigOn = true;
+  const host = document.querySelector('.main') || document.body, el = document.createElement('div'); el.className = 'bigal ' + (o.dir || '');
+  el.innerHTML = `${o.tag ? `<span class="ba-tag">${esc(o.tag)}</span>` : ''}<b class="ba-t">${esc(o.title)}</b><span class="ba-s">${o.dirText ? `<i class="ba-d">${esc(o.dirText)}</i>` : ''}${esc(o.sub || '')}</span>`;
+  el.title = '누르면 닫혀요'; host.appendChild(el); requestAnimationFrame(() => el.classList.add('in'));
+  const end = () => { if(!el.isConnected) return; el.classList.remove('in'); setTimeout(() => { el.remove(); bigNext() }, 250) };
+  el.onclick = end; setTimeout(end, o.ms || 6500) }
+/* 브라우저는 사용자가 한 번 누른 뒤에야 소리를 허락해요. 첫 클릭 때 소리 장치를 깨워 두면, 다른 탭을 볼 때도 알림 소리가 나요 */
+['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { try{ actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if(actx.state === 'suspended') actx.resume() }catch(e){} }, { capture:true, passive:true }));
+function notify(title, body, o = {}){
+  bigAlert({ tag: o.tag || '알림', title, sub: body, dir: o.dir || '', dirText: o.dirText || '', tone: o.tone || 'alert' });
 }
 /* 공용 모달 */
 function modal(title, html, onMount, wide, onClose){
@@ -790,7 +825,7 @@ LC.LG_ICON = { eye: ic('<path d="M1.5 9S4.3 4 9 4s7.5 5 7.5 5-2.8 5-7.5 5S1.5 9 
   up: ic('<path d="M5 11l4-4 4 4"/>'), down: ic('<path d="M5 7l4 4 4-4"/>') };
 /* 불러오는 동안 보여 줄 회색 줄 */
 const skel = (n = 6, cls = '') => `<div class="skel-wrap ${cls}">${'<div class="skel-row"></div>'.repeat(n)}</div>`;
-Object.assign(LC, { idb, fetchT, skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
+Object.assign(LC, { idb, fetchT, bigAlert, chime, skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
 })();
 
 </script>
@@ -883,11 +918,32 @@ LC.DASH = DASH;
 /* 지표 띠 채우기 (차트 안쪽, 봉 뒤에 그려요) */
 class IndFill {
   constructor(v, ind){ this.v = v; this.ind = ind; const self = this;
-    this.view = { zOrder(){ return ind.def.fill && ind.def.fill.kind === 'ew' ? 'top' : 'bottom' }, renderer(){ return { draw(t){ try{ self.draw(t) }catch(e){} } } } } }
+    this.view = { zOrder(){ return ind.def.fill && ind.def.fill.kind === 'ew' ? 'top' : 'bottom' }, renderer(){ return { draw(t){ try{ self.draw(t) }catch(e){} } } } };
+    this.topView = { zOrder(){ return 'top' }, renderer(){ return { draw(t){ try{ self.drawTop(t) }catch(e){} } } } } }
   attached(p){ this.p = p } detached(){ this.p = null }
-  updateAllViews(){} paneViews(){ return [this.view] }
+  updateAllViews(){} paneViews(){ const k = this.ind.def.fill && this.ind.def.fill.kind; return k === 'vwt' || k === 'vp' ? [this.view, this.topView] : [this.view] }
+  /* 맨 위 층: VWT 캔들 색칠, 매물대 POC 이름표 */
+  drawTop(target){
+    const ind = this.ind, F = ind.def.fill, st = ind.style, o = st.opts || {}; if(!F || ind.hidden || ind.tfOff || !this.p) return;
+    const se = this.p.series, ts = this.v.chart.timeScale();
+    target.useBitmapCoordinateSpace(sc => {
+      const ctx = sc.context, hr = sc.horizontalPixelRatio, vr = sc.verticalPixelRatio, W = sc.bitmapSize.width;
+      const X = t => { const x = ts.timeToCoordinate(t); return x == null ? null : x * hr }, Y = p => { const y = se.priceToCoordinate(p); return y == null ? null : y * vr };
+      if(F.kind === 'vwt' && o.bars){ const V = ind.data._vwt || [], cols = V.cols || ['#00ffbb', '#ff1744'], bars = this.v.shown || []; if(!V.length) return;
+        const tm = new Map(V.map(d => [d.time, d.t])), bw = Math.max(1, (ts.options().barSpacing || 6) * hr * .7);
+        for(let i = bars.length - 1; i >= 0; i--){ const b = bars[i], x = X(b.time); if(x == null) continue; if(x < -bw) break; if(x > W + bw) continue; const t = tm.get(b.time); if(!t) continue;
+          const yo = Y(b.open), yc = Y(b.close), yh = Y(b.high), yl = Y(b.low); if(yo == null || yh == null) continue; const col = t > 0 ? cols[0] : cols[1];
+          ctx.fillStyle = col; ctx.fillRect(Math.round(x - hr/2), yh, Math.max(1, Math.round(hr)), yl - yh);
+          ctx.fillRect(Math.round(x - bw/2), Math.min(yo, yc), Math.round(bw), Math.max(Math.round(hr), Math.abs(yc - yo))) } }
+      if(F.kind === 'vp' && o.lbl){ const P = ind.data._vp, pl = st.plots[0]; if(!P || !pl.visible) return; const y = Y(P.pp), x = X(P.t1); if(y == null || x == null) return;
+        const fs = Math.round(11 * vr), txt = 'POC ' + (LC.fmtN ? LC.fmtN(P.pp, this.v.prec) : P.pp.toFixed(2)); ctx.font = `600 ${fs}px ${LC.FONT}`;
+        const tw = ctx.measureText(txt).width, pd = 4 * hr, bx = Math.min(x + 6 * hr, W - tw - pd*2 - 2), bh = fs + 6 * vr;
+        ctx.fillStyle = pl.color; ctx.globalAlpha = .9; ctx.fillRect(bx, y - bh/2, tw + pd*2, bh); ctx.globalAlpha = 1;
+        ctx.fillStyle = '#111'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillText(txt, bx + pd, y + vr) }
+    });
+  }
   draw(target){
-    const ind = this.ind, F = ind.def.fill, st = ind.style.fill; if(!F || !st || !st.show || ind.hidden || !this.p) return;
+    const ind = this.ind, F = ind.def.fill, st = ind.style.fill, o = ind.style.opts || {}; if(!F || !st || !st.show || ind.hidden || ind.tfOff || !this.p) return;
     const se = this.p.series, ts = this.v.chart.timeScale();
     target.useBitmapCoordinateSpace(sc => {
       const ctx = sc.context, hr = sc.horizontalPixelRatio, vr = sc.verticalPixelRatio, W = sc.bitmapSize.width;
@@ -920,6 +976,32 @@ class IndFill {
         if(E.fibs.length && E.from != null){ const x0 = X(E.from); if(x0 != null){ ctx.textAlign = 'left'; ctx.textBaseline = 'bottom'; ctx.font = `${Math.round(10 * vr)}px ${LC.FONT}`;
           E.fibs.forEach(f => { const y = Y(f.p); if(y == null) return; ctx.beginPath(); ctx.setLineDash([2*hr, 3*hr]); ctx.moveTo(x0, y); ctx.lineTo(W, y); ctx.strokeStyle = 'rgba(160,170,185,.55)'; ctx.lineWidth = hr; ctx.stroke(); ctx.setLineDash([]);
             ctx.fillStyle = 'rgba(160,170,185,.9)'; ctx.fillText(`${f.f} (${LC.fmtN ? LC.fmtN(f.p, ind.v ? ind.v.prec : 2) : f.p.toFixed(2)})`, x0 + 4*hr, y - 2*vr) }) } }
+        return;
+      }
+      if(F.kind === 'vwt'){
+        /* 리본: 띠~중간선은 진하게, 중간선 사이는 옅게. 네온 빛: VWMA 선 뒤에 넓고 옅은 선을 두 겹 */
+        const V = ind.data[F.key] || [], cols = V.cols || ['#00ffbb', '#ff1744'], pts = [];
+        for(const d of V){ const x = X(d.time); if(x == null || x < -50 || x > W + 50) continue; pts.push({ x, m:Y(d.m), u:Y(d.u), l:Y(d.l), um:Y(d.um), lm:Y(d.lm), t:d.t }) }
+        if(pts.length < 2) return; const alpha = Math.max(0, Math.min(1, (100 - (+o.tr || 0))/100));
+        const area = (s, e, k1, k2, col) => { ctx.beginPath(); for(let i = s; i <= e; i++) i === s ? ctx.moveTo(pts[i].x, pts[i][k1]) : ctx.lineTo(pts[i].x, pts[i][k1]);
+          for(let i = e; i >= s; i--) ctx.lineTo(pts[i].x, pts[i][k2]); ctx.closePath(); ctx.fillStyle = col; ctx.fill() };
+        const line = (s, e, col, w) => { ctx.beginPath(); for(let i = s; i <= e; i++) i === s ? ctx.moveTo(pts[i].x, pts[i].m) : ctx.lineTo(pts[i].x, pts[i].m); ctx.strokeStyle = col; ctx.lineWidth = w * hr; ctx.lineJoin = 'round'; ctx.stroke() };
+        let i0 = 0; const run = (s, e) => { const hex = parseColor(pts[s].t > 0 ? cols[0] : cols[1]).hex;
+          if(o.rib && alpha > 0){ area(s, e, 'u', 'um', mkColor(hex, alpha)); area(s, e, 'lm', 'l', mkColor(hex, alpha)); area(s, e, 'um', 'lm', mkColor(hex, alpha * .35)) }
+          if(o.glow && ind.style.plots[0].visible){ line(s, e, mkColor(hex, .07), 12); line(s, e, mkColor(hex, .16), 6) } };
+        for(let i = 1; i <= pts.length; i++) if(i === pts.length || pts[i].t !== pts[i0].t){ run(i0, Math.min(i, pts.length - 1)); i0 = i }
+        return;
+      }
+      if(F.kind === 'vp'){
+        const P = ind.data[F.key]; if(!P) return; const x0 = X(P.t0), x1 = X(P.t1); if(x0 == null || x1 == null) return;
+        const span = Math.max(40 * hr, x1 - x0), mx = Math.max(...P.tot) || 1, wmax = span * Math.max(5, Math.min(100, +o.wid || 40))/100, yT = Y(P.hi), yB = Y(P.lo);
+        if(o.box && yT != null && yB != null){ ctx.fillStyle = 'rgba(120,134,156,0.05)'; ctx.fillRect(x0, yT, x1 - x0, yB - yT); ctx.strokeStyle = 'rgba(120,134,156,0.45)'; ctx.lineWidth = hr; ctx.strokeRect(x0, yT, x1 - x0, yB - yT) }
+        for(let r = 0; r < P.R; r++){ const ya = Y(P.lo + (r+1)*P.h), yb = Y(P.lo + r*P.h); if(ya == null || yb == null) continue; const inVA = r >= P.a && r <= P.z;
+          const h = Math.max(1, yb - ya - Math.max(1, vr)), wu = P.up[r]/mx * wmax, wd = P.dn[r]/mx * wmax;
+          if(o.right){ ctx.fillStyle = inVA ? o.vaUp : o.up; ctx.fillRect(x1 - wu, ya, wu, h); ctx.fillStyle = inVA ? o.vaDn : o.dn; ctx.fillRect(x1 - wu - wd, ya, wd, h) }
+          else { ctx.fillStyle = inVA ? o.vaUp : o.up; ctx.fillRect(x0, ya, wu, h); ctx.fillStyle = inVA ? o.vaDn : o.dn; ctx.fillRect(x0 + wu, ya, wd, h) } }
+        if(o.vaL){ ctx.setLineDash([4*hr, 3*hr]); ctx.strokeStyle = 'rgba(160,170,185,0.7)'; ctx.lineWidth = hr;
+          [P.vaHi, P.vaLo].forEach(v => { const y = Y(v); if(y == null) return; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke() }); ctx.setLineDash([]) }
         return;
       }
       if(F.kind === 'band'){
@@ -1087,6 +1169,10 @@ const colorBars = (arr, upFn) => arr.map((d, i, a) => ({...d, color: upFn(d, i, 
 /* 지표의 오름/내림 색은 차트 캔들 색(경계선)을 따라가요 */
 const U = a => { const S = LC.chartStyle ? LC.chartStyle.get() : null; return S ? LC.color.mkColor(LC.color.parseColor(S.borderVisible ? S.borderUp : S.upColor).hex, a) : `rgba(91,156,246,${a})` };
 const D = a => { const S = LC.chartStyle ? LC.chartStyle.get() : null; return S ? LC.color.mkColor(LC.color.parseColor(S.borderVisible ? S.borderDown : S.downColor).hex, a) : `rgba(209,212,220,${a})` };
+/* VWT 설정 묶음 [기간, 배수]과 색 묶음 */
+const VWT_PRE = { '빠르게':[50, 1.2], '기본':[100, 1.5], '느리게':[200, 2] };
+const vwtCols = (p, st) => p.theme === '클래식' ? ['#26a69a', '#ef5350'] : p.theme === '차트색' ? [U(1), D(1)]
+  : p.theme === '직접' ? [(st && st.opts && st.opts.bull) || '#00ffbb', (st && st.opts && st.opts.bear) || '#ff1744'] : ['#00ffbb', '#ff1744'];
 const DEFS = {
   VOL:{ label:'거래량', overlay:true, params:{}, series:[{key:'v', type:'hist', scale:'vol'}],
     calc:c => ({ v: c.map(b => ({time:b.time, value:b.volume, color: b.close>=b.open ? U(.45) : D(.45)})) }) },
@@ -1111,9 +1197,10 @@ const DEFS = {
   ENV:{ label:'엔벨로프', overlay:true, params:{period:20, pct:2}, colors:['#ff9f43','#8aa0b8','#ff9f43'], series:[{key:'u',type:'line',name:'위'},{key:'m',type:'line',dash:true,name:'중심'},{key:'l',type:'line',name:'아래'}],
     title:p=>`ENV ${p.period} ${p.pct}%`, calc:(c,p) => { const m = sma(src(c,'close'), +p.period);
       return { m:toSeries(c,m), u:toSeries(c,m.map(x=>x==null?null:x*(1+p.pct/100))), l:toSeries(c,m.map(x=>x==null?null:x*(1-p.pct/100))) } } },
-  ICHI:{ label:'일목균형표', overlay:true, params:{conv:9, base:26, span:52, disp:26}, colors:['#5b9cf6',D(1),U(1),'#f0a33b','#b38cff'],
-    series:[{key:'t',type:'line',name:'전환선'},{key:'k',type:'line',name:'기준선'},{key:'a',type:'line',name:'선행스팬 1'},{key:'b',type:'line',name:'선행스팬 2'},{key:'g',type:'line',name:'후행스팬'}],
-    fill:{kind:'between', a:'a', b:'b', color:U(0.12), color2:D(0.12)}, title:p=>`일목 ${p.conv} ${p.base} ${p.span}`,
+  ICHI:{ label:'일목균형표', overlay:true, params:{conv:9, base:26, span:52, disp:26}, colors:['#5b9cf6',D(1),U(1),'#f0a33b','#b38cff','#4caf50','#ef5350'],
+    series:[{key:'t',type:'line',name:'전환선'},{key:'k',type:'line',name:'기준선'},{key:'a',type:'line',name:'선행 스팬 A'},{key:'b',type:'line',name:'선행 스팬 B'},{key:'g',type:'line',name:'래깅 스팬'},
+            {key:'ku',type:'line',name:'구름 윗선',hide:1},{key:'kl',type:'line',name:'구름 아랫선',hide:1}],
+    fill:{kind:'between', a:'a', b:'b', color:U(0.12), color2:D(0.12), name:'구름 채우기 (상승 / 하락)'}, title:p=>`일목 ${p.conv} ${p.base} ${p.span} ${p.disp}`,
     calc:(c,p) => { const mid = (i,n) => (hiN(c,i,n)+loN(c,i,n))/2, n = c.length, d = +p.disp, step = n > 1 ? c[n-1].time - c[n-2].time : 60;
       const T = i => i < n ? c[i].time : c[n-1].time + (i-n+1)*step;
       const t = [], k = [], a = [], b = [], g = [];
@@ -1123,7 +1210,8 @@ const DEFS = {
         if(i >= +p.span-1) b.push({time:T(i+d-1), value:mid(i,+p.span)});
         if(i-d+1 >= 0) g.push({time:c[i-d+1].time, value:c[i].close}) }
       const bt = new Set(b.map(x=>x.time)); const a2 = a.filter(x=>bt.has(x.time)), at = new Set(a2.map(x=>x.time));
-      return { t, k, a:a2, b:b.filter(x=>at.has(x.time)), g } } },
+      const b2 = b.filter(x=>at.has(x.time));
+      return { t, k, a:a2, b:b2, g, ku:a2.map((x, i) => ({time:x.time, value:Math.max(x.value, b2[i].value)})), kl:a2.map((x, i) => ({time:x.time, value:Math.min(x.value, b2[i].value)})) } } },
   PSAR:{ label:'파라볼릭 SAR', overlay:true, params:{start:0.02, inc:0.02, max:0.2}, colors:['#f0b90b'], series:[{key:'s',type:'dots',name:'SAR'}], title:p=>`SAR ${p.start} ${p.inc} ${p.max}`,
     calc:(c,p) => { if(c.length < 3) return {s:[]}; let up = c[1].close >= c[0].close, af = +p.start, ep = up ? c[0].high : c[0].low, sar = up ? c[0].low : c[0].high; const out = [];
       for(let i = 1; i < c.length; i++){ const b = c[i]; sar = sar + af*(ep - sar);
@@ -1154,17 +1242,48 @@ const DEFS = {
   RSI:{ label:'RSI', overlay:false, params:{period:14, ma:14}, colors:['#b38cff','#f0b90b'], series:[{key:'r',type:'line',name:'RSI'},{key:'m',type:'line',name:'RSI 이동평균'}], levels:[70,50,30],
     fill:{kind:'levels', a:0, b:2, color:'rgba(126,87,194,0.10)'}, title:p=>`RSI ${p.period}${+p.ma ? ' · MA ' + p.ma : ''}`,
     calc:(c,p) => { const r = rsiCalc(src(c,'close'), +p.period); return { r: toSeries(c, r), m: +p.ma > 0 ? toSeries(c, smaN(r, +p.ma)) : [] } } },
-  VWT:{ label:'거래량 가중 추세 띠', overlay:true, params:{period:30, mult:1.2}, colors:[U(1)], series:[{key:'m',type:'line',name:'중심선'}],
-    fill:{kind:'band', key:'_band', color:U(0.5), color2:D(0.5)}, width:2, title:p=>`추세 띠 ${p.period} ${p.mult}`,
-    /* 거래량 가중 평균을 중심으로 ATR 폭의 띠를 두르고, 종가가 띠 위로 벗어나면 상승, 아래로 벗어나면 하락으로 색을 바꿔요 */
-    calc:(c,p,st) => { const n = +p.period, atr = rma(trueRange(c), n), up = (st && st.fill.color) || U(0.5), dn = (st && st.fill.color2) || D(0.5);
-      const solid = x => x.replace(/rgba\(([^,]+),([^,]+),([^,]+),[^)]+\)/, 'rgb($1,$2,$3)');
-      let pv = 0, vv = 0, tr = 1; const m = [], band = [];
+  VWT:{ label:'거래량 가중 추세 (VWT)', overlay:true, params:{period:100, mult:1.5, preset:'직접', theme:'네온'},
+    selects:{ preset:['직접','빠르게','기본','느리게'], theme:['네온','클래식','차트색','직접'] },
+    colors:['#00ffbb','#00ffbb','#00ffbb','#00ffbb','#00ffbb'],
+    series:[{key:'m',type:'line',name:'VWMA 선',w:2,trend:1},{key:'u',type:'line',name:'위 띠',trend:1},{key:'l',type:'line',name:'아래 띠',trend:1},
+            {key:'um',type:'line',name:'위 중간선',dash:1,trend:1,hide:1},{key:'lm',type:'line',name:'아래 중간선',dash:1,trend:1,hide:1}],
+    opts:[{k:'bull',t:'color',label:'상승 색 (색 묶음이 직접일 때)',v:'#00ffbb'},{k:'bear',t:'color',label:'하락 색 (색 묶음이 직접일 때)',v:'#ff1744'},
+          {k:'glow',t:'bool',label:'네온 빛',v:true},{k:'rib',t:'bool',label:'변동성 리본 (띠 채우기)',v:true},{k:'tr',t:'num',label:'띠 투명도 (0 진하게 ~ 100 안 보임)',v:90},{k:'bars',t:'bool',label:'캔들을 추세 색으로 칠하기',v:false}],
+    fill:{kind:'vwt', key:'_vwt', hideUi:true}, title:p=>{ const r = VWT_PRE[p.preset]; return `VWT ${r ? r[0] : p.period} ${r ? r[1] : p.mult}` },
+    /* 거래량 가중 이동평균(VWMA)에 ATR 폭의 띠를 둘러요. 종가가 위 띠를 넘으면 상승, 아래 띠를 깨면 하락으로 바뀌고 그 사이에선 앞 추세를 이어가요 */
+    calc:(c,p,st) => { const r = VWT_PRE[p.preset], n = Math.max(2, Math.round(+(r ? r[0] : p.period) || 100)), k = +(r ? r[1] : p.mult) || 1.5;
+      const [bu, be] = vwtCols(p, st), atr = rma(trueRange(c), n), fade = (x, a) => LC.color.mkColor(LC.color.parseColor(x).hex, a);
+      const fu = [fade(bu, .8), fade(be, .8)], fm = [fade(bu, .5), fade(be, .5)];
+      let pv = 0, vv = 0, tr = 0; const o = { m:[], u:[], l:[], um:[], lm:[], _vwt:[] };
       c.forEach((b, i) => { pv += b.close*b.volume; vv += b.volume; if(i >= n){ pv -= c[i-n].close*c[i-n].volume; vv -= c[i-n].volume }
-        if(i < n-1 || atr[i] == null) return; const w = vv ? pv/vv : b.close, hi = w + p.mult*atr[i], lo = w - p.mult*atr[i];
-        if(b.close > hi) tr = 1; else if(b.close < lo) tr = -1;
-        m.push({time:b.time, value:w, color: solid(tr > 0 ? up : dn)}); band.push({time:b.time, up:hi, lo, t:tr}) });
-      return { m, _band:band } } },
+        if(i < n-1 || atr[i] == null) return; const w = vv > 0 ? pv/vv : b.close, a = k*atr[i], hi = w + a, lo = w - a;
+        if(b.close > hi) tr = 1; else if(b.close < lo) tr = -1; else if(!tr) tr = b.close >= w ? 1 : -1;
+        const j = tr > 0 ? 0 : 1, t = b.time;
+        o.m.push({time:t, value:w, color: j ? be : bu}); o.u.push({time:t, value:hi, color:fu[j]}); o.l.push({time:t, value:lo, color:fu[j]});
+        o.um.push({time:t, value:w + a/2, color:fm[j]}); o.lm.push({time:t, value:w - a/2, color:fm[j]});
+        o._vwt.push({time:t, m:w, u:hi, l:lo, um:w + a/2, lm:w - a/2, t:tr}) });
+      o._vwt.cols = [bu, be]; return o } },
+  VP:{ label:'매물대 (고정 범위)', overlay:true, params:{bars:180, rows:28, va:60}, colors:['#ffd400'], width:1,
+    series:[{key:'poc',type:'line',name:'POC 선'}],
+    opts:[{k:'vaUp',t:'color',label:'가치 영역 상승',v:'rgba(0,200,160,0.55)'},{k:'vaDn',t:'color',label:'가치 영역 하락',v:'rgba(255,82,82,0.55)'},
+          {k:'up',t:'color',label:'상승 거래량 (가치 영역 밖)',v:'rgba(0,200,160,0.2)'},{k:'dn',t:'color',label:'하락 거래량 (가치 영역 밖)',v:'rgba(255,82,82,0.2)'},
+          {k:'lbl',t:'bool',label:'POC 이름표',v:true},{k:'box',t:'bool',label:'범위 상자',v:true},{k:'vaL',t:'bool',label:'가치 영역 위·아래 선',v:true},{k:'right',t:'bool',label:'막대를 범위 오른쪽에 붙이기',v:false},{k:'wid',t:'num',label:'막대 최대 길이 (범위의 %)',v:40}],
+    fill:{kind:'vp', key:'_vp', hideUi:true}, title:p=>`매물대 ${p.bars} ${p.rows} ${p.va}%`,
+    /* 최근 N개 봉의 거래량을 가격 줄마다 나눠 쌓아요. 봉이 걸친 가격 폭만큼 나눠 담고, 가장 많은 줄이 POC, POC에서 양옆으로 넓혀 거래량 va%를 담는 구간이 가치 영역이에요 */
+    calc:(c,p) => { const N = Math.min(c.length, Math.max(10, Math.round(+p.bars) || 180)), R = Math.max(5, Math.min(200, Math.round(+p.rows) || 28)), s = c.slice(-N);
+      let hi = -Infinity, lo = Infinity; s.forEach(b => { if(b.high > hi) hi = b.high; if(b.low < lo) lo = b.low });
+      if(!s.length || !(hi > lo)) return { poc:[], _vp:null };
+      const h = (hi - lo)/R, up = new Array(R).fill(0), dn = new Array(R).fill(0);
+      s.forEach(b => { const A = b.close >= b.open ? up : dn, rg = b.high - b.low;
+        if(!(rg > 0)){ A[Math.min(R-1, Math.floor((b.close - lo)/h))] += b.volume; return }
+        const r0 = Math.max(0, Math.floor((b.low - lo)/h)), r1 = Math.min(R-1, Math.floor((b.high - lo)/h));
+        for(let r = r0; r <= r1; r++){ const ov = Math.min(b.high, lo + (r+1)*h) - Math.max(b.low, lo + r*h); if(ov > 0) A[r] += b.volume*ov/rg } });
+      const tot = up.map((u, i) => u + dn[i]), all = tot.reduce((a, b) => a + b, 0); let poc = 0; tot.forEach((v, i) => { if(v > tot[poc]) poc = i });
+      let a = poc, z = poc, sum = tot[poc]; const need = all*Math.min(100, Math.max(1, +p.va || 60))/100;
+      while(sum < need && (a > 0 || z < R-1)){ const da = a > 0 ? tot[a-1] : -1, dz = z < R-1 ? tot[z+1] : -1; if(dz >= da){ z++; sum += tot[z] } else { a--; sum += tot[a] } }
+      const pp = lo + (poc + .5)*h, t0 = s[0].time, t1 = s[s.length-1].time;
+      return { poc: t1 > t0 ? [{time:t0, value:pp}, {time:t1, value:pp}] : [{time:t1, value:pp}],
+        _vp:{ t0, t1, lo, hi, h, R, up, dn, tot, poc, pp, a, z, vaLo: lo + a*h, vaHi: lo + (z+1)*h } } } },
   EW:{ label:'엘리어트 파동', overlay:true, params:{len:5, fib:1}, colors:['rgba(140,150,165,0.55)'], series:[{key:'zz',type:'line',name:'지그재그'}], width:1,
     fill:{kind:'ew', key:'_ew', color:U(1), color2:D(1)}, title:p=>`엘리어트 파동 ${p.len}`,
     /* 고점·저점(앞뒤 len봉 중 가장 높고 낮은 봉)을 이어 지그재그를 만들고, 그 안에서 규칙에 맞는 5파(1~5)와 뒤따르는 조정파(a·b·c)를 찾아요.
@@ -1282,12 +1401,13 @@ const PARAM_LABEL = {t1:'1번 종류',p1:'1번 기간 (0=끔)',t2:'2번 종류',
 /* 분류와 한 줄 설명 (지표 찾기 창) */
 const META = {
   VOL:['거래량','봉마다 거래량'], VOLMA:['거래량','거래량과 그 평균'], VWAP:['거래량','하루 동안의 거래량 가중 평균가'], OBV:['거래량','오르면 더하고 내리면 빼는 누적 거래량'], CMF:['거래량','매집·분산 강도'], MFI:['거래량','거래량을 넣은 RSI'],
-  MAS:['추세','이동평균선 여러 개를 한 줄로 (최대 8개)'], MA:['추세','SMA·EMA·WMA·HMA·RMA'], RIBBON:['추세','EMA 20·50·100·200 한 번에'], ST:['추세','ATR 기반 추세 따라가기'], VWT:['추세','거래량 가중 평균 + ATR 띠'], ICHI:['추세','전환·기준선과 구름'], EW:['추세','고점·저점으로 1~5파와 a·b·c 조정파 자동 표시'], PSAR:['추세','추세 반전 점'], ADX:['추세','추세 세기와 방향'], AROON:['추세','최근 고점·저점이 얼마나 가까운지'], PIVOT:['추세','전날 고저종으로 만든 지지·저항'],
+  MAS:['추세','이동평균선 여러 개를 한 줄로 (최대 8개)'], MA:['추세','SMA·EMA·WMA·HMA·RMA'], RIBBON:['추세','EMA 20·50·100·200 한 번에'], ST:['추세','ATR 기반 추세 따라가기'], VWT:['추세','거래량 가중 이동평균 + ATR 띠, 네온 빛·리본·캔들 색칠'], VP:['거래량','최근 N개 봉의 가격대별 거래량, POC·가치 영역'], ICHI:['추세','전환·기준선과 구름'], EW:['추세','고점·저점으로 1~5파와 a·b·c 조정파 자동 표시'], PSAR:['추세','추세 반전 점'], ADX:['추세','추세 세기와 방향'], AROON:['추세','최근 고점·저점이 얼마나 가까운지'], PIVOT:['추세','전날 고저종으로 만든 지지·저항'],
   RSI:['모멘텀','과매수·과매도 (이동평균 포함)'], STOCH:['모멘텀','기간 내 종가 위치'], STOCHRSI:['모멘텀','RSI의 스토캐스틱'], MACD:['모멘텀','두 EMA 차이와 시그널'], CCI:['모멘텀','평균에서 얼마나 벗어났는지'], WR:['모멘텀','기간 고가 대비 종가 위치'], ROC:['모멘텀','N봉 전 대비 변화율'], MOM:['모멘텀','N봉 전 대비 가격 차'], AO:['모멘텀','5·34 중간값 이동평균 차'], TRIX:['모멘텀','3중 EMA 변화율'],
   BB:['변동성','평균 ± 표준편차 띠'], KC:['변동성','EMA ± ATR 띠'], DC:['변동성','기간 최고·최저 띠'], ENV:['변동성','이동평균 ± 고정 %'], ATR:['변동성','평균 실제 변동폭'], BBW:['변동성','볼린저 밴드 폭 %'], BBP:['변동성','밴드 안 가격 위치'], HV:['변동성','연율로 본 변동성'], CHOP:['변동성','추세장인지 횡보장인지'],
   CVD:['우호 전용','체결 기반 누적 매수−매도'], DELTA:['우호 전용','봉별 체결 매수−매도'],
   OI:['선물 데이터','미결제약정 금액'], LSR:['선물 데이터','전체 계정 롱/숏 비율'], TOPLSR:['선물 데이터','상위 트레이더 포지션 롱/숏'], TAKER:['선물 데이터','시장가 매수/매도 비율'], FUND:['선물 데이터','8시간 펀딩비 기록']
 };
+Object.assign(PARAM_LABEL, { conv:'전환선', base:'기준선', span:'선행 스팬 B', disp:'래깅 스팬', mult:'ATR 배수', preset:'설정 묶음 (직접이면 위 값)', theme:'색 묶음', bars:'봉 개수', rows:'가격 줄 수', va:'가치 영역 거래량 %' });
 Object.entries(META).forEach(([k, [cat, desc]]) => { if(DEFS[k]){ DEFS[k].cat = cat; DEFS[k].desc = desc } });
 LC.IND = { DEFS, META, PARAM_LABEL, sma, ema, smaN, rsiCalc };
 })();
@@ -1726,6 +1846,7 @@ LC.DRAW_TOOLS = { TWO, ONE, NAMES };
 <script>
 /* 차트 한 칸: 캔들, 지표, 작도, 알림, 리플레이 */
 (() => {
+const KC = new Map();   /* 최근 본 봉 묶음: 종목|시장|분봉 → { t, c } */
 const L = LightweightCharts;
 const SERIES_BY_TYPE = { candle:L.CandlestickSeries, hollow:L.CandlestickSeries, ha:L.CandlestickSeries, bar:L.BarSeries, line:L.LineSeries, area:L.AreaSeries };
 const UP = '#5b9cf6', DN = '#f0616d';
@@ -1775,6 +1896,7 @@ class ChartView {
       const D = this.drawings, rc = D.cv.getBoundingClientRect(), hit = D.hitTest(e.clientX - rc.left, e.clientY - rc.top);
       const top = hit ? [[`이 작도 지우기`, () => D.remove(hit.item), ''], ['이 작도 설정…', () => { D.sel = hit.item; D.updateBar(); D.settings(hit.item) }], '-'] : [];
       LC.ctxMenu(e.clientX, e.clientY, [...top, ['차트 설정…', () => LC.chartStyle.modal(), '모양·색'], ['지표 추가…', () => this.app.indModal()], '-',
+        [(LC.walls && LC.walls.cfg().on ? '✓ ' : '　') + '호가 벽 표시', () => { const c = LC.walls.cfg(); c.on = !c.on; LC.store.set('wallCfg', c); LC.walls.poll() }], ['호가 벽 · 알림 설정…', () => LC.walls.modal()], '-',
         ['차트 그림 저장', () => this.screenshot()], ['리플레이', () => this.replayBegin()], ['처음 화면으로', () => this.resetView(true), '더블클릭'], ['오른쪽 끝으로', () => this.scrollNow()], ['가격 눈금 자동 맞춤', () => this.chart.priceScale('right').applyOptions({autoScale:true})], '-',
         ['이 종목 작도 모두 지우기', () => this.drawings.clear()]]) });
     /* 예전에 따로 넣은 이동평균선 여러 개는 '이동평균선 묶음' 하나로 합쳐요 */
@@ -1827,34 +1949,51 @@ class ChartView {
 
   /* 데이터 */
   get rest(){ return LC.EP[this.market].rest }
+  /* 거래소에서 봉 받기. since(초)를 주면 그 봉부터 지금까지만 */
+  async fetchK(since){
+    if(this.market === 'hl'){ const r = await LC.hlm.klines(this.sym, this.tf); return since ? r.filter(b => b.time >= since) : r }
+    const rows = await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000${since ? '&startTime=' + since * 1000 : ''}`);
+    return rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5], tbv:+k[9]})) }
+  /* 연결이 끊겼다 다시 붙거나 잠자기에서 깨면, 끊긴 동안의 봉을 받아 채워요. 마지막 봉도 다시 받아서 덜 반영된 값을 고쳐요 */
+  async backfill(tok = this.tok){
+    if(this._bfBusy || !this.candles || !this.candles.length || !this.loadedSym) return; this._bfBusy = true;
+    try{ const last = this.candles[this.candles.length - 1], rows = await this.fetchK(last.time); if(tok !== this.tok || !rows.length) return;
+      if(this.market !== 'hl' && rows.length >= 1000){ KC.delete(this._ck); return this.load() }   /* 너무 오래 끊겼으면 통째로 다시 */
+      const c = this.candles; let n = 0;
+      rows.forEach(b => { const L = c[c.length - 1]; if(L.time === b.time){ c[c.length - 1] = b; n++ } else if(b.time > L.time){ c.push(b); n++ } });
+      if(!n || this.replay) return; this.shown = c;
+      if(n <= 1){ const b = c[c.length - 1]; this.series.update(this.mainLast(b)); this.lastLabel(); this.updateInds(false) } else { const r = this.chart.timeScale().getVisibleLogicalRange(); this.renderAll(); if(r) this.chart.timeScale().setVisibleLogicalRange({ from: r.from + n - 1, to: r.to + n - 1 }) }
+      this.setLegend(c[c.length - 1]);
+    }catch(e){} finally{ this._bfBusy = false } }
   async load(){
-    const tok = this.tok = Math.random();
+    /* 떠나는 봉 묶음은 잠깐 기억해 둬요 (분봉을 오갈 때 바로 보이게) */
+    if(this.loadedSym && this._ck && this.candles && this.candles.length && !this.replay){ KC.delete(this._ck); KC.set(this._ck, { t: Date.now(), c: this.candles, noMore: this.noMore }); while(KC.size > 8) KC.delete(KC.keys().next().value) }
+    const tok = this.tok = Math.random(), ck = `${this.sym}|${this.market}|${this.tf}`, hit = KC.get(ck), fresh = hit && Date.now() - hit.t < 30 * 6e4;
     this.closeStreams(); this.replayExit(true); this.noMore = false; this.loadedSym = null;
     const ld = this.q('.cv-load'); ld.hidden = false; ld.innerHTML = '<div class="cv-sk"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>';
     this.q('.lg-t').textContent = this.market === 'hl' ? `${this.sym.split(':')[1] || this.sym} · ${(LC.TF.find(x=>x[0]===this.tf)||[,''])[1]} · HYPERLIQUID ${(this.sym.split(':')[0] || '').toUpperCase()}` : `${this.sym}${this.market==='futures'?'.P':''} · ${(LC.TF.find(x=>x[0]===this.tf)||[,''])[1]} · BINANCE`;
     this.q('.lg-mk').innerHTML = LC.session ? LC.session.badge(this.sym, this.market) : '';
     this.drawings.load(); if(this.bubbles) this.bubbles.items = []; if(this.wm) LC.chartStyle.apply(this);
     try{
-      if(this.market === 'hl'){ const r = await LC.hlm.klines(this.sym, this.tf); if(tok !== this.tok) return; this.candles = r }
-      else { const rows = await LC.getJSON(`${this.rest}/klines?symbol=${this.sym}&interval=${this.tf}&limit=1000`);
-        if(tok !== this.tok) return;
-        this.candles = rows.map(k => ({time:Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5], tbv:+k[9]})) }
+      if(fresh){ this.candles = hit.c.slice(); this.noMore = !!hit.noMore }
+      else { const r = await this.fetchK(); if(tok !== this.tok) return; this.candles = r }
       this.autoPrec = null; this.prec = this.app.precOf(this.sym, this.market) ?? LC.autoPrec(this.candles.length ? this.candles[this.candles.length-1].close : 1);
       this.series.applyOptions({ priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec} }); LC.chartStyle.apply(this);
       this.shown = this.candles; this.renderAll();
       /* 종목이 바뀌면 가격 눈금을 새 종목에 맞추고 지금 봉이 보이게 해요 (시간 단위만 바뀌면 확대 정도는 그대로) */
-      if(this._vSym !== this.sym + this.market) this.resetView(false); else this.scrollNow(); this._vSym = this.sym + this.market; this.loadedSym = this.sym;
-      ld.hidden = true;
+      if(this._vSym !== this.sym + this.market) this.resetView(false); else this.scrollNow(); this._vSym = this.sym + this.market; this.loadedSym = this.sym; this._ck = ck;
+      ld.hidden = true; if(fresh) this.backfill(tok);
     }catch(e){ if(tok !== this.tok) return;
       ld.innerHTML = `<div class="cv-err">${/늦어요/.test(e.message) ? '거래소 응답이 너무 늦어요.' : '데이터를 못 불러왔어요. 종목이나 인터넷 연결을 확인해 주세요.'}<button class="btn sm" data-retry>다시 시도</button></div>`;
       ld.querySelector('[data-retry]').onclick = () => this.load(); return }
     this.prevPrice = this.last && this.last.close;
-    if(this.market === 'hl') this.kws = LC.hlm.stream(this.sym, this.tf, b => { if(tok === this.tok) this.onBar(b) }, ok => this.app.setConn(this, ok));
+    this._down = false;
+    if(this.market === 'hl') this.kws = LC.hlm.stream(this.sym, this.tf, b => { if(tok === this.tok) this.onBar(b) }, ok => { this.app.setConn(this, ok); if(!ok) this._down = true; else if(this._down){ this._down = false; this.backfill(tok) } });
     else { let bnOk = false;
       this.kws = LC.openWS(`${LC.EP[this.market].ws}/${this.sym.toLowerCase()}@kline_${this.tf}`, m => {
         if(tok !== this.tok || !m.k) return; const k = m.k;
         this.onBar({time:Math.floor(k.t/1000), open:+k.o, high:+k.h, low:+k.l, close:+k.c, volume:+k.v, tbv:+k.V});
-      }, ok => { bnOk = ok;
+      }, ok => { bnOk = ok; if(!ok) this._down = true; else if(this._down){ this._down = false; this.backfill(tok) }
         if(ok){ clearTimeout(this.bkT); this.bkT = null; this.stopBackup() } else if(!this.bkT && !this.bkws) this.bkT = setTimeout(() => { this.bkT = null; this.startBackup(tok) }, 8000);
         this.app.setConn(this, ok || this.bkOk, ok ? '' : this.bkOk ? 'bybit' : '') });
       /* 처음 8초 안에 바이낸스가 안 열리면(막힌 지역 등) 바로 바이비트로 */
@@ -1896,7 +2035,7 @@ class ChartView {
   }
   get last(){ return this.candles[this.candles.length-1] }
   set(sym, market){ this.sym = sym; if(market) this.market = market; this.load(); this.app.save() }
-  setTf(tf){ this.tf = tf; this.load(); this.app.save() }
+  setTf(tf){ this.tf = tf; this.inds.forEach(i => this.applyIndStyle(i)); this.renderLegendInds(); this.load(); this.app.save() }
 
   onBar(b){
     const c = this.candles, last = c[c.length-1];
@@ -1919,7 +2058,8 @@ class ChartView {
   /* 지표 */
   /* 지표 모양 기본값: 선마다 색·굵기·모양·보이기, 기준선, 띠 채우기 */
   defStyle(def, color){
-    return { plots: def.series.map((s, i) => ({ color: (i === 0 && color) || (def.colors||[])[i] || '#888888', width: s.type === 'hist' ? 1 : def.width || (def.overlay ? 1 : 1.5), dash: s.dash ? 2 : 0, visible:true })),
+    return { plots: def.series.map((s, i) => ({ color: (i === 0 && color) || (def.colors||[])[i] || '#888888', width: s.type === 'hist' ? 1 : s.w || def.width || (def.overlay ? 1 : 1.5), dash: s.dash ? 2 : 0, visible:!s.hide })),
+      opts: def.opts ? Object.fromEntries(def.opts.map(o => [o.k, o.v])) : null, tfs: [],
       levels: (def.levels||[]).map(v => ({ v, color:'rgba(120,134,156,0.6)', dash:2, show:true })),
       fill: def.fill ? { show:true, color:def.fill.color, color2:def.fill.color2 } : null };
   }
@@ -1927,7 +2067,8 @@ class ChartView {
     const def = LC.IND.DEFS[key]; if(!def) return;
     const ds = this.defStyle(def, color);
     if(style){ ds.plots.forEach((p, i) => style.plots && style.plots[i] && Object.assign(p, style.plots[i]));
-      if(style.levels && style.levels.length === ds.levels.length) ds.levels = style.levels; if(style.fill && ds.fill) Object.assign(ds.fill, style.fill) }
+      if(style.levels && style.levels.length === ds.levels.length) ds.levels = style.levels; if(style.fill && ds.fill) Object.assign(ds.fill, style.fill)
+      if(style.opts && ds.opts) Object.keys(ds.opts).forEach(k => { if(k in style.opts) ds.opts[k] = style.opts[k] }); if(Array.isArray(style.tfs)) ds.tfs = style.tfs.slice() }
     const ind = { id:Math.random().toString(36).slice(2,8), key, def, params:{...def.params, ...(params||{})}, hidden:!!hidden, series:[], data:{}, style:ds, lines:[] };
     ind.color = ds.plots[0].color;
     const pane = def.overlay ? 0 : this.chart.panes().length;
@@ -1953,8 +2094,8 @@ class ChartView {
     else { (this._indHid || []).forEach(id => { const i = this.inds.find(x => x.id === id); if(i){ i.hidden = false; this.applyIndStyle(i); i.def.async ? this.fetchAsync(i) : this.computeInd(i, true) } }); this._indHid = null }
     this.renderLegendInds() }
   applyIndStyle(ind){
-    const st = ind.style; ind.color = st.plots[0].color;
-    ind.def.series.forEach((s, i) => { const p = st.plots[i], se = ind.series[i], vis = !ind.hidden && p.visible;
+    const st = ind.style; ind.color = st.plots[0].color; ind.tfOff = (st.tfs || []).includes(this.tf);
+    ind.def.series.forEach((s, i) => { const p = st.plots[i], se = ind.series[i], vis = !ind.hidden && !ind.tfOff && p.visible;
       if(s.type === 'hist') se.applyOptions({ color:p.color, visible:vis });
       else if(s.type === 'area'){ const c = LC.color.parseColor(p.color); se.applyOptions({ lineColor:p.color, topColor:LC.color.mkColor(c.hex, .3), bottomColor:LC.color.mkColor(c.hex, .02), lineWidth:+p.width, lineStyle:+p.dash, visible:vis }) }
       else se.applyOptions({ color:p.color, lineWidth:+p.width, lineStyle:+p.dash, visible:vis }) });
@@ -1985,7 +2126,7 @@ class ChartView {
   indPane(ind){ try{ return ind.series[0].getPane().paneIndex() }catch(e){ return ind.def.overlay ? 0 : 1 } }
   renderLegendInds(){
     const I = LC.LG_ICON, title = i => LC.esc(i.def.title ? i.def.title(i.params) : i.def.label);
-    const row = i => `<div class="lgr ${i.hidden ? 'off' : ''}" data-id="${i.id}"><span class="nm">${title(i)}</span><span class="vals num"></span>
+    const row = i => `<div class="lgr ${i.hidden || i.tfOff ? 'off' : ''}" data-id="${i.id}"${i.tfOff ? ' title="이 분봉에선 숨겨 둔 지표예요 (설정 → 보임)"' : ''}><span class="nm">${title(i)}</span><span class="vals num"></span>
       ${i.hidden ? `<button class="hid" data-a="eye" title="다시 보이기">${I.eyeOff}</button>` : ''}
       <span class="act"><button data-a="eye" title="${i.hidden ? '보이기' : '숨기기'}">${i.hidden ? I.eyeOff : I.eye}</button><button data-a="set" title="설정">${I.gear}</button><button data-a="del" title="지우기">${I.trash}</button><button data-a="more" title="더 보기">${I.more}</button></span></div>`;
     const by = {}; this.inds.forEach(i => { const p = this.indPane(i); (by[p] = by[p] || []).push(i) });
@@ -2020,17 +2161,23 @@ class ChartView {
     const old = { params:{...P}, style:JSON.parse(JSON.stringify(st)) };
     const field = k => (k === 'type' || /^t\d$/.test(k)) ? `<select class="inp" data-k="${k}">${['SMA','EMA','WMA','HMA','RMA'].map(t => `<option ${P[k]===t?'selected':''}>${t}</option>`).join('')}</select>`
       : k === 'reset' ? `<select class="inp" data-k="reset">${['없음','일간'].map(s => `<option ${P.reset===s?'selected':''}>${s}</option>`).join('')}</select>`
+      : D.selects && D.selects[k] ? `<select class="inp" data-k="${k}">${D.selects[k].map(s => `<option ${P[k]===s?'selected':''}>${s}</option>`).join('')}</select>`
       : k === 'source' ? `<select class="inp" data-k="source">${['close','open','high','low','hl2','hlc3'].map(s => `<option ${P.source===s?'selected':''}>${s}</option>`).join('')}</select>`
       : `<input class="inp" type="number" step="any" min="0" data-k="${k}" value="${LC.esc(P[k])}">`;
     const dashSel = (attr, v) => `<select ${attr} title="선 모양">${LC.DASH.map(([k, n]) => `<option value="${k}" ${String(v) === k ? 'selected' : ''}>${n}</option>`).join('')}</select>`;
     const plots = D.series.map((s, i) => { const p = st.plots[i];
-      return `<div class="srow"><label><input type="checkbox" data-pv="${i}" ${p.visible ? 'checked' : ''}> ${LC.esc(s.name || (D.series.length > 1 ? '선 ' + (i+1) : D.label))}</label><span class="sctl">${C.colorField('p' + i, p.color)}
+      return `<div class="srow"><label><input type="checkbox" data-pv="${i}" ${p.visible ? 'checked' : ''}> ${LC.esc(s.name || (D.series.length > 1 ? '선 ' + (i+1) : D.label))}</label><span class="sctl">${s.trend ? '<span class="muted" style="font-size:11px">추세 색</span>' : C.colorField('p' + i, p.color)}
         ${s.type === 'hist' ? '' : `<select data-pw="${i}" title="굵기">${[1,1.5,2,3,4].map(w => `<option ${+p.width === w ? 'selected' : ''}>${w}</option>`).join('')}</select>${dashSel(`data-pd="${i}"`, p.dash)}`}</span></div>` }).join('');
     const levels = st.levels.map((l, i) => `<div class="srow"><label><input type="checkbox" data-lv="${i}" ${l.show ? 'checked' : ''}> 기준선 <input class="inp sm" type="number" step="any" data-lval="${i}" value="${l.v}"></label><span class="sctl">${C.colorField('l' + i, l.color)}${dashSel(`data-ld="${i}"`, l.dash)}</span></div>`).join('');
-    const fill = st.fill ? `<div class="srow"><label><input type="checkbox" data-fill ${st.fill.show ? 'checked' : ''}> ${D.fill.kind === 'band' ? '띠 (상승 / 하락)' : '사이 채우기'}</label><span class="sctl">${C.colorField('f1', st.fill.color)}${D.fill.color2 ? C.colorField('f2', st.fill.color2) : ''}</span></div>` : '';
-    const html = `<div class="sub-tabs st-tabs"><button data-t="0" class="on">입력값</button><button data-t="1">모양</button></div>
+    const fill = st.fill && !D.fill.hideUi ? `<div class="srow"><label><input type="checkbox" data-fill ${st.fill.show ? 'checked' : ''}> ${D.fill.name || (D.fill.kind === 'band' ? '띠 (상승 / 하락)' : '사이 채우기')}</label><span class="sctl">${C.colorField('f1', st.fill.color)}${D.fill.color2 ? C.colorField('f2', st.fill.color2) : ''}</span></div>` : '';
+    const opts = (D.opts || []).map(o => { const v = st.opts[o.k];
+      return `<div class="srow">${o.t === 'bool' ? `<label><input type="checkbox" data-ok="${o.k}" ${v ? 'checked' : ''}> ${LC.esc(o.label)}</label>`
+        : `<label>${LC.esc(o.label)}</label><span class="sctl">${o.t === 'color' ? C.colorField('o_' + o.k, v) : `<input class="inp sm" type="number" step="any" data-ok="${o.k}" value="${LC.esc(v)}">`}</span>`}</div>` }).join('');
+    const tfs = `<p class="muted" style="font-size:12px;margin:4px 0 8px">체크를 끈 분봉에선 이 지표를 숨겨요.</p>` + LC.TF.map(([k, n]) => `<div class="srow"><label><input type="checkbox" data-tf="${k}" ${(st.tfs || []).includes(k) ? '' : 'checked'}> ${n}</label></div>`).join('');
+    const html = `<div class="sub-tabs st-tabs"><button data-t="0" class="on">입력값</button><button data-t="1">모양</button><button data-t="2">보임</button></div>
       <div class="st-pane" data-t="0"><div class="form">${ind.key === 'MAS' ? `<label>기준값${field('source')}</label><div class="mas-h"><span></span><span>종류</span><span>기간 (0이면 끔)</span></div>${[1,2,3,4,5,6,7,8].map(i => `<div class="mas-r"><i style="background:${LC.color.parseColor(st.plots[i-1].color).hex}"></i>${field('t'+i)}${field('p'+i)}</div>`).join('')}` : keys.length ? keys.map(k => `<label>${LC.IND.PARAM_LABEL[k]||k}${field(k)}</label>`).join('') : '<p class="muted">바꿀 입력값이 없는 지표예요. 모양 탭에서 색과 선을 바꿀 수 있어요.</p>'}</div></div>
-      <div class="st-pane" data-t="1" hidden>${plots}${levels ? '<h6>기준선</h6>' + levels : ''}${fill ? '<h6>채우기</h6>' + fill : ''}</div>
+      <div class="st-pane" data-t="1" hidden>${plots}${levels ? '<h6>기준선</h6>' + levels : ''}${fill ? '<h6>채우기</h6>' + fill : ''}${opts ? '<h6>옵션</h6>' + opts : ''}</div>
+      <div class="st-pane" data-t="2" hidden>${tfs}</div>
       <div class="row-end"><button class="btn" id="indDef">기본값으로</button><button class="btn" id="indCancel">취소</button><button class="btn pri" id="indOk">확인</button></div>`;
     let done = false;
     const close = LC.modal(D.label + ' 설정', html, (mb, close) => {
@@ -2038,11 +2185,14 @@ class ChartView {
         mb.querySelectorAll('.st-tabs button').forEach(x => x.classList.toggle('on', x === b)); mb.querySelectorAll('.st-pane').forEach(p => p.hidden = p.dataset.t !== b.dataset.t) };
       const read = () => {
         mb.querySelectorAll('[data-k]').forEach(el => { const k = el.dataset.k; P[k] = el.type === 'number' ? (el.value === '' ? old.params[k] : Math.max(/^(ma|p\d|fib)$/.test(k) ? 0 : 1, +el.value)) : el.value });
-        D.series.forEach((s, i) => { const p = st.plots[i]; p.visible = mb.querySelector(`[data-pv="${i}"]`).checked; p.color = C.readColor(mb.querySelector(`[data-ck="p${i}"]`));
+        D.series.forEach((s, i) => { const p = st.plots[i]; p.visible = mb.querySelector(`[data-pv="${i}"]`).checked; const ck = mb.querySelector(`[data-ck="p${i}"]`); if(ck) p.color = C.readColor(ck);
           const w = mb.querySelector(`[data-pw="${i}"]`); if(w){ p.width = +w.value; p.dash = +mb.querySelector(`[data-pd="${i}"]`).value } });
         st.levels.forEach((l, i) => { l.show = mb.querySelector(`[data-lv="${i}"]`).checked; const v = mb.querySelector(`[data-lval="${i}"]`).value; if(v !== '') l.v = +v;
           l.color = C.readColor(mb.querySelector(`[data-ck="l${i}"]`)); l.dash = +mb.querySelector(`[data-ld="${i}"]`).value });
-        if(st.fill){ st.fill.show = mb.querySelector('[data-fill]').checked; st.fill.color = C.readColor(mb.querySelector('[data-ck="f1"]')); const f2 = mb.querySelector('[data-ck="f2"]'); if(f2) st.fill.color2 = C.readColor(f2) }
+        (D.opts || []).forEach(o => { if(o.t === 'color') st.opts[o.k] = C.readColor(mb.querySelector(`[data-ck="o_${o.k}"]`));
+          else { const el = mb.querySelector(`[data-ok="${o.k}"]`); st.opts[o.k] = o.t === 'bool' ? el.checked : (el.value === '' ? o.v : +el.value) } });
+        st.tfs = [...mb.querySelectorAll('[data-tf]')].filter(x => !x.checked).map(x => x.dataset.tf);
+        if(st.fill && mb.querySelector('[data-fill]')){ st.fill.show = mb.querySelector('[data-fill]').checked; st.fill.color = C.readColor(mb.querySelector('[data-ck="f1"]')); const f2 = mb.querySelector('[data-ck="f2"]'); if(f2) st.fill.color2 = C.readColor(f2) }
         this.applyIndStyle(ind); ind.def.async ? this.fetchAsync(ind) : this.computeInd(ind, true); this.renderLegendInds() };
       mb.addEventListener('input', read); mb.addEventListener('change', read);
       mb.querySelector('#indDef').onclick = () => { Object.assign(P, D.params); Object.assign(st, this.defStyle(D)); this.applyIndStyle(ind); this.computeInd(ind, true); this.renderLegendInds(); done = true; close(); this.editInd(ind) };
@@ -2131,6 +2281,7 @@ LC.ChartView = ChartView;
 <script>
 /* 종목 아이콘·이름·시가총액. 코인은 코인게코 상위 500개(12시간 보관), 주식은 공개 로고 주소, 그 밖엔 글자 동그라미 */
 (() => {
+const BAD = new Set();   /* 못 불러온 아이콘 주소 */
 const { esc, store } = LC;
 const KR = { SAMSUNG:['삼성전자','005930.KS'], SKHYNIX:['SK하이닉스','000660.KS'], HYUNDAI:['현대차','005380.KS'], SAMSUNGEM:['삼성전기','009150.KS'], HANMI:['한미반도체','042700.KS'],
   LGELECTRONICS:['LG전자','066570.KS'], NAVER:['네이버','035420.KS'], KODEX200:['KODEX 200','069500.KS'] };
@@ -2189,11 +2340,11 @@ const A = LC.assets = {
     else if(g === 'kr' && KR[b]) srcs.push(`https://financialmodelingprep.com/image-stock/${KR[b][1]}.png`);
     else if(g === 'hk' && HK[b] && HK[b][1]) srcs.push(`https://financialmodelingprep.com/image-stock/${HK[b][1]}.png`);
     const fb = g === 'cmd' || g === 'fx' ? letter((CMD[b] || [b])[0].slice(0, 1), (CMD[b] || [])[1]) : g === 'idx' ? letter('지', '#5b6b82') : letter((g === 'kr' ? (KR[b] || [b])[0] : b).slice(0, 1));
-    if(!srcs.length) return fb;
+    srcs = srcs.filter(u => !BAD.has(u)); if(!srcs.length) return fb;
     return `<span class="aicw" style="width:${sz}px;height:${sz}px"><img class="aimg" src="${esc(srcs[0])}" data-alt="${esc(srcs.slice(1).join('|'))}" decoding="async" alt="" width="${sz}" height="${sz}">${fb.replace('class="aic"', 'class="aic bk"')}</span>` }
 };
 /* 그림이 안 열리면 다음 주소, 다 안 되면 뒤에 깔린 글자 동그라미가 보여요 */
-document.addEventListener('error', e => { const i = e.target; if(!i.classList || !i.classList.contains('aimg')) return; const alt = (i.dataset.alt || '').split('|').filter(Boolean);
+document.addEventListener('error', e => { const i = e.target; if(!i.classList || !i.classList.contains('aimg')) return; BAD.add(i.getAttribute('src')); const alt = (i.dataset.alt || '').split('|').filter(u => u && !BAD.has(u));
   if(alt.length){ i.dataset.alt = alt.slice(1).join('|'); i.src = alt[0] } else i.remove() }, true);
 A.load();
 })();
@@ -2556,9 +2707,13 @@ const BOOK = {
       <div class="imb"><div class="imb-bar"><i></i></div><div class="imb-t num"></div></div>`;
     el.querySelector('[data-c=ex]').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.ex = b.dataset.v; store.set('bookEx', this.ex); this.connect() };
     el.querySelector('[data-c=group]').onchange = e => { this.group = +e.target.value; this.render() };
-    setInterval(() => { if(!document.hidden) this.render() }, 250);
+    setInterval(() => { if(!document.hidden && this.vis()) this.render() }, 250);
+    /* 호가는 초당 10번씩 들어와서, 패널이 보일 때만 연결하고 안 보인 지 20초가 지나면 끊어요 */
+    setInterval(() => { const on = this.vis() && !document.hidden; if(on){ this.offAt = 0; if(!this.ws && this.sym) this.connect() } else if(this.ws){ this.offAt = this.offAt || Date.now(); if(Date.now() - this.offAt > 20000){ this.ws.close(); this.ws = null; this.offAt = 0 } } }, 2000);
   },
-  onSymbol(v){ if(this.sym === v.sym && this.market === v.market){ if(this.prec !== v.prec) this.setupGroups(v); return } this.sym = v.sym; this.market = v.market; this.setupGroups(v); this.connect() },
+  vis(){ const pn = this.el && (this.el.closest('.pn') || this.el); return !!pn && !pn.hidden && !(this.app && this.app.asideHidden) },
+  onShow(on){ if(on && !this.ws && this.sym) this.connect() },
+  onSymbol(v){ if(this.sym === v.sym && this.market === v.market){ if(this.prec !== v.prec) this.setupGroups(v); return } this.sym = v.sym; this.market = v.market; this.setupGroups(v); if(this.vis()) this.connect(); else { this.ws && this.ws.close(); this.ws = null; this.bids = new Map(); this.asks = new Map() } },
   setupGroups(v){
     this.prec = v.prec; const tick = 1 / 10 ** v.prec; const g = [1, 2, 5, 10, 50, 100, 500].map(m => +(tick*m).toFixed(10));
     this.group = g[0];
@@ -3500,6 +3655,120 @@ LC.overlays = LC.overlays || []; LC.overlays.push({ draw: (ctx, d, A) => BT.draw
 
 </script>
 <script>
+/* 호가 벽: 바이낸스·바이비트·OKX 호가를 10초마다 합쳐서, 지금가 근처에 유난히 두꺼운 가격대(벽)를 찾아요.
+   두 번 넘게 연달아 보이면 벽으로 치고, 차트에 빗금 띠와 크기·버틴 시간·거리를 그려요.
+   가격이 닿지 않았는데 사라지면 "빠짐"(✕), 가격이 지나가며 사라지면 "체결"로 남겨요. */
+(() => {
+const { store, esc } = LC;
+const POLL = 10000, KEEP = 40;
+const cfg = () => Object.assign({ on:true, alNear:true, alNew:false, alPull:true, nearPct:0.25, newPct:1, min:0 }, store.get('wallCfg', {}));
+const fmtU = v => '$' + (v >= 1e9 ? (v / 1e9).toFixed(2) + 'B' : v >= 1e6 ? (v / 1e6).toFixed(2) + 'M' : (v / 1e3).toFixed(0) + 'K');
+const ago = ms => { const m = Math.floor(ms / 6e4); return m < 1 ? '방금' : m < 60 ? m + '분째' : Math.floor(m / 60) + '시간 ' + (m % 60) + '분째' };
+const nice = x => { const e = 10 ** Math.floor(Math.log10(x)), f = x / e; return (f < 1.5 ? 1 : f < 3.5 ? 2.5 : f < 7.5 ? 5 : 10) * e };
+const okxCt = {};
+
+const W = LC.walls = {
+  key: '', active: [], hist: {}, mid: 0, step: 0, src: [], err: '',
+  cfg,
+  /* 지금 보고 있는 차트 종목의 호가를 세 거래소에서 받아 합쳐요 */
+  async books(sym, m){
+    const fut = m === 'futures', base = sym.replace(/USDT$/, ''), out = [], jobs = [];
+    jobs.push(LC.getJSON(`${LC.EP[m].rest}/depth?symbol=${sym}&limit=${fut ? 1000 : 1000}`).then(d => out.push({ ex:'Binance', b:d.bids, a:d.asks, k:1 })).catch(() => {}));
+    jobs.push(LC.getJSON(`https://api.bybit.com/v5/market/orderbook?category=${fut ? 'linear' : 'spot'}&symbol=${sym}&limit=${fut ? 500 : 200}`)
+      .then(d => d.result && d.result.b && out.push({ ex:'Bybit', b:d.result.b, a:d.result.a, k:1 })).catch(() => {}));
+    if(!/^\d/.test(base)){ const id = fut ? `${base}-USDT-SWAP` : `${base}-USDT`;
+      jobs.push((async () => { let k = 1;
+        if(fut){ if(okxCt[id] == null){ const r = await LC.getJSON(`https://www.okx.com/api/v5/public/instruments?instType=SWAP&instId=${id}`); const cv = r.data && r.data[0] ? +r.data[0].ctVal * (+r.data[0].ctMult || 1) : 0; if(cv > 0) okxCt[id] = cv } k = okxCt[id] }
+        if(!k) return; const d = await LC.getJSON(`https://www.okx.com/api/v5/market/books?instId=${id}&sz=400`); const x = d.data && d.data[0]; if(x) out.push({ ex:'OKX', b:x.bids, a:x.asks, k }) })().catch(() => {})) }
+    await Promise.all(jobs); return out;
+  },
+  /* 호가를 가격 칸으로 묶고, 둘레보다 훨씬 두꺼운 칸을 벽 후보로 */
+  find(books){
+    const B = books.find(x => x.ex === 'Binance') || books[0]; if(!B || !B.b.length || !B.a.length) return null;
+    const mid = (+B.b[0][0] + +B.a[0][0]) / 2, step = nice(mid * 0.0005), lim = mid * 0.03;
+    const agg = { b:new Map(), a:new Map() };
+    books.forEach(bk => ['b', 'a'].forEach(s => bk[s].forEach(r => { const p = +r[0], q = +r[1] * bk.k; if(!(p > 0 && q > 0) || Math.abs(p - mid) > lim) return;
+      const c = Math.round(p / step) * step; agg[s].set(c, (agg[s].get(c) || 0) + p * q) })));
+    const all = [...agg.b.values(), ...agg.a.values()].sort((x, y) => x - y), med = all.length ? all[Math.floor(all.length / 2)] : 0;
+    const c = cfg(), thr = Math.max(c.min || 0, med * 6, 2e5), out = [];
+    ['b', 'a'].forEach(s => [...agg[s].entries()].filter(([p, u]) => u >= thr && (s === 'b' ? p < mid : p > mid)).sort((x, y) => y[1] - x[1]).slice(0, 3)
+      .forEach(([p, usd]) => out.push({ side: s === 'b' ? 'bid' : 'ask', p, usd })));
+    return { mid, step, list: out, src: books.map(x => x.ex) };
+  },
+  async poll(){
+    const app = LC.app, v = app && app.v; if(!v || !cfg().on || document.hidden && Date.now() - (this.at || 0) < 60000) return;
+    if(v.market === 'hl' || (LC.assets && LC.assets.group(v.sym, v.market) !== 'coin')){ this.key = ''; this.active = []; return }
+    const key = v.sym + '|' + v.market; if(this.busy) return; this.busy = true;
+    try{ const r = this.find(await this.books(v.sym, v.market)); if(!r || (LC.app.v && LC.app.v.sym + '|' + LC.app.v.market) !== key) return;
+      if(key !== this.key){ this.key = key; this.active = [] }
+      this.at = Date.now(); this.mid = r.mid; this.step = r.step; this.src = r.src; this.track(r, v);
+    }catch(e){} finally{ this.busy = false } },
+  /* 앞선 결과와 이어 붙여서 버틴 시간을 재고, 사라진 벽은 빠짐/체결로 남겨요 */
+  track(r, v){
+    const now = Date.now(), seen = new Set(), C = cfg(), H = this.hist[this.key] = this.hist[this.key] || [];
+    r.list.forEach(w => { const a = this.active.find(x => x.side === w.side && Math.abs(x.p - w.p) <= r.step * 1.01 && !seen.has(x));
+      if(a){ seen.add(a); Object.assign(a, { p:w.p, usd:w.usd, seen:now, miss:0, n:a.n + 1, peak:Math.max(a.peak, w.usd) }) }
+      else { const n = { id: Math.random().toString(36).slice(2, 8), side:w.side, p:w.p, usd:w.usd, peak:w.usd, t0:now, seen:now, n:1, miss:0 }; this.active.push(n); seen.add(n) } });
+    this.active.forEach(a => { if(seen.has(a)) return; a.miss++ });
+    const dist = a => (a.p / r.mid - 1) * 100;
+    this.active.forEach(a => { if(a.n === 2 && !a.ok){ a.ok = true; if(C.alNew && Math.abs(dist(a)) <= C.newPct) this.alert(a, 'new', r) }
+      if(a.ok && !a.nearDone && C.alNear && Math.abs(dist(a)) <= C.nearPct){ a.nearDone = true; this.alert(a, 'near', r) } });
+    const gone = this.active.filter(a => a.miss >= 2); this.active = this.active.filter(a => a.miss < 2);
+    gone.forEach(a => { if(!a.ok) return; const since = (v.candles || []).filter(b => b.time * 1000 >= a.t0 - 6e4);
+      const hit = a.side === 'ask' ? since.some(b => b.high >= a.p - r.step / 2) : since.some(b => b.low <= a.p + r.step / 2);
+      const h = { ...a, t1: a.seen, end: hit ? 'filled' : 'pulled' }; H.push(h); if(H.length > KEEP) H.shift();
+      if(!hit && C.alPull && Math.abs(dist(a)) <= Math.max(C.nearPct * 3, 0.6)) this.alert(h, 'pull', r) });
+  },
+  alert(a, kind, r){
+    const ask = a.side === 'ask', name = ask ? '매도벽' : '매수벽', d = (a.p / r.mid - 1) * 100;
+    const title = kind === 'near' ? `${name} ${fmtU(a.usd)} 가까이` : kind === 'new' ? `${name} ${fmtU(a.usd)} 생김` : `${name} ${fmtU(a.peak)} 빠짐`;
+    const sub = `${r.src.join('·')} 합산 · ${kind === 'pull' ? '가격이 닿기 전에 사라졌어요' : kind === 'new' ? '방금 생겼어요' : ago(Date.now() - a.t0) + ' 그대로'} · 지금가에서 ${d > 0 ? '+' : ''}${d.toFixed(2)}%`;
+    LC.bigAlert({ tag:'호가 벽', title, sub, dir: ask ? 'down' : 'up', dirText: ask ? '▼ 하락 쪽' : '▲ 상승 쪽', tone: kind === 'pull' ? 'pull' : ask ? 'down' : 'up' });
+  },
+  /* 차트 그리기 */
+  drawOn(ctx, d, A){
+    const v = d.v; if(!cfg().on || !v || v.replay || this.key !== v.sym + '|' + v.market) return;
+    const H = this.hist[this.key] || [], now = Date.now(), col = s => s === 'ask' ? '240,97,109' : '38,198,218';
+    const X = ms => { const x = d.tToX(Math.floor(ms / 1000)); return x == null ? null : x };
+    ctx.save(); ctx.font = '600 11px "Noto Sans KR",system-ui,sans-serif'; ctx.textBaseline = 'middle';
+    /* 지난 벽: 체결은 옅은 빗금, 빠짐은 ✕ 줄 */
+    H.forEach(h => { const y = d.pToY(h.p); let x0 = X(h.t0), x1 = X(h.t1); if(y == null || x0 == null || x1 == null) return; x0 = Math.max(0, x0); x1 = Math.min(A.w, Math.max(x1, x0 + 10)); if(x1 <= 0 || x0 >= A.w) return;
+      if(h.end === 'pulled'){ ctx.strokeStyle = `rgba(${col(h.side)},.85)`; ctx.lineWidth = 1.2; for(let x = x0 + 4; x < x1; x += 9){ ctx.beginPath(); ctx.moveTo(x - 3, y - 3); ctx.lineTo(x + 3, y + 3); ctx.moveTo(x + 3, y - 3); ctx.lineTo(x - 3, y + 3); ctx.stroke() } }
+      else this.hatch(ctx, x0, x1, y, col(h.side), .35) });
+    /* 지금 벽: 빗금 띠 + 오른쪽 라벨 */
+    this.active.filter(a => a.ok).forEach(a => { const y = d.pToY(a.p); if(y == null || y < -10 || y > A.h + 10) return; let x0 = X(a.t0); x0 = x0 == null ? 0 : Math.max(0, x0);
+      this.hatch(ctx, x0, A.w, y, col(a.side), .9);
+      ctx.strokeStyle = `rgba(${col(a.side)},.55)`; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(x0, y); ctx.stroke(); ctx.setLineDash([]);
+      const t = `${a.side === 'ask' ? '매도벽' : '매수벽'} ${fmtU(a.usd)} · ${ago(now - a.t0)} · ${a.p > this.mid ? '+' : ''}${((a.p / this.mid - 1) * 100).toFixed(2)}%`, w = ctx.measureText(t).width + 12, lx = A.w - w - 6, ly = y + (a.side === 'ask' ? -14 : 14);
+      ctx.fillStyle = 'rgba(11,12,15,.82)'; ctx.strokeStyle = `rgba(${col(a.side)},.9)`; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(lx, ly - 9, w, 18, 4) : ctx.rect(lx, ly - 9, w, 18); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = `rgb(${col(a.side)})`; ctx.fillText(t, lx + 6, ly + .5) });
+    ctx.restore();
+  },
+  hatch(ctx, x0, x1, y, rgb, alpha){ const h = 7; ctx.save(); ctx.beginPath(); ctx.rect(x0, y - h / 2, x1 - x0, h); ctx.clip();
+    ctx.fillStyle = `rgba(${rgb},${alpha * .12})`; ctx.fillRect(x0, y - h / 2, x1 - x0, h);
+    ctx.strokeStyle = `rgba(${rgb},${alpha})`; ctx.lineWidth = 1.4; ctx.beginPath(); for(let x = x0 - h; x < x1 + h; x += 6){ ctx.moveTo(x, y + h / 2); ctx.lineTo(x + h, y - h / 2) } ctx.stroke(); ctx.restore() },
+  modal(){ const c = cfg();
+    LC.modal('호가 벽', `<p class="muted" style="margin:0 0 10px">바이낸스·바이비트·OKX 호가를 10초마다 합쳐서, 지금가 ±3% 안에서 주변보다 6배 넘게 두꺼운 가격대를 벽으로 표시해요. 20초 넘게 버틴 것만 벽으로 쳐요.</p>
+      <div class="wl-set">
+        <label class="chk"><input type="checkbox" id="wlOn" ${c.on ? 'checked' : ''}> 차트에 호가 벽 표시</label>
+        <label class="chk"><input type="checkbox" id="wlNear" ${c.alNear ? 'checked' : ''}> 가격이 벽에 가까워지면 알림 (<input class="inp num wl-n" type="number" step="0.05" min="0.05" id="wlNearP" value="${c.nearPct}">% 안)</label>
+        <label class="chk"><input type="checkbox" id="wlPull" ${c.alPull ? 'checked' : ''}> 가까운 벽이 닿기 전에 빠지면 알림</label>
+        <label class="chk"><input type="checkbox" id="wlNew" ${c.alNew ? 'checked' : ''}> 새 벽이 생기면 알림 (<input class="inp num wl-n" type="number" step="0.1" min="0.1" id="wlNewP" value="${c.newPct}">% 안)</label>
+        <label>최소 크기 (USD, 0이면 자동)<input class="inp num" type="number" min="0" step="100000" id="wlMin" value="${c.min || 0}"></label>
+      </div>
+      <div class="row-end"><button class="btn" id="wlTest">알림 미리 보기</button><span style="flex:1"></span><button class="btn pri" id="wlOk">저장</button></div>`, (mb, close) => {
+      const q = s => mb.querySelector(s);
+      q('#wlTest').onclick = () => LC.bigAlert({ tag:'호가 벽', title:'매도벽 $12.20M 가까이', sub:'Binance·Bybit·OKX 합산 · 14분째 그대로 · 지금가에서 +0.19%', dir:'down', dirText:'▼ 하락 쪽', tone:'down' });
+      q('#wlOk').onclick = () => { store.set('wallCfg', { on:q('#wlOn').checked, alNear:q('#wlNear').checked, alPull:q('#wlPull').checked, alNew:q('#wlNew').checked,
+        nearPct: Math.max(0.05, +q('#wlNearP').value || 0.25), newPct: Math.max(0.1, +q('#wlNewP').value || 1), min: Math.max(0, +q('#wlMin').value || 0) }); close(); this.poll() } }, 'mid') },
+};
+LC.overlays = LC.overlays || []; LC.overlays.push({ draw: (ctx, d, A) => W.drawOn(ctx, d, A) });
+const start = () => { if(!LC.app || !LC.app.v){ setTimeout(start, 1000); return } W.poll(); setInterval(() => W.poll(), POLL) };
+setTimeout(start, 2500);
+})();
+
+</script>
+<script>
 /* 하이퍼리퀴드: 고래 포지션, 고래 움직임, 청산 감지, 청산 지도 */
 (() => {
 const { esc, store } = LC;
@@ -4436,7 +4705,7 @@ const app = LC.app = {
     this.applyLayout(this.layout, cfgs);
     this.buildAside();
     { const qp = Q.get('panel'); if(qp && this.panels.some(p => p.id === qp)){ setTimeout(() => { this.toggleAside && this.asideHidden && this.toggleAside(false); this.showPanel(qp) }, 300); history.replaceState(null, '', location.pathname) } }
-    this.loadInfo('futures'); this.loadInfo('spot');
+    this.loadInfo('futures'); this.loadInfo('spot'); this.watchWake();
     setInterval(() => { this.views.forEach(v => v.tick()); this.updateHeader(); this.updateFunding() }, 1000);
     document.addEventListener('keydown', e => this.onKey(e));
     if('Notification' in window && Notification.permission === 'default') document.addEventListener('click', () => { try{ Notification.requestPermission() }catch(e){} }, {once:true});
@@ -4478,7 +4747,7 @@ const app = LC.app = {
     this.active = v; this.views.forEach(o => o.box.classList.toggle('active', o === v));
     this.syncHeader(); if(this.asideReady) this.panels.forEach(p => p.onSymbol && p.onSymbol(v));
   },
-  onViewLoaded(v){ if(v === this.active && this.asideReady){ this.syncHeader(); this.panels.forEach(p => p.onSymbol && p.onSymbol(v)) } this.loadFunding(); LC.paper && LC.paper.lines() },
+  onViewLoaded(v){ if(v === this.active && this.asideReady){ this.syncHeader(); this.panels.forEach(p => p.onSymbol && p.onSymbol(v)) } this.loadFunding(); LC.paper && LC.paper.lines(); if(v === this.active && LC.walls) setTimeout(() => LC.walls.poll(), 300) },
   openSymbol(sym, market){
     const v = this.active; if(!v) return;
     if(market && market !== v.market) v.market = market;
@@ -4488,14 +4757,16 @@ const app = LC.app = {
   setConn(v, ok, via){ if(v === this.active){ const bk = ok && via === 'bybit'; $('dot').classList.toggle('ok', ok && !bk); $('dot').classList.toggle('bk', bk); $('connTxt').textContent = bk ? '예비' : ok ? '' : '재연결'; $('connTxt').parentNode.title = bk ? '바이낸스 연결이 끊겨 바이비트 시세로 잠시 이어 그리는 중이에요 (값이 조금 다를 수 있어요)' : ok ? '실시간 연결됨' : '연결이 끊겨 다시 잇는 중이에요' } },
   hint(t){ const h = $('hint'); h.textContent = t; h.classList.toggle('show', !!t) },
 
+  applyInfo(m, map){ this.info[m] = map; this.views.forEach(v => { if(v.market === m){ const p = this.precOf(v.sym, m); if(p != null && p !== v.prec){ v.prec = p; v.series.applyOptions({priceFormat:{type:'price', precision:p, minMove:1/10**p}}) } } }); if(LC.bus) LC.bus.emit('info', m) },
   /* 거래소 종목 정보 (가격 소수점) */
   async loadInfo(m){
-    try{ const d = await LC.getJSON(`${LC.EP[m].rest}/exchangeInfo`); const map = {};
+    /* 하루 안에 받아 둔 게 있으면 그걸 써요 (현물 원본은 17MB가 넘어서 필요한 것만 받아요) */
+    try{ const c = await LC.idb.get('info_' + m); if(c && c.map && Date.now() - c.t < 864e5){ this.applyInfo(m, c.map); if(Date.now() - c.t < 6 * 36e5) return } }catch(e){}   /* 6시간 지났으면 쓰면서 뒤에서 새로 받아요 */
+    try{ const d = await LC.getJSON(`${LC.EP[m].rest}/exchangeInfo${m === 'spot' ? '?permissions=SPOT&symbolStatus=TRADING&showPermissionSets=false' : ''}`, 20000); const map = {};
       d.symbols.forEach(s => { if(m === 'futures' && (!/PERPETUAL$/.test(s.contractType) || s.status !== 'TRADING')) return; if(m === 'spot' && s.status !== 'TRADING') return;
         const f = (s.filters||[]).find(x => x.filterType === 'PRICE_FILTER'); const ts = f ? f.tickSize : '0.01';
         map[s.symbol] = { prec: Math.max(0, (ts.replace(/0+$/,'').split('.')[1]||'').length), base:s.baseAsset, ut:s.underlyingType || 'COIN' } });
-      if(LC.bus) LC.bus.emit('info', m);
-      this.info[m] = map; this.views.forEach(v => { if(v.market === m){ const p = this.precOf(v.sym, m); if(p != null && p !== v.prec){ v.prec = p; v.series.applyOptions({priceFormat:{type:'price', precision:p, minMove:1/10**p}}) } } });
+      LC.idb.set('info_' + m, { t: Date.now(), map }).catch(() => {}); this.applyInfo(m, map);
     }catch(e){}
   },
   precOf(sym, m){ const i = this.info[m] && this.info[m][sym]; return i ? i.prec : null },
@@ -4539,6 +4810,7 @@ const app = LC.app = {
     $('btnFull').onclick = () => { try{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() }catch(e){} };
     $('btnReplay2').onclick = $('btnReplay').onclick;
     $('btnBt').onclick = $('btnBt2').onclick = () => LC.bt && LC.bt.open();
+
     $('btnSym').onclick = () => this.symSearch();
     $('ranges').innerHTML = RANGES.map(([n,tf]) => `<button data-tf="${tf}" title="${n} 보기 (${tf} 봉)">${n}</button>`).join('');
     $('ranges').onclick = e => { const b = e.target.closest('button'); if(b && this.v){ this.v.setTf(b.dataset.tf); this.syncHeader() } };
@@ -4832,6 +5104,9 @@ const app = LC.app = {
   toggleAside(hide){ this.asideHidden = hide; store.set('asideHidden', hide); document.querySelector('aside').style.display = hide ? 'none' : ''; document.querySelector('.app').classList.toggle('aside-off', hide);
     document.querySelector('.app').style.setProperty('--asideW', hide ? '0px' : store.get('asideW', 340) + 'px');
     this.drawRail && this.drawRail(); window.dispatchEvent(new Event('resize')) },
+  /* 탭을 30초 넘게 안 봤다가 다시 보면, 그 사이 빠졌을 수 있는 봉을 채워요 */
+  watchWake(){ let hidAt = 0; document.addEventListener('visibilitychange', () => { if(document.hidden){ hidAt = Date.now(); return } if(hidAt && Date.now() - hidAt > 30000) this.views.forEach(v => v.backfill()) });
+    let tick = Date.now(); setInterval(() => { const now = Date.now(); if(now - tick > 60000) this.views.forEach(v => v.backfill()); tick = now }, 15000) },
   showPanel(id){
     if(!this.panels.find(p => p.id === id)) id = this.panels[0].id;
     this.panelId = id; const P = this.panels.find(p => p.id === id);
