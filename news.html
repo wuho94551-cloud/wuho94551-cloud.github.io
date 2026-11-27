@@ -152,8 +152,18 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = {
   get(k, d){ try{ const v = localStorage.getItem('lc_'+k); return v ? JSON.parse(v) : d }catch(e){ return d } },
-  set(k, v){ try{ localStorage.setItem('lc_'+k, JSON.stringify(v)) }catch(e){} }
+  set(k, v){ try{ localStorage.setItem('lc_'+k, JSON.stringify(v)); return true }catch(e){ storeFull(k); return false } }
 };
+/* 브라우저 저장 공간(약 5MB)이 차서 저장이 안 되면 30초에 한 번 알려요 */
+let fullAt = 0;
+function storeFull(k){ if(Date.now() - fullAt < 30000) return; fullAt = Date.now();
+  setTimeout(() => LC.toast && LC.toast('저장 공간이 가득 차서 방금 바꾼 내용을 저장하지 못했어요 (' + k + '). 작도 목록이나 일지에서 안 쓰는 것을 지워 주세요.', 'alert', 9000)) }
+/* 큰 자료(일지 차트 그림)는 IndexedDB에 둬요. 용량이 훨씬 커요 */
+const idb = (() => { let p;
+  const open = () => p || (p = new Promise((res, rej) => { if(!window.indexedDB) return rej(new Error('no idb')); const r = indexedDB.open('wuho', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error) }));
+  const run = (mode, fn) => open().then(db => new Promise((res, rej) => { const t = db.transaction('kv', mode), q = fn(t.objectStore('kv')); t.oncomplete = () => res(q && q.result); t.onerror = t.onabort = () => rej(t.error) }));
+  return { get: k => run('readonly', s => s.get(k)), set: (k, v) => run('readwrite', s => s.put(v, k)), del: k => run('readwrite', s => s.delete(k)) } })();
 const TF = [['1m','1분'],['3m','3분'],['5m','5분'],['15m','15분'],['30m','30분'],['1h','1시간'],['2h','2시간'],['4h','4시간'],['12h','12시간'],['1d','1일'],['1w','1주']];
 const TFMS = {'1m':6e4,'3m':18e4,'5m':3e5,'15m':9e5,'30m':18e5,'1h':36e5,'2h':72e5,'4h':144e5,'12h':432e5,'1d':864e5,'1w':6048e5};
 const EP = {
@@ -174,21 +184,27 @@ const pad = n => String(n).padStart(2,'0');
 const fmtClock = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` };
 const fmtDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms/36e5), m = Math.floor(ms%36e5/6e4), s = Math.floor(ms%6e4/1e3);
   return h>0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}` };
-async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error(r.status); return r.json() }
+/* 응답이 멈춰도 로딩이 끝없이 이어지지 않게 시간 제한을 둬요 */
+function fetchT(u, opt = {}, ms = 12000){ const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  return fetch(u, { ...opt, signal: c.signal }).catch(e => { throw e && e.name === 'AbortError' ? new Error('응답이 너무 늦어요') : e }).finally(() => clearTimeout(t)) }
+async function getJSON(u, ms){ const r = await fetchT(u, {}, ms); if(!r.ok) throw new Error(r.status); return r.json() }
 
 /* 자동 재연결 웹소켓. onOpen(ws)에서 구독 메시지를 보낼 수 있어요 */
+let visAt = 0; document.addEventListener('visibilitychange', () => { if(!document.hidden) visAt = Date.now() });
 function openWS(url, onMsg, onState, onOpen){
   if(!/^wss?:\/\/[a-z]/i.test(url)) return { close(){}, send(){}, keepAlive(){} };   /* 하이퍼리퀴드 종목처럼 바이낸스 주소가 없는 경우 */
-  let ws, closed = false, retry = 0, ping;
+  let ws, closed = false, retry = 0, ping, last = Date.now();
+  /* 연결은 살아 있는데 90초 넘게 아무 소식이 없으면 멈춘 것으로 보고 다시 연결해요 (탭을 안 볼 땐 건너뛰어요) */
+  const dog = setInterval(() => { if(closed){ clearInterval(dog); return } if(!document.hidden && ws && ws.readyState === 1 && Date.now() - Math.max(last, visAt) > 90000){ last = Date.now(); try{ ws.close() }catch(e){} } }, 15000);
   const go = () => {
-    ws = new WebSocket(url);
-    ws.onopen = () => { retry = 0; onState && onState(true); onOpen && onOpen(ws) };
-    ws.onmessage = e => { try{ onMsg(JSON.parse(e.data)) }catch(x){ console.error(x) } };
+    ws = new WebSocket(url); last = Date.now();
+    ws.onopen = () => { retry = 0; last = Date.now(); onState && onState(true); onOpen && onOpen(ws) };
+    ws.onmessage = e => { last = Date.now(); try{ onMsg(JSON.parse(e.data)) }catch(x){ console.error(x) } };
     ws.onclose = () => { if(closed) return; onState && onState(false); if(!closed) setTimeout(go, Math.min(1e4, 1000 * 2 ** retry++)) };
     ws.onerror = () => ws.close();
   };
   go();
-  return { close(){ closed = true; clearInterval(ping); try{ ws.close() }catch(e){} },
+  return { close(){ closed = true; clearInterval(ping); clearInterval(dog); try{ ws.close() }catch(e){} },
            send(m){ try{ ws.readyState === 1 && ws.send(typeof m === 'string' ? m : JSON.stringify(m)) }catch(e){} },
            keepAlive(msg, ms){ ping = setInterval(() => this.send(msg), ms) } };
 }
@@ -238,7 +254,7 @@ LC.LG_ICON = { eye: ic('<path d="M1.5 9S4.3 4 9 4s7.5 5 7.5 5-2.8 5-7.5 5S1.5 9 
   up: ic('<path d="M5 11l4-4 4 4"/>'), down: ic('<path d="M5 7l4 4 4-4"/>') };
 /* 불러오는 동안 보여 줄 회색 줄 */
 const skel = (n = 6, cls = '') => `<div class="skel-wrap ${cls}">${'<div class="skel-row"></div>'.repeat(n)}</div>`;
-Object.assign(LC, { skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
+Object.assign(LC, { idb, fetchT, skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
 })();
 
 </script>
@@ -248,6 +264,38 @@ Object.assign(LC, { skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fm
 const { store, esc } = LC;
 LC.bus = LC.bus || { h:{}, on(k, f){ (this.h[k] = this.h[k] || []).push(f) }, emit(k, d){ (this.h[k] || []).forEach(f => { try{ f(d) }catch(e){ console.error(e) } }) } };
 const NOSYNC = /^lc_(newsSeen|cgMeta|trCache|srv|jrImg)/;   /* 일지 그림은 커서 이 기기에만 */
+/* 동기화 합치기: 일지와 작도는 통째로 덮어쓰지 않고 기록(id) 단위로 합쳐요.
+   지운 기록은 lc_tomb에 지운 시각을 남겨서, 다른 기기의 옛 자료 때문에 되살아나지 않게 해요 (90일 보관) */
+const MERGEABLE = k => k === 'lc_journal' || k.startsWith('lc_dr_');
+const parse = (s, d) => { try{ const v = JSON.parse(s); return v == null ? d : v }catch(e){ return d } };
+const tombPrune = T => { const old = Date.now() - 90 * 864e5; Object.keys(T).forEach(id => { if(!(T[id] > old)) delete T[id] }); return T };
+function mergeArr(localStr, remoteStr, T, prefer){
+  const L = parse(localStr, []), Rm = parse(remoteStr, []); if(!Array.isArray(L) || !Array.isArray(Rm)) return prefer === 'local' ? localStr : remoteStr;
+  const key = it => it && it.id ? 'i:' + it.id : 'j:' + JSON.stringify(it), ts = it => +((it && (it.upd || it.closeAt || it.at)) || 0);
+  const [main, other] = prefer === 'local' ? [L, Rm] : [Rm, L], om = new Map(other.map(it => [key(it), it])), seen = new Set(), out = [];
+  for(const it of main){ const k = key(it); seen.add(k); const o = om.get(k); out.push(o && ts(o) > ts(it) ? o : it) }
+  for(const it of other){ const k = key(it); if(!seen.has(k)){ seen.add(k); out.push(it) } }
+  return JSON.stringify(out.filter(it => !(it && it.id && T[it.id])));
+}
+/* 서버 자료를 이 기기에 반영. prefer 'remote'(받기): 설정은 서버 것으로, 'local'(올리기 전): 설정은 그대로 두고 일지·작도만 합쳐요 */
+function applyRemote(data, prefer){
+  let changed = false; const T = tombPrune({ ...parse(localStorage.getItem('lc_tomb'), {}), ...parse(data.lc_tomb, {}) });
+  const put = (k, v) => { if(localStorage.getItem(k) === v) return; try{ localStorage.setItem(k, v); changed = true }catch(e){} };
+  put('lc_tomb', JSON.stringify(T));
+  Object.keys(data).forEach(k => { if(!k.startsWith('lc_') || NOSYNC.test(k) || k === 'lc_tomb') return;
+    if(MERGEABLE(k)) put(k, mergeArr(localStorage.getItem(k), data[k], T, prefer)); else if(prefer === 'remote') put(k, data[k]) });
+  /* 서버에는 없고 이 기기에만 있는 작도에도 지운 기록을 반영해요 */
+  Object.keys(localStorage).forEach(k => { if(MERGEABLE(k) && !(k in data)){ const a = parse(localStorage.getItem(k), []); if(Array.isArray(a) && a.some(it => it && it.id && T[it.id])) put(k, JSON.stringify(a.filter(it => !(it && it.id && T[it.id])))) } });
+  return changed;
+}
+/* 지운 기록 표시: 일지·작도를 저장할 때 이전에 있던 id가 빠졌으면 남기고, 되돌리기로 돌아오면 지워요 */
+function tombTrack(k, v){ if(!Array.isArray(v)) return; const old = store.get(k, []); if(!Array.isArray(old)) return;
+  const now = new Set(v.map(x => x && x.id).filter(Boolean)), T = store.get('tomb', {}); let ch = false;
+  old.forEach(x => { if(x && x.id && !now.has(x.id) && !T[x.id]){ T[x.id] = Date.now(); ch = true } });
+  now.forEach(id => { if(T[id]){ delete T[id]; ch = true } });
+  if(ch) try{ localStorage.setItem('lc_tomb', JSON.stringify(tombPrune(T))) }catch(e){} }
+/* 사이트가 기대하는 서버 버전. 이보다 낮으면 새 서버 코드를 붙여넣으라고 알려요 */
+const NEED_V = '1.3', oldV = i => !!(i && i.ok !== false && (parseFloat(i.v) || 0) < parseFloat(NEED_V));
 const S = LC.srv = {
   get url(){ return (store.get('srvUrl', '') || '').replace(/\/+$/, '') },
   get code(){ return store.get('srvCode', '') },
@@ -255,7 +303,7 @@ const S = LC.srv = {
   info: store.get('srvInfo', null),
   async api(path, opt = {}){
     if(!this.on) throw new Error('서버 주소가 없어요');
-    const r = await fetch(this.url + path, { ...opt, headers: { 'content-type': 'application/json', ...(opt.headers || {}) }, body: opt.body && typeof opt.body !== 'string' ? JSON.stringify(opt.body) : opt.body });
+    const r = await LC.fetchT(this.url + path, { ...opt, headers: { 'content-type': 'application/json', ...(opt.headers || {}) }, body: opt.body && typeof opt.body !== 'string' ? JSON.stringify(opt.body) : opt.body }, opt.ms || 20000);
     const d = await r.json().catch(() => ({})); if(!r.ok) throw new Error(d.error || ('서버 응답 ' + r.status)); return d;
   },
   async check(){ const d = await this.api('/health'); this.info = d; store.set('srvInfo', d); return d },
@@ -282,10 +330,12 @@ const S = LC.srv = {
   /* 동기화 */
   async newCode(){ const d = await this.api('/sync/new', { method: 'POST' }); store.set('srvCode', d.code); return d.code },
   snapshot(){ const o = {}; for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(k.startsWith('lc_') && !NOSYNC.test(k)) o[k] = localStorage.getItem(k) } return o },
-  async upload(){ if(!this.code) await this.newCode(); const data = this.snapshot(); const d = await this.api('/sync/' + this.code, { method: 'PUT', body: { data, dev: this.dev } }); store.set('srvSyncAt', d.at); return Object.keys(data).length },
+  async upload(){ if(!this.code) await this.newCode();
+    try{ const r = await this.api('/sync/' + this.code); if(r && r.data && r.dev && r.dev !== this.dev && applyRemote(r.data, 'local')) this.refreshLocal() }catch(e){}
+    const data = this.snapshot(); const d = await this.api('/sync/' + this.code, { method: 'PUT', body: { data, dev: this.dev } }); store.set('srvSyncAt', d.at); return Object.keys(data).length },
   async download(code = this.code){
     const d = await this.api('/sync/' + code); const data = d.data || {}, n = Object.keys(data).length; if(!n) throw new Error('이 코드에는 아직 올린 설정이 없어요');
-    Object.keys(data).forEach(k => { if(k.startsWith('lc_') && !NOSYNC.test(k)) localStorage.setItem(k, data[k]) }); store.set('srvCode', code); store.set('srvSyncAt', d.at || Date.now()); sessionStorage.srvPulled = 1; return n;
+    applyRemote(data, 'remote'); store.set('srvCode', code); store.set('srvSyncAt', d.at || Date.now()); sessionStorage.srvPulled = 1; return n;
   },
 
   /* 텔레그램 알림: 차트에 그은 가격 알림선 + 알림 목록의 조건 알림을 모아 서버에 올려요 */
@@ -374,11 +424,13 @@ const S = LC.srv = {
   autoQueue(k){ if(!this.on || !this.code || !this.ready || store.get('srvAuto', true) === false || NOSYNC.test('lc_' + k)) return;
     clearTimeout(this._sy); const wait = Math.max(8000, 60000 - (Date.now() - (this._last || 0)));
     this._sy = setTimeout(() => { this._last = Date.now(); this.upload().catch(() => {}) }, wait) },
+  /* 합친 결과를 열려 있는 화면에 반영 */
+  refreshLocal(){ try{ LC.app && LC.app.views.forEach(v => { if(!v.drawings.drag && !v.drawings.draft) v.drawings.load() }); LC.journal && LC.journal.render() }catch(e){} },
   async autoPull(){
     if(!this.on || !this.code || store.get('srvAuto', true) === false){ this.ready = true; return }
     try{ const d = await this.api('/sync/' + this.code);
       if(d.dev && d.dev !== this.dev && d.at > store.get('srvSyncAt', 0) && Object.keys(d.data || {}).length && !sessionStorage.srvPulled){
-        sessionStorage.srvPulled = 1; Object.keys(d.data).forEach(k => { if(k.startsWith('lc_') && !NOSYNC.test(k)) localStorage.setItem(k, d.data[k]) }); store.set('srvSyncAt', d.at);
+        sessionStorage.srvPulled = 1; applyRemote(d.data, 'remote'); store.set('srvSyncAt', d.at);
         LC.toast('다른 기기에서 바꾼 설정을 받아 왔어요. 새로 고칠게요', '', 3000); setTimeout(() => location.reload(), 1200); return }
     }catch(e){}
     this.ready = true;
@@ -401,7 +453,8 @@ const S = LC.srv = {
     </div>`, (mb) => {
       const $ = s => mb.querySelector(s), say = (id, t, bad) => { const e = $(id); e.textContent = t; e.classList.toggle('bad', !!bad) };
       const paint = () => { const i = this.info; $('#sv-code').textContent = this.code || '아직 없음';
-        say('#sv-st', !this.on ? '주소를 넣고 연결 확인을 눌러 주세요' : !i ? '확인 전' : `연결됨 · 텔레그램 ${i.tg ? '✓' : '✗ (TG_TOKEN 없음)'} · 번역 ${i.ai ? '✓' : '✗ (ANTHROPIC_API_KEY 없음)'} · 저장소 ${i.kv ? '✓' : '✗'}`, this.on && i && !(i.kv && i.tg));
+        say('#sv-st', !this.on ? '주소를 넣고 연결 확인을 눌러 주세요' : !i ? '확인 전' : `연결됨 · 서버 v${esc(String(i.v || '?'))} · 텔레그램 ${i.tg ? '✓' : '✗ (TG_TOKEN 없음)'} · 번역 ${i.ai ? '✓' : '✗ (번역 연결 없음)'} · 저장소 ${i.kv ? '✓' : '✗'}`
+          + (oldV(i) ? ` · ⚠ 서버 코드가 옛 버전이에요. GitHub의 worker/wuho-api.js(v${NEED_V})를 Cloudflare에 붙여넣으면 경제 일정·주간 복기·무료 번역이 켜져요` : ''), this.on && i && (!(i.kv && i.tg) || oldV(i)));
         say('#sv-trst', this.info && !this.info.ai ? '서버에 번역이 아직 꺼져 있어요. Cloudflare 워커 설정 → 바인딩에서 Workers AI 를 이름 AI 로 넣으면 키 없이 무료로 켜져요' : this.info && this.info.aiKind === 'workers-ai' ? 'Cloudflare 무료 번역 모델을 쓰는 중이에요' : '');
         const a = $('#sv-link'); if(i && i.bot && this.code){ a.href = `https://t.me/${i.bot}?start=${this.code}`; a.classList.remove('off') } else { a.removeAttribute('href'); a.classList.add('off') } };
       const tgStatus = async () => { if(!this.on || !this.code) return say('#sv-tgst', '먼저 동기화 코드를 만들어 주세요(“이 기기 설정 올리기”)');
@@ -426,8 +479,10 @@ const S = LC.srv = {
   }
 };
 if(LC.Drawings){ const o = LC.Drawings.prototype.save; LC.Drawings.prototype.save = function(){ this.items.forEach(x => { if(x.type === 'alert' && !x.id) x.id = S.newId() }); o.call(this); if(this.items.some(x => x.type === 'alert') || this._hadAlert) S.pushAlerts(); this._hadAlert = this.items.some(x => x.type === 'alert') } }
-{ const set0 = store.set.bind(store); store.set = (k, v) => { set0(k, v); if(!/^(srv|newsSeen|cgMeta|trCache)/.test(k)) S.autoQueue(k) } }
-if(S.on){ S.check().catch(() => {}); S.autoPull(); if(LC.Drawings){ setTimeout(() => S.pull(), 4000); setInterval(() => S.pull(), 60000) } } else S.ready = true;
+{ const set0 = store.set.bind(store); store.set = (k, v) => { if(k === 'journal' || k.startsWith('dr_')) tombTrack(k, v); const ok = set0(k, v); if(!/^(srv|newsSeen|cgMeta|trCache)/.test(k)) S.autoQueue(k); return ok } }
+S._merge = { mergeArr, applyRemote, tombTrack };
+if(S.on){ S.check().then(i => { if(oldV(i) && Date.now() - store.get('srvOldWarn', 0) > 864e5){ store.set('srvOldWarn', Date.now());
+    setTimeout(() => LC.toast(`내 서버가 옛 버전(v${i.v || '?'})이에요. 새 서버 코드(v${NEED_V})를 Cloudflare에 붙여넣으면 경제 일정과 주간 복기가 켜져요.`, 'alert', 12000), 3000) } }).catch(() => {}); S.autoPull(); if(LC.Drawings){ setTimeout(() => S.pull(), 4000); setInterval(() => S.pull(), 60000) } } else S.ready = true;
 })();
 
 </script>
@@ -684,7 +739,11 @@ $('nk').onclick = e => { const b = e.target.closest('[data-k]'); if(!b) return; 
 right(); load(); loadN();
 LC.bus.on('newsTr', all);
 if(LC.srv && LC.srv.on && $('nfoot')) $('nfoot').textContent = '바이낸스·바이비트·비트겟·업비트·OKX 공지예요.';
-setInterval(load, 180000); setInterval(loadN, 300000); setInterval(all, 60000);
+/* 탭을 안 볼 땐 쉬고, 다시 보면 오래된 것만 새로 받아요 */
+let lastL = Date.now(), lastN = Date.now();
+const L2 = () => { lastL = Date.now(); load() }, N2 = () => { lastN = Date.now(); loadN() };
+setInterval(() => { if(!document.hidden) L2() }, 180000); setInterval(() => { if(!document.hidden) N2() }, 300000); setInterval(() => { if(!document.hidden) all() }, 60000);
+document.addEventListener('visibilitychange', () => { if(document.hidden) return; if(Date.now() - lastL > 180000) L2(); if(Date.now() - lastN > 300000) N2(); all() });
 })();
 
 </script>

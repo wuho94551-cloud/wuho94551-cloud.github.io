@@ -130,8 +130,18 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = {
   get(k, d){ try{ const v = localStorage.getItem('lc_'+k); return v ? JSON.parse(v) : d }catch(e){ return d } },
-  set(k, v){ try{ localStorage.setItem('lc_'+k, JSON.stringify(v)) }catch(e){} }
+  set(k, v){ try{ localStorage.setItem('lc_'+k, JSON.stringify(v)); return true }catch(e){ storeFull(k); return false } }
 };
+/* 브라우저 저장 공간(약 5MB)이 차서 저장이 안 되면 30초에 한 번 알려요 */
+let fullAt = 0;
+function storeFull(k){ if(Date.now() - fullAt < 30000) return; fullAt = Date.now();
+  setTimeout(() => LC.toast && LC.toast('저장 공간이 가득 차서 방금 바꾼 내용을 저장하지 못했어요 (' + k + '). 작도 목록이나 일지에서 안 쓰는 것을 지워 주세요.', 'alert', 9000)) }
+/* 큰 자료(일지 차트 그림)는 IndexedDB에 둬요. 용량이 훨씬 커요 */
+const idb = (() => { let p;
+  const open = () => p || (p = new Promise((res, rej) => { if(!window.indexedDB) return rej(new Error('no idb')); const r = indexedDB.open('wuho', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error) }));
+  const run = (mode, fn) => open().then(db => new Promise((res, rej) => { const t = db.transaction('kv', mode), q = fn(t.objectStore('kv')); t.oncomplete = () => res(q && q.result); t.onerror = t.onabort = () => rej(t.error) }));
+  return { get: k => run('readonly', s => s.get(k)), set: (k, v) => run('readwrite', s => s.put(v, k)), del: k => run('readwrite', s => s.delete(k)) } })();
 const TF = [['1m','1분'],['3m','3분'],['5m','5분'],['15m','15분'],['30m','30분'],['1h','1시간'],['2h','2시간'],['4h','4시간'],['12h','12시간'],['1d','1일'],['1w','1주']];
 const TFMS = {'1m':6e4,'3m':18e4,'5m':3e5,'15m':9e5,'30m':18e5,'1h':36e5,'2h':72e5,'4h':144e5,'12h':432e5,'1d':864e5,'1w':6048e5};
 const EP = {
@@ -152,21 +162,27 @@ const pad = n => String(n).padStart(2,'0');
 const fmtClock = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` };
 const fmtDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms/36e5), m = Math.floor(ms%36e5/6e4), s = Math.floor(ms%6e4/1e3);
   return h>0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}` };
-async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error(r.status); return r.json() }
+/* 응답이 멈춰도 로딩이 끝없이 이어지지 않게 시간 제한을 둬요 */
+function fetchT(u, opt = {}, ms = 12000){ const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  return fetch(u, { ...opt, signal: c.signal }).catch(e => { throw e && e.name === 'AbortError' ? new Error('응답이 너무 늦어요') : e }).finally(() => clearTimeout(t)) }
+async function getJSON(u, ms){ const r = await fetchT(u, {}, ms); if(!r.ok) throw new Error(r.status); return r.json() }
 
 /* 자동 재연결 웹소켓. onOpen(ws)에서 구독 메시지를 보낼 수 있어요 */
+let visAt = 0; document.addEventListener('visibilitychange', () => { if(!document.hidden) visAt = Date.now() });
 function openWS(url, onMsg, onState, onOpen){
   if(!/^wss?:\/\/[a-z]/i.test(url)) return { close(){}, send(){}, keepAlive(){} };   /* 하이퍼리퀴드 종목처럼 바이낸스 주소가 없는 경우 */
-  let ws, closed = false, retry = 0, ping;
+  let ws, closed = false, retry = 0, ping, last = Date.now();
+  /* 연결은 살아 있는데 90초 넘게 아무 소식이 없으면 멈춘 것으로 보고 다시 연결해요 (탭을 안 볼 땐 건너뛰어요) */
+  const dog = setInterval(() => { if(closed){ clearInterval(dog); return } if(!document.hidden && ws && ws.readyState === 1 && Date.now() - Math.max(last, visAt) > 90000){ last = Date.now(); try{ ws.close() }catch(e){} } }, 15000);
   const go = () => {
-    ws = new WebSocket(url);
-    ws.onopen = () => { retry = 0; onState && onState(true); onOpen && onOpen(ws) };
-    ws.onmessage = e => { try{ onMsg(JSON.parse(e.data)) }catch(x){ console.error(x) } };
+    ws = new WebSocket(url); last = Date.now();
+    ws.onopen = () => { retry = 0; last = Date.now(); onState && onState(true); onOpen && onOpen(ws) };
+    ws.onmessage = e => { last = Date.now(); try{ onMsg(JSON.parse(e.data)) }catch(x){ console.error(x) } };
     ws.onclose = () => { if(closed) return; onState && onState(false); if(!closed) setTimeout(go, Math.min(1e4, 1000 * 2 ** retry++)) };
     ws.onerror = () => ws.close();
   };
   go();
-  return { close(){ closed = true; clearInterval(ping); try{ ws.close() }catch(e){} },
+  return { close(){ closed = true; clearInterval(ping); clearInterval(dog); try{ ws.close() }catch(e){} },
            send(m){ try{ ws.readyState === 1 && ws.send(typeof m === 'string' ? m : JSON.stringify(m)) }catch(e){} },
            keepAlive(msg, ms){ ping = setInterval(() => this.send(msg), ms) } };
 }
@@ -216,7 +232,7 @@ LC.LG_ICON = { eye: ic('<path d="M1.5 9S4.3 4 9 4s7.5 5 7.5 5-2.8 5-7.5 5S1.5 9 
   up: ic('<path d="M5 11l4-4 4 4"/>'), down: ic('<path d="M5 7l4 4 4-4"/>') };
 /* 불러오는 동안 보여 줄 회색 줄 */
 const skel = (n = 6, cls = '') => `<div class="skel-wrap ${cls}">${'<div class="skel-row"></div>'.repeat(n)}</div>`;
-Object.assign(LC, { skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
+Object.assign(LC, { idb, fetchT, skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
 })();
 
 </script>
@@ -245,10 +261,11 @@ const S = LC.scalp = {
     await this.loadUniverse();
     this.layout(+store.get('scSplit', 1));
     this.openStream();
-    this.loadFunding(); setInterval(() => this.loadFunding(), 60000);
-    this.loadMacro(); setInterval(() => this.loadMacro(), 300000);
-    setInterval(() => { this.summary(); this.tape(); this.ranks() }, 1500);
-    setInterval(() => this.panes.forEach(p => p.draw()), 1000);
+    this.loadFunding(); setInterval(() => { if(!document.hidden) this.loadFunding() }, 60000);
+    this.loadMacro(); setInterval(() => { if(!document.hidden) this.loadMacro() }, 300000);
+    setInterval(() => { if(document.hidden) return; this.summary(); this.tape(); this.ranks() }, 1500);
+    setInterval(() => { if(!document.hidden) this.panes.forEach(p => p.draw()) }, 1000);
+    document.addEventListener('visibilitychange', () => { if(!document.hidden){ this.loadFunding(); this.summary(); this.tape(); this.ranks(); this.panes.forEach(p => p.draw()) } });
   },
   async loadUniverse(){
     try{

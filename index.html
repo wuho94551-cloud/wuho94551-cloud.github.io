@@ -150,6 +150,7 @@ header>*{flex:none}
 .cv-chart{position:absolute;inset:0}
 .draw-layer{position:absolute;left:0;top:0;pointer-events:none;z-index:2}
 .cv.tool-on .cv-chart{cursor:crosshair}.cv.hover-draw .cv-chart{cursor:move}.cv.erase-hit .cv-chart{cursor:pointer}
+.cv-err{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:0 16px;pointer-events:auto}
 .lg{position:absolute;left:8px;top:6px;z-index:4;font-size:12px;line-height:1.55;pointer-events:none;max-width:calc(100% - 90px)}
 .lg1{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
 .lg1 b{font-weight:600}.lg1 i{font-style:normal;color:var(--dim);margin-right:2px}
@@ -205,6 +206,7 @@ header>*{flex:none}
 .cv-chart{position:absolute;inset:0}
 .draw-layer{position:absolute;left:0;top:0;pointer-events:none;z-index:2}
 .cv.tool-on .cv-chart{cursor:crosshair}.cv.hover-draw .cv-chart{cursor:move}.cv.erase-hit .cv-chart{cursor:pointer}
+.cv-err{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:0 16px;pointer-events:auto}
 .lg{position:absolute;left:8px;top:6px;z-index:4;font-size:12px;line-height:1.55;pointer-events:none;max-width:calc(100% - 90px)}
 .lg1{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
 .lg1 b{font-weight:600}.lg1 i{font-style:normal;color:var(--dim);margin-right:2px}
@@ -678,8 +680,18 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = {
   get(k, d){ try{ const v = localStorage.getItem('lc_'+k); return v ? JSON.parse(v) : d }catch(e){ return d } },
-  set(k, v){ try{ localStorage.setItem('lc_'+k, JSON.stringify(v)) }catch(e){} }
+  set(k, v){ try{ localStorage.setItem('lc_'+k, JSON.stringify(v)); return true }catch(e){ storeFull(k); return false } }
 };
+/* 브라우저 저장 공간(약 5MB)이 차서 저장이 안 되면 30초에 한 번 알려요 */
+let fullAt = 0;
+function storeFull(k){ if(Date.now() - fullAt < 30000) return; fullAt = Date.now();
+  setTimeout(() => LC.toast && LC.toast('저장 공간이 가득 차서 방금 바꾼 내용을 저장하지 못했어요 (' + k + '). 작도 목록이나 일지에서 안 쓰는 것을 지워 주세요.', 'alert', 9000)) }
+/* 큰 자료(일지 차트 그림)는 IndexedDB에 둬요. 용량이 훨씬 커요 */
+const idb = (() => { let p;
+  const open = () => p || (p = new Promise((res, rej) => { if(!window.indexedDB) return rej(new Error('no idb')); const r = indexedDB.open('wuho', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error) }));
+  const run = (mode, fn) => open().then(db => new Promise((res, rej) => { const t = db.transaction('kv', mode), q = fn(t.objectStore('kv')); t.oncomplete = () => res(q && q.result); t.onerror = t.onabort = () => rej(t.error) }));
+  return { get: k => run('readonly', s => s.get(k)), set: (k, v) => run('readwrite', s => s.put(v, k)), del: k => run('readwrite', s => s.delete(k)) } })();
 const TF = [['1m','1분'],['3m','3분'],['5m','5분'],['15m','15분'],['30m','30분'],['1h','1시간'],['2h','2시간'],['4h','4시간'],['12h','12시간'],['1d','1일'],['1w','1주']];
 const TFMS = {'1m':6e4,'3m':18e4,'5m':3e5,'15m':9e5,'30m':18e5,'1h':36e5,'2h':72e5,'4h':144e5,'12h':432e5,'1d':864e5,'1w':6048e5};
 const EP = {
@@ -700,21 +712,27 @@ const pad = n => String(n).padStart(2,'0');
 const fmtClock = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` };
 const fmtDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms/36e5), m = Math.floor(ms%36e5/6e4), s = Math.floor(ms%6e4/1e3);
   return h>0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}` };
-async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error(r.status); return r.json() }
+/* 응답이 멈춰도 로딩이 끝없이 이어지지 않게 시간 제한을 둬요 */
+function fetchT(u, opt = {}, ms = 12000){ const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  return fetch(u, { ...opt, signal: c.signal }).catch(e => { throw e && e.name === 'AbortError' ? new Error('응답이 너무 늦어요') : e }).finally(() => clearTimeout(t)) }
+async function getJSON(u, ms){ const r = await fetchT(u, {}, ms); if(!r.ok) throw new Error(r.status); return r.json() }
 
 /* 자동 재연결 웹소켓. onOpen(ws)에서 구독 메시지를 보낼 수 있어요 */
+let visAt = 0; document.addEventListener('visibilitychange', () => { if(!document.hidden) visAt = Date.now() });
 function openWS(url, onMsg, onState, onOpen){
   if(!/^wss?:\/\/[a-z]/i.test(url)) return { close(){}, send(){}, keepAlive(){} };   /* 하이퍼리퀴드 종목처럼 바이낸스 주소가 없는 경우 */
-  let ws, closed = false, retry = 0, ping;
+  let ws, closed = false, retry = 0, ping, last = Date.now();
+  /* 연결은 살아 있는데 90초 넘게 아무 소식이 없으면 멈춘 것으로 보고 다시 연결해요 (탭을 안 볼 땐 건너뛰어요) */
+  const dog = setInterval(() => { if(closed){ clearInterval(dog); return } if(!document.hidden && ws && ws.readyState === 1 && Date.now() - Math.max(last, visAt) > 90000){ last = Date.now(); try{ ws.close() }catch(e){} } }, 15000);
   const go = () => {
-    ws = new WebSocket(url);
-    ws.onopen = () => { retry = 0; onState && onState(true); onOpen && onOpen(ws) };
-    ws.onmessage = e => { try{ onMsg(JSON.parse(e.data)) }catch(x){ console.error(x) } };
+    ws = new WebSocket(url); last = Date.now();
+    ws.onopen = () => { retry = 0; last = Date.now(); onState && onState(true); onOpen && onOpen(ws) };
+    ws.onmessage = e => { last = Date.now(); try{ onMsg(JSON.parse(e.data)) }catch(x){ console.error(x) } };
     ws.onclose = () => { if(closed) return; onState && onState(false); if(!closed) setTimeout(go, Math.min(1e4, 1000 * 2 ** retry++)) };
     ws.onerror = () => ws.close();
   };
   go();
-  return { close(){ closed = true; clearInterval(ping); try{ ws.close() }catch(e){} },
+  return { close(){ closed = true; clearInterval(ping); clearInterval(dog); try{ ws.close() }catch(e){} },
            send(m){ try{ ws.readyState === 1 && ws.send(typeof m === 'string' ? m : JSON.stringify(m)) }catch(e){} },
            keepAlive(msg, ms){ ping = setInterval(() => this.send(msg), ms) } };
 }
@@ -764,7 +782,7 @@ LC.LG_ICON = { eye: ic('<path d="M1.5 9S4.3 4 9 4s7.5 5 7.5 5-2.8 5-7.5 5S1.5 9 
   up: ic('<path d="M5 11l4-4 4 4"/>'), down: ic('<path d="M5 7l4 4 4-4"/>') };
 /* 불러오는 동안 보여 줄 회색 줄 */
 const skel = (n = 6, cls = '') => `<div class="skel-wrap ${cls}">${'<div class="skel-row"></div>'.repeat(n)}</div>`;
-Object.assign(LC, { skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
+Object.assign(LC, { idb, fetchT, skel, $, esc, store, TF, TFMS, EP, autoPrec, fmtN, fmtPx, fmtBig, fmtPct, fmtChg, pad, fmtClock, fmtDur, getJSON, openWS, beep, toast, notify, modal, download });
 })();
 
 </script>
@@ -1304,20 +1322,21 @@ class Drawings {
     ['pointerdown','mousedown','touchstart'].forEach(ev => view.box.addEventListener(ev, e => this.onDown(e), { capture:true, passive:false }));
     /* 손가락: 끌어서 그리기·옮기기 */
     /* 마우스: pointerdown을 막으면 브라우저가 mousemove·mouseup을 안 보내요. 그래서 끌기·지우개는 pointer로도 받아요 */
-    window.addEventListener('pointermove', e => { if(e.pointerType === 'mouse'){ if(this.drag || this._erase) this.onMove(e); return }
+    const W = this._win = [], on = (t, f) => { window.addEventListener(t, f); W.push([t, f]) };
+    on('pointermove', e => { if(e.pointerType === 'mouse'){ if(this.drag || this._erase) this.onMove(e); return }
       if(this.draft){ const {x, y} = this.pos(e), pt = this.ptAt(x, y); if(pt) this.draft.pts[this.draft.pts.length-1] = pt; if(this._tDraft && Math.hypot(e.clientX - this._tDraft.x, e.clientY - this._tDraft.y) > 12) this._tDraft.moved = true }
       else this.onMove(e) });
-    window.addEventListener('pointerup', e => { if(e.pointerType === 'mouse'){ this.onUp(e); return }
+    on('pointerup', e => { if(e.pointerType === 'mouse'){ this.onUp(e); return }
       if(this.draft && this._tDraft && this._tDraft.moved){ const d = this.draft; if(d.pts.length >= (NEED[d.type] || 2)) this.finishDraft(); else d.pts.push({...d.pts[d.pts.length-1]}) }
       this._tDraft = null; this.onUp() });
     view.box.addEventListener('mousemove', e => this.onHover(e));
-    window.addEventListener('mousemove', e => this.onMove(e));
-    window.addEventListener('mouseup', e => this.onUp(e));
+    on('mousemove', e => this.onMove(e));
+    on('mouseup', e => this.onUp(e));
     view.box.addEventListener('dblclick', e => this.onDbl(e), cap);
     const loop = () => { if(this.dead) return; try{ this.render() }catch(e){ console.error(e) } requestAnimationFrame(loop) };
     requestAnimationFrame(loop);
   }
-  destroy(){ this.dead = true; this.cv.remove(); this.bar.remove() }
+  destroy(){ this.dead = true; (this._win || []).forEach(([t, f]) => window.removeEventListener(t, f)); this._win = []; this.cv.remove(); this.bar.remove() }
   get app(){ return LC.app }
   key(){ return 'dr_' + this.v.sym }
   load(){ this.items = LC.store.get(this.key(), []); this.sel = null; this.draft = null; this.undoStack = []; this.updateBar() }
@@ -1818,7 +1837,9 @@ class ChartView {
       /* 종목이 바뀌면 가격 눈금을 새 종목에 맞추고 지금 봉이 보이게 해요 (시간 단위만 바뀌면 확대 정도는 그대로) */
       if(this._vSym !== this.sym + this.market) this.resetView(false); else this.scrollNow(); this._vSym = this.sym + this.market; this.loadedSym = this.sym;
       ld.hidden = true;
-    }catch(e){ ld.textContent = '데이터를 못 불러왔어요. 종목이나 인터넷 연결을 확인해 주세요.'; return }
+    }catch(e){ if(tok !== this.tok) return;
+      ld.innerHTML = `<div class="cv-err">${/늦어요/.test(e.message) ? '거래소 응답이 너무 늦어요.' : '데이터를 못 불러왔어요. 종목이나 인터넷 연결을 확인해 주세요.'}<button class="btn sm" data-retry>다시 시도</button></div>`;
+      ld.querySelector('[data-retry]').onclick = () => this.load(); return }
     this.prevPrice = this.last && this.last.close;
     if(this.market === 'hl') this.kws = LC.hlm.stream(this.sym, this.tf, b => { if(tok === this.tok) this.onBar(b) }, ok => this.app.setConn(this, ok));
     else { let bnOk = false;
@@ -2070,7 +2091,7 @@ class ChartView {
   replayLabel(){ const b = this.shown[this.shown.length-1]; const d = new Date(b.time*1000);
     this.q('.rp-time').textContent = `${d.getMonth()+1}/${d.getDate()} ${LC.pad(d.getHours())}:${LC.pad(d.getMinutes())} · 남은 봉 ${this.candles.length-1-this.replay.idx}` }
   replayExit(silent){
-    this.replayPick = false;
+    if(this.replayPick && this.app) this.app.hint(''); this.replayPick = false;
     if(!this.replay) return; clearInterval(this.replay.timer); this.replay = null; this.q('.cv-replay').hidden = true; this.q('[data-r=play]').textContent = '▶';
     if(!silent){ this.shown = this.candles; this.renderAll(); this.chart.timeScale().scrollToRealTime() }
   }
@@ -2231,7 +2252,7 @@ const P = {
       const up = () => { store.set('detailH', h); document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up) };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up) };
     setInterval(() => { if(!this.el.hidden) this.detail() }, 1000);
-    setInterval(() => this.loadOI(), 30000);
+    setInterval(() => { if(!document.hidden) this.loadOI() }, 30000);
     this.list = el.querySelector('.list');
     el.querySelector('.ls-tabs').onclick = e => { const b = e.target.closest('[data-top]'); if(!b) return; this.top = b.dataset.top; store.set('lsTop', this.top); this.render() };
     el.querySelector('.ls-cats').onclick = e => { const b = e.target.closest('[data-cat]'); if(!b) return; this.cat = b.dataset.cat; store.set('lsCat', this.cat); this.fixMarket(); this.render() };
@@ -2435,7 +2456,7 @@ const FLOW = {
       this.cfg[k] = e.target.type === 'checkbox' ? e.target.checked : +e.target.value; store.set('flowCfg', this.cfg); this.renderFeed() };
     this.feed.onclick = e => { const r = e.target.closest('[data-s]'); if(r && r.dataset.s !== (app.v && app.v.sym)) app.openSymbol(r.dataset.s, 'futures') };
     this.startLiq();
-    setInterval(() => { this.drawLiqChart(); if(this.dirty && !this.el.hidden){ this.dirty = false; this.renderFeed() } }, 500);
+    setInterval(() => { if(document.hidden) return; this.drawLiqChart(); if(this.dirty && !this.el.hidden){ this.dirty = false; this.renderFeed() } }, 500);
   },
   onSymbol(v){
     if(this.sym === v.sym && this.market === v.market) return;
@@ -2525,7 +2546,7 @@ const BOOK = {
       <div class="imb"><div class="imb-bar"><i></i></div><div class="imb-t num"></div></div>`;
     el.querySelector('[data-c=ex]').onclick = e => { const b = e.target.closest('button'); if(!b) return; this.ex = b.dataset.v; store.set('bookEx', this.ex); this.connect() };
     el.querySelector('[data-c=group]').onchange = e => { this.group = +e.target.value; this.render() };
-    setInterval(() => this.render(), 250);
+    setInterval(() => { if(!document.hidden) this.render() }, 250);
   },
   onSymbol(v){ if(this.sym === v.sym && this.market === v.market){ if(this.prec !== v.prec) this.setupGroups(v); return } this.sym = v.sym; this.market = v.market; this.setupGroups(v); this.connect() },
   setupGroups(v){
@@ -2657,7 +2678,7 @@ const M = LC.market = {
     this.mb.querySelectorAll('.mk-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
     this.body.innerHTML = LC.skel(8);
     const run = () => this[t]().catch(e => { if(this.tab === t) this.body.innerHTML = `<div class="empty">자료를 못 불러왔어요 (${esc(e.message)}). 잠시 뒤 다시 열어 주세요.</div>` });
-    run(); timer = setInterval(run, t === 'flow' ? 60000 : t === 'kimp' ? 15000 : 10000);
+    run(); timer = setInterval(() => { if(!document.hidden) run() }, t === 'flow' ? 60000 : t === 'kimp' ? 15000 : 10000);
   },
   goto(sym){ LC.app.openSymbol(sym, 'futures'); document.querySelector('.modal-bg .x') && document.querySelector('.modal-bg .x').click() },
 
@@ -3011,13 +3032,19 @@ const cls = v => v > 0 ? 'up' : v < 0 ? 'down' : '';
 const riskCfg = () => Object.assign({ acct:null, pct:1 }, store.get('riskCfg', {}));
 const sugSize = (entry, stop) => { const c = riskCfg(); if(!c.acct || !c.pct || !entry || !stop || entry === stop) return null; return c.acct * c.pct / 100 / (Math.abs(entry - stop) / entry) };
 LC.riskSize = sugSize;
-/* 차트 그림: 작은 JPEG로 줄여서 따로 보관해요 (기록 40개까지) */
-const IMG_KEY = 'lc_jrImg', IMG_MAX = 30;
-const imgsAll = () => { try{ return JSON.parse(localStorage.getItem(IMG_KEY)) || {} }catch(e){ return {} } };
+/* 차트 그림: 작은 JPEG로 줄여서 IndexedDB에 따로 보관해요 (최근 기록 300개까지).
+   IndexedDB를 못 쓰는 브라우저면 예전처럼 localStorage에 30개까지 둬요 */
+const IMG_KEY = 'lc_jrImg'; let IMGS = {}, IMG_DB = true, IMG_MAX = 300;
+const imgsAll = () => IMGS;
 const imgsSave = o => { const order = (store.get('journal', []) || []).slice().sort((a, b) => (b.openAt || b.at) - (a.openAt || a.at)).map(r => r.id);
   Object.keys(o).forEach(k => { if(!order.includes(k)) delete o[k] });
-  let keep = order.filter(k => o[k]); while(keep.length > IMG_MAX) delete o[keep.pop()];
+  let keep = order.filter(k => o[k]); while(keep.length > IMG_MAX) delete o[keep.pop()]; IMGS = o;
+  if(IMG_DB) return LC.idb.set('jrImg', o).catch(() => LC.toast('차트 그림을 저장하지 못했어요. 저장 공간을 확인해 주세요.', 'alert', 7000));
   for(let i = 0; i < 30; i++){ try{ localStorage.setItem(IMG_KEY, JSON.stringify(o)); break }catch(e){ keep = order.filter(k => o[k]); if(!keep.length) break; delete o[keep.pop()] } } };
+const imgsLoad = () => LC.idb.get('jrImg').then(v => { IMGS = v || {}; const old = localStorage.getItem(IMG_KEY);
+    if(old){ try{ IMGS = { ...JSON.parse(old), ...IMGS } }catch(e){} return LC.idb.set('jrImg', IMGS).then(() => localStorage.removeItem(IMG_KEY)) } })
+  .catch(() => { IMG_DB = false; IMG_MAX = 30; try{ IMGS = JSON.parse(localStorage.getItem(IMG_KEY)) || {} }catch(e){ IMGS = {} } })
+  .then(() => { try{ J.render() }catch(e){} });
 const snap = sym => { const v = LC.app && (LC.app.views.find(x => x.sym === sym && x.candles && x.candles.length) || null); if(!v) return null;
   try{ const c = v.snapCanvas(), k = Math.min(1, 640 / c.width), t = document.createElement('canvas'); t.width = Math.round(c.width * k); t.height = Math.round(c.height * k);
     const g = t.getContext('2d'); g.fillStyle = '#0b0c0f'; g.fillRect(0, 0, t.width, t.height); g.drawImage(c, 0, 0, t.width, t.height); return t.toDataURL('image/jpeg', .62) }catch(e){ return null } };
@@ -3038,9 +3065,18 @@ const calc = r => {
   return o;
 };
 
+/* 기록 하나를 안전한 모양으로: 숫자 칸은 숫자 아니면 비우고, 상태·방향·태그도 정해진 값만 */
+const NUMK = ['entry', 'stop', 'target', 'exit', 'size', 'lev', 'rating', 'at', 'openAt', 'closeAt', 'upd'];
+const cleanRec = r => { const o = { ...r };
+  NUMK.forEach(k => { if(o[k] == null || o[k] === '') { o[k] = null; return } const n = +o[k]; o[k] = isFinite(n) ? n : null });
+  if(!o.at) o.at = o.openAt || o.upd || 0;
+  o.side = o.side === 'short' ? 'short' : 'long'; if(!['plan', 'open', 'closed', 'cancel'].includes(o.status)) o.status = o.exit != null ? 'closed' : 'open';
+  ['reasons', 'mistakes', 'inds'].forEach(k => { o[k] = Array.isArray(o[k]) ? o[k].filter(x => typeof x === 'string').map(x => x.slice(0, 40)) : [] });
+  o.sym = String(o.sym || '').slice(0, 40); o.note = typeof o.note === 'string' ? o.note.slice(0, 4000) : '';
+  return o };
 const J = {
   id:'journal', label:'매매 일지', tab:'list', filter:'all', onlySym:false, period:'all',
-  get list(){ return store.get('journal', []) },
+  get list(){ const L = store.get('journal', []); return Array.isArray(L) ? L.filter(r => r && typeof r === 'object' && r.id).map(cleanRec) : [] },
   set list(v){ store.set('journal', v); this.render(); LC.srv && LC.srv.pushAlerts && LC.srv.pushAlerts(); this.app && this.app.views.forEach(x => x.drawings && x.drawings.updateBar()) },
   icon:'<path d="M6 3h11a1 1 0 011 1v16a1 1 0 01-1 1H6z"/><path d="M6 3a2 2 0 00-2 2v14a2 2 0 002 2"/><path d="M9 8h6M9 12h6M9 16h3"/>',
   mount(el, app){
@@ -3263,7 +3299,7 @@ const J = {
     ctx.restore();
   }
 };
-LC.journal = J;
+LC.journal = J; imgsLoad();
 LC.panels.push(J);
 })();
 
@@ -3274,7 +3310,7 @@ LC.panels.push(J);
 const { esc, store } = LC;
 const API = 'https://api.hyperliquid.xyz/info';
 const N_WHALES = 120, POLL_MS = 45000;
-const post = body => fetch(API, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body) }).then(r => { if(!r.ok) throw new Error(r.status); return r.json() });
+const post = body => LC.fetchT(API, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body) }, 10000).then(r => { if(!r.ok) throw new Error(r.status); return r.json() });
 const toCoin = sym => { const b = sym.replace(/USDT$/, ''); return /^1000/.test(b) ? 'k' + b.slice(4) : b };
 const toSym = coin => (/^k[A-Z]/.test(coin) ? '1000' + coin.slice(1) : coin) + 'USDT';
 const short = a => a.slice(0, 6) + '…' + a.slice(-4);
@@ -3285,8 +3321,10 @@ const HL = LC.hl = {
   async start(){
     if(this.started) return; this.started = true;
     try{ await this.loadWhales() }catch(e){ this.err = '하이퍼리퀴드 순위표를 못 불러왔어요'; LC.bus.emit('hl', 'err'); return }
-    this.loadMarks(); setInterval(() => this.loadMarks(), 15000);
-    this.poll(); setInterval(() => this.poll(), POLL_MS);
+    this.loadMarks(); setInterval(() => { if(!document.hidden) this.loadMarks() }, 15000);
+    this.poll(); setInterval(() => { if(!document.hidden || Date.now() - this.lastPoll > 180000) this.poll() }, POLL_MS);
+    /* 탭을 다시 보면 밀린 조회를 바로 해요 */
+    document.addEventListener('visibilitychange', () => { if(!document.hidden){ this.loadMarks(); if(Date.now() - this.lastPoll > POLL_MS) this.poll() } });
   },
   /* 순위표에서 계좌 규모가 큰 활동 계정 120개를 골라요 (6시간마다 새로) */
   async loadWhales(){
@@ -3450,7 +3488,7 @@ const H = LC.hlm = {
       this.ready = true; this.at = Date.now(); LC.bus && LC.bus.emit('hlTick');
     }catch(e){} finally{ this.busy = false }
   },
-  start(){ if(this.timer) return; this.load(); this.timer = setInterval(() => this.load(), 15000) },
+  start(){ if(this.timer) return; this.load(); this.timer = setInterval(() => { if(!document.hidden) this.load() }, 15000); document.addEventListener('visibilitychange', () => { if(!document.hidden && Date.now() - (this.at || 0) > 15000) this.load() }) },
   label(sym){ const d = sym.split(':')[0]; return 'HL·' + (d.length <= 4 ? d.toUpperCase() : d) },
   async klines(sym, tf, endMs){ const ms = LC.TFMS[tf] || 6e4, end = endMs || Date.now();
     const r = await post({ type:'candleSnapshot', req:{ coin:sym, interval:tf, startTime:end - 1000*ms, endTime:end } });
@@ -3470,6 +3508,38 @@ const H = LC.hlm = {
 const { store, esc } = LC;
 LC.bus = LC.bus || { h:{}, on(k, f){ (this.h[k] = this.h[k] || []).push(f) }, emit(k, d){ (this.h[k] || []).forEach(f => { try{ f(d) }catch(e){ console.error(e) } }) } };
 const NOSYNC = /^lc_(newsSeen|cgMeta|trCache|srv|jrImg)/;   /* 일지 그림은 커서 이 기기에만 */
+/* 동기화 합치기: 일지와 작도는 통째로 덮어쓰지 않고 기록(id) 단위로 합쳐요.
+   지운 기록은 lc_tomb에 지운 시각을 남겨서, 다른 기기의 옛 자료 때문에 되살아나지 않게 해요 (90일 보관) */
+const MERGEABLE = k => k === 'lc_journal' || k.startsWith('lc_dr_');
+const parse = (s, d) => { try{ const v = JSON.parse(s); return v == null ? d : v }catch(e){ return d } };
+const tombPrune = T => { const old = Date.now() - 90 * 864e5; Object.keys(T).forEach(id => { if(!(T[id] > old)) delete T[id] }); return T };
+function mergeArr(localStr, remoteStr, T, prefer){
+  const L = parse(localStr, []), Rm = parse(remoteStr, []); if(!Array.isArray(L) || !Array.isArray(Rm)) return prefer === 'local' ? localStr : remoteStr;
+  const key = it => it && it.id ? 'i:' + it.id : 'j:' + JSON.stringify(it), ts = it => +((it && (it.upd || it.closeAt || it.at)) || 0);
+  const [main, other] = prefer === 'local' ? [L, Rm] : [Rm, L], om = new Map(other.map(it => [key(it), it])), seen = new Set(), out = [];
+  for(const it of main){ const k = key(it); seen.add(k); const o = om.get(k); out.push(o && ts(o) > ts(it) ? o : it) }
+  for(const it of other){ const k = key(it); if(!seen.has(k)){ seen.add(k); out.push(it) } }
+  return JSON.stringify(out.filter(it => !(it && it.id && T[it.id])));
+}
+/* 서버 자료를 이 기기에 반영. prefer 'remote'(받기): 설정은 서버 것으로, 'local'(올리기 전): 설정은 그대로 두고 일지·작도만 합쳐요 */
+function applyRemote(data, prefer){
+  let changed = false; const T = tombPrune({ ...parse(localStorage.getItem('lc_tomb'), {}), ...parse(data.lc_tomb, {}) });
+  const put = (k, v) => { if(localStorage.getItem(k) === v) return; try{ localStorage.setItem(k, v); changed = true }catch(e){} };
+  put('lc_tomb', JSON.stringify(T));
+  Object.keys(data).forEach(k => { if(!k.startsWith('lc_') || NOSYNC.test(k) || k === 'lc_tomb') return;
+    if(MERGEABLE(k)) put(k, mergeArr(localStorage.getItem(k), data[k], T, prefer)); else if(prefer === 'remote') put(k, data[k]) });
+  /* 서버에는 없고 이 기기에만 있는 작도에도 지운 기록을 반영해요 */
+  Object.keys(localStorage).forEach(k => { if(MERGEABLE(k) && !(k in data)){ const a = parse(localStorage.getItem(k), []); if(Array.isArray(a) && a.some(it => it && it.id && T[it.id])) put(k, JSON.stringify(a.filter(it => !(it && it.id && T[it.id])))) } });
+  return changed;
+}
+/* 지운 기록 표시: 일지·작도를 저장할 때 이전에 있던 id가 빠졌으면 남기고, 되돌리기로 돌아오면 지워요 */
+function tombTrack(k, v){ if(!Array.isArray(v)) return; const old = store.get(k, []); if(!Array.isArray(old)) return;
+  const now = new Set(v.map(x => x && x.id).filter(Boolean)), T = store.get('tomb', {}); let ch = false;
+  old.forEach(x => { if(x && x.id && !now.has(x.id) && !T[x.id]){ T[x.id] = Date.now(); ch = true } });
+  now.forEach(id => { if(T[id]){ delete T[id]; ch = true } });
+  if(ch) try{ localStorage.setItem('lc_tomb', JSON.stringify(tombPrune(T))) }catch(e){} }
+/* 사이트가 기대하는 서버 버전. 이보다 낮으면 새 서버 코드를 붙여넣으라고 알려요 */
+const NEED_V = '1.3', oldV = i => !!(i && i.ok !== false && (parseFloat(i.v) || 0) < parseFloat(NEED_V));
 const S = LC.srv = {
   get url(){ return (store.get('srvUrl', '') || '').replace(/\/+$/, '') },
   get code(){ return store.get('srvCode', '') },
@@ -3477,7 +3547,7 @@ const S = LC.srv = {
   info: store.get('srvInfo', null),
   async api(path, opt = {}){
     if(!this.on) throw new Error('서버 주소가 없어요');
-    const r = await fetch(this.url + path, { ...opt, headers: { 'content-type': 'application/json', ...(opt.headers || {}) }, body: opt.body && typeof opt.body !== 'string' ? JSON.stringify(opt.body) : opt.body });
+    const r = await LC.fetchT(this.url + path, { ...opt, headers: { 'content-type': 'application/json', ...(opt.headers || {}) }, body: opt.body && typeof opt.body !== 'string' ? JSON.stringify(opt.body) : opt.body }, opt.ms || 20000);
     const d = await r.json().catch(() => ({})); if(!r.ok) throw new Error(d.error || ('서버 응답 ' + r.status)); return d;
   },
   async check(){ const d = await this.api('/health'); this.info = d; store.set('srvInfo', d); return d },
@@ -3504,10 +3574,12 @@ const S = LC.srv = {
   /* 동기화 */
   async newCode(){ const d = await this.api('/sync/new', { method: 'POST' }); store.set('srvCode', d.code); return d.code },
   snapshot(){ const o = {}; for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(k.startsWith('lc_') && !NOSYNC.test(k)) o[k] = localStorage.getItem(k) } return o },
-  async upload(){ if(!this.code) await this.newCode(); const data = this.snapshot(); const d = await this.api('/sync/' + this.code, { method: 'PUT', body: { data, dev: this.dev } }); store.set('srvSyncAt', d.at); return Object.keys(data).length },
+  async upload(){ if(!this.code) await this.newCode();
+    try{ const r = await this.api('/sync/' + this.code); if(r && r.data && r.dev && r.dev !== this.dev && applyRemote(r.data, 'local')) this.refreshLocal() }catch(e){}
+    const data = this.snapshot(); const d = await this.api('/sync/' + this.code, { method: 'PUT', body: { data, dev: this.dev } }); store.set('srvSyncAt', d.at); return Object.keys(data).length },
   async download(code = this.code){
     const d = await this.api('/sync/' + code); const data = d.data || {}, n = Object.keys(data).length; if(!n) throw new Error('이 코드에는 아직 올린 설정이 없어요');
-    Object.keys(data).forEach(k => { if(k.startsWith('lc_') && !NOSYNC.test(k)) localStorage.setItem(k, data[k]) }); store.set('srvCode', code); store.set('srvSyncAt', d.at || Date.now()); sessionStorage.srvPulled = 1; return n;
+    applyRemote(data, 'remote'); store.set('srvCode', code); store.set('srvSyncAt', d.at || Date.now()); sessionStorage.srvPulled = 1; return n;
   },
 
   /* 텔레그램 알림: 차트에 그은 가격 알림선 + 알림 목록의 조건 알림을 모아 서버에 올려요 */
@@ -3596,11 +3668,13 @@ const S = LC.srv = {
   autoQueue(k){ if(!this.on || !this.code || !this.ready || store.get('srvAuto', true) === false || NOSYNC.test('lc_' + k)) return;
     clearTimeout(this._sy); const wait = Math.max(8000, 60000 - (Date.now() - (this._last || 0)));
     this._sy = setTimeout(() => { this._last = Date.now(); this.upload().catch(() => {}) }, wait) },
+  /* 합친 결과를 열려 있는 화면에 반영 */
+  refreshLocal(){ try{ LC.app && LC.app.views.forEach(v => { if(!v.drawings.drag && !v.drawings.draft) v.drawings.load() }); LC.journal && LC.journal.render() }catch(e){} },
   async autoPull(){
     if(!this.on || !this.code || store.get('srvAuto', true) === false){ this.ready = true; return }
     try{ const d = await this.api('/sync/' + this.code);
       if(d.dev && d.dev !== this.dev && d.at > store.get('srvSyncAt', 0) && Object.keys(d.data || {}).length && !sessionStorage.srvPulled){
-        sessionStorage.srvPulled = 1; Object.keys(d.data).forEach(k => { if(k.startsWith('lc_') && !NOSYNC.test(k)) localStorage.setItem(k, d.data[k]) }); store.set('srvSyncAt', d.at);
+        sessionStorage.srvPulled = 1; applyRemote(d.data, 'remote'); store.set('srvSyncAt', d.at);
         LC.toast('다른 기기에서 바꾼 설정을 받아 왔어요. 새로 고칠게요', '', 3000); setTimeout(() => location.reload(), 1200); return }
     }catch(e){}
     this.ready = true;
@@ -3623,7 +3697,8 @@ const S = LC.srv = {
     </div>`, (mb) => {
       const $ = s => mb.querySelector(s), say = (id, t, bad) => { const e = $(id); e.textContent = t; e.classList.toggle('bad', !!bad) };
       const paint = () => { const i = this.info; $('#sv-code').textContent = this.code || '아직 없음';
-        say('#sv-st', !this.on ? '주소를 넣고 연결 확인을 눌러 주세요' : !i ? '확인 전' : `연결됨 · 텔레그램 ${i.tg ? '✓' : '✗ (TG_TOKEN 없음)'} · 번역 ${i.ai ? '✓' : '✗ (ANTHROPIC_API_KEY 없음)'} · 저장소 ${i.kv ? '✓' : '✗'}`, this.on && i && !(i.kv && i.tg));
+        say('#sv-st', !this.on ? '주소를 넣고 연결 확인을 눌러 주세요' : !i ? '확인 전' : `연결됨 · 서버 v${esc(String(i.v || '?'))} · 텔레그램 ${i.tg ? '✓' : '✗ (TG_TOKEN 없음)'} · 번역 ${i.ai ? '✓' : '✗ (번역 연결 없음)'} · 저장소 ${i.kv ? '✓' : '✗'}`
+          + (oldV(i) ? ` · ⚠ 서버 코드가 옛 버전이에요. GitHub의 worker/wuho-api.js(v${NEED_V})를 Cloudflare에 붙여넣으면 경제 일정·주간 복기·무료 번역이 켜져요` : ''), this.on && i && (!(i.kv && i.tg) || oldV(i)));
         say('#sv-trst', this.info && !this.info.ai ? '서버에 번역이 아직 꺼져 있어요. Cloudflare 워커 설정 → 바인딩에서 Workers AI 를 이름 AI 로 넣으면 키 없이 무료로 켜져요' : this.info && this.info.aiKind === 'workers-ai' ? 'Cloudflare 무료 번역 모델을 쓰는 중이에요' : '');
         const a = $('#sv-link'); if(i && i.bot && this.code){ a.href = `https://t.me/${i.bot}?start=${this.code}`; a.classList.remove('off') } else { a.removeAttribute('href'); a.classList.add('off') } };
       const tgStatus = async () => { if(!this.on || !this.code) return say('#sv-tgst', '먼저 동기화 코드를 만들어 주세요(“이 기기 설정 올리기”)');
@@ -3648,8 +3723,10 @@ const S = LC.srv = {
   }
 };
 if(LC.Drawings){ const o = LC.Drawings.prototype.save; LC.Drawings.prototype.save = function(){ this.items.forEach(x => { if(x.type === 'alert' && !x.id) x.id = S.newId() }); o.call(this); if(this.items.some(x => x.type === 'alert') || this._hadAlert) S.pushAlerts(); this._hadAlert = this.items.some(x => x.type === 'alert') } }
-{ const set0 = store.set.bind(store); store.set = (k, v) => { set0(k, v); if(!/^(srv|newsSeen|cgMeta|trCache)/.test(k)) S.autoQueue(k) } }
-if(S.on){ S.check().catch(() => {}); S.autoPull(); if(LC.Drawings){ setTimeout(() => S.pull(), 4000); setInterval(() => S.pull(), 60000) } } else S.ready = true;
+{ const set0 = store.set.bind(store); store.set = (k, v) => { if(k === 'journal' || k.startsWith('dr_')) tombTrack(k, v); const ok = set0(k, v); if(!/^(srv|newsSeen|cgMeta|trCache)/.test(k)) S.autoQueue(k); return ok } }
+S._merge = { mergeArr, applyRemote, tombTrack };
+if(S.on){ S.check().then(i => { if(oldV(i) && Date.now() - store.get('srvOldWarn', 0) > 864e5){ store.set('srvOldWarn', Date.now());
+    setTimeout(() => LC.toast(`내 서버가 옛 버전(v${i.v || '?'})이에요. 새 서버 코드(v${NEED_V})를 Cloudflare에 붙여넣으면 경제 일정과 주간 복기가 켜져요.`, 'alert', 12000), 3000) } }).catch(() => {}); S.autoPull(); if(LC.Drawings){ setTimeout(() => S.pull(), 4000); setInterval(() => S.pull(), 60000) } } else S.ready = true;
 })();
 
 </script>
