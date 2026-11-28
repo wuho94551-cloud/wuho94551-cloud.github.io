@@ -170,7 +170,6 @@ header>*{flex:none}
 .lg-p{position:absolute;inset:0;pointer-events:none;z-index:4}
 .lgp{position:absolute;left:8px;font-size:12px;line-height:1.55;max-width:calc(100% - 90px)}
 :root[data-theme=light] .lgr:hover,:root[data-theme=light] .lg-tg{background:rgba(255,255,255,.92)}
-.cv-cd{display:none}
 .wh-head{padding:8px 10px 4px;font-size:12px}.wh-sum .imb-t{flex-wrap:wrap;gap:2px 10px}
 header select{width:auto;max-width:84px}header .seg button{padding:5px 6px}.wh-sum .imb{padding:4px 10px 8px}
 .frow.wh{grid-template-columns:minmax(0,1.4fr) 1fr 62px;cursor:pointer}.frow.wh .wh-2{grid-column:1/-1;margin-top:-2px}.frow.wh a{text-decoration:none}.frow.wh:hover{background:var(--panel2)}
@@ -216,7 +215,7 @@ header>*{flex:none}
 .lgr .act{display:none;gap:2px}.lgr:hover .act{display:flex}
 .lgr .act button{width:20px;height:20px;border-radius:3px;color:var(--dim);font-size:12px}
 .lgr .act button:hover{background:var(--line);color:var(--ink)}
-.cv-cd{position:absolute;right:72px;bottom:32px;z-index:3;font-size:11px;color:var(--dim);pointer-events:none}
+.cv-cd{position:absolute;right:0;top:0;z-index:3;font-size:11px;line-height:17px;height:17px;text-align:center;color:#0b0c0f;font-weight:600;pointer-events:none;box-sizing:border-box;border-radius:0 0 2px 2px}
 .cv-load{position:absolute;inset:0;display:grid;place-items:center;color:var(--dim);z-index:3;pointer-events:none}
 .cv-load[hidden]{display:none}
 .sel-bar{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:6;display:none;gap:4px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 6px}
@@ -1846,6 +1845,9 @@ LC.DRAW_TOOLS = { TWO, ONE, NAMES };
 <script>
 /* 차트 한 칸: 캔들, 지표, 작도, 알림, 리플레이 */
 (() => {
+/* 봉 마감까지 남은 시간: 59:12, 3:05:09, 2일 4시간 */
+const cdFmt = ms => { ms = Math.max(0, ms); const s = Math.floor(ms/1000), d = Math.floor(s/86400), h = Math.floor(s%86400/3600), m = Math.floor(s%3600/60), x = s%60, P = n => String(n).padStart(2, '0');
+  return d ? `${d}일 ${h}시간` : h ? `${h}:${P(m)}:${P(x)}` : `${P(m)}:${P(x)}` };
 const KC = new Map();   /* 최근 본 봉 묶음: 종목|시장|분봉 → { t, c } */
 const L = LightweightCharts;
 const SERIES_BY_TYPE = { candle:L.CandlestickSeries, hollow:L.CandlestickSeries, ha:L.CandlestickSeries, bar:L.BarSeries, line:L.LineSeries, area:L.AreaSeries };
@@ -1919,7 +1921,7 @@ class ChartView {
     if(this.drawings) this.drawings.v = this;
   }
   /* 몸통을 비운 캔들은 현재가 라벨이 투명해져서, 경계선 색으로 직접 그려요 */
-  lastLabel(){
+  lastLabel(){ requestAnimationFrame(() => this.placeCd && this.placeCd());
     const S = LC.chartStyle.get(), b = this.shown[this.shown.length-1], need = (this.type === 'candle' || this.type === 'ha') && !S.bodyVisible;
     if(!need || !b){ if(this.lastPL){ try{ this.series.removePriceLine(this.lastPL) }catch(e){} this.lastPL = null } return }
     const o = { price:b.close, color: b.close >= b.open ? S.borderUp : S.borderDown, lineWidth:1, lineStyle:2, lineVisible:S.lastLine, axisLabelVisible:S.lastLabel, axisLabelTextColor:'#0b0c0f' };
@@ -2256,10 +2258,19 @@ class ChartView {
     if(!silent){ this.shown = this.candles; this.renderAll(); this.chart.timeScale().scrollToRealTime() }
   }
 
-  tick(){
+  tick(){ /* 1초마다 */
     const ms = LC.TFMS[this.tf], now = Date.now(); const b = this.last;
     const left = this.tf === '1w' && b ? b.time*1000 + ms - now : ms - (now % ms);
-    this.q('.cv-cd').textContent = this.replay ? '' : '봉 마감까지 ' + LC.fmtDur(left);
+    const el = this.q('.cv-cd'); el.textContent = this.replay ? '' : cdFmt(left); this.placeCd();
+  }
+  /* 남은 시간 이름표: 오른쪽 가격 눈금의 현재가 이름표 바로 아래, 같은 색으로 붙여요 */
+  placeCd(){
+    const el = this.q('.cv-cd'), b = this.shown[this.shown.length-1]; if(!el || !b || this.replay){ if(el) el.hidden = true; return }
+    let y = null, w = 0; try{ y = this.series.priceToCoordinate(b.close); w = this.chart.priceScale('right').width() }catch(e){}
+    const H = this.chart.panes && this.chart.panes()[0] ? this.chart.panes()[0].getHeight() : 0;
+    if(y == null || !w || y < 0 || y > H - 8){ el.hidden = true; return }
+    const S = LC.chartStyle.get(); el.hidden = false;
+    el.style.background = b.close >= b.open ? S.borderUp : S.borderDown; el.style.width = w + 'px'; el.style.top = Math.round(y + 9) + 'px';
   }
   setLog(on){ this.log = on; this.chart.priceScale('right').applyOptions({ mode: on ? L.PriceScaleMode.Logarithmic : L.PriceScaleMode.Normal }) }
   setPercent(on){ this.chart.priceScale('right').applyOptions({ mode: on ? L.PriceScaleMode.Percentage : L.PriceScaleMode.Normal }) }
