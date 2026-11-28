@@ -1034,7 +1034,7 @@ const DEF = theme => { const light = theme === 'light';
 const CS = LC.chartStyle = {
   user: store.get('chartStyle', {}),
   get(){ return { ...DEF(LC.app && LC.app.theme), ...this.user } },
-  set(k, v){ this.user[k] = v; store.set('chartStyle', this.user); this.applyAll() },
+  set(k, v){ this.user[k] = v; if(k === 'precision') this.user.precSym = LC.app && LC.app.v ? LC.app.v.sym : null; store.set('chartStyle', this.user); this.applyAll() },
   reset(){ this.user = {}; store.set('chartStyle', {}); this.applyAll() },
   applyAll(){ (LC.app ? LC.app.views : []).forEach(v => this.apply(v)) },
   mainOpts(type){ const S = this.get(), o = { priceLineVisible:S.lastLine, lastValueVisible:S.lastLabel };
@@ -1057,7 +1057,8 @@ const CS = LC.chartStyle = {
       rightPriceScale:{ borderColor:border }, timeScale:{ borderColor:border } });
     v.series.applyOptions(this.mainOpts(v.type)); v.lastLabel && v.lastLabel();
     const ck = S.borderUp + S.borderDown + S.upColor + S.downColor + S.borderVisible; if(v.indColorKey !== ck){ const first = v.indColorKey == null; v.indColorKey = ck; if(!first && v.shown && v.shown.length) v.updateInds(true) }
-    const pr = S.precision === 'auto' ? (v.autoPrec ?? v.prec) : +S.precision; if(v.prec !== pr){ v.autoPrec = v.autoPrec ?? v.prec; v.prec = pr; v.series.applyOptions({ priceFormat:{ type:'price', precision:pr, minMove:1/10**pr } }) }
+    /* 정밀도는 바꿀 때 보던 종목에만 써요 (BTC에서 1로 맞춘 게 0.08짜리 코인에 가면 눈금이 전부 0이 돼요) */
+    const fixed = S.precision !== 'auto' && S.precSym && S.precSym === v.sym, pr = fixed ? +S.precision : (v.autoPrec ?? v.prec); if(v.prec !== pr){ v.autoPrec = v.autoPrec ?? v.prec; v.prec = pr; v.applyPrec ? v.applyPrec() : v.series.applyOptions({ priceFormat:{ type:'price', precision:pr, minMove:1/10**pr } }) }
     if(v.prevCloseOn !== S.prevClose){ v.prevCloseOn = S.prevClose; if(v.shown && v.shown.length) v.renderAll() }
     v.inds.forEach(i => i.series.forEach(se => { try{ se.applyOptions({ lastValueVisible: !i.def.overlay && S.indLabels }) }catch(e){} }));
     v.box.classList.toggle('no-title', !S.legendTitle); v.box.classList.toggle('no-chg', !S.legendChange);
@@ -1980,7 +1981,7 @@ class ChartView {
       if(fresh){ this.candles = hit.c.slice(); this.noMore = !!hit.noMore }
       else { const r = await this.fetchK(); if(tok !== this.tok) return; this.candles = r }
       this.autoPrec = null; this.prec = this.app.precOf(this.sym, this.market) ?? LC.autoPrec(this.candles.length ? this.candles[this.candles.length-1].close : 1);
-      this.series.applyOptions({ priceFormat:{type:'price', precision:this.prec, minMove:1/10**this.prec} }); LC.chartStyle.apply(this);
+      this.applyPrec(); LC.chartStyle.apply(this);
       this.shown = this.candles; this.renderAll();
       /* 종목이 바뀌면 가격 눈금을 새 종목에 맞추고 지금 봉이 보이게 해요 (시간 단위만 바뀌면 확대 정도는 그대로) */
       if(this._vSym !== this.sym + this.market) this.resetView(false); else this.scrollNow(); this._vSym = this.sym + this.market; this.loadedSym = this.sym; this._ck = ck;
@@ -2122,8 +2123,22 @@ class ChartView {
   }
   async fetchAsync(ind){
     if(ind.def.futuresOnly && this.market !== 'futures'){ ind.series.forEach(s => s.setData([])); return }
-    try{ const r = await ind.def.fetch({sym:this.sym, tf:this.tf}); const t0 = this.candles.length ? this.candles[0].time : 0;
-      ind.def.series.forEach((s, i) => { r[s.key] = r[s.key].filter(d => d.time >= t0); ind.data[s.key] = r[s.key]; if(!ind.hidden) ind.series[i].setData(r[s.key]) }) }catch(e){}
+    /* 받는 사이 종목이나 분봉을 바꿨으면 버려요 (예전 분봉 값이 섞이면 봉 간격이 깨져요) */
+    const tok = this.tok, key = this.sym + '|' + this.market + '|' + this.tf;
+    try{ const r = await ind.def.fetch({sym:this.sym, tf:this.tf}); if(tok !== this.tok || key !== this.sym + '|' + this.market + '|' + this.tf || !this.inds.includes(ind)) return;
+      ind.def.series.forEach((s, i) => { r[s.key] = this.snapToBars(r[s.key] || []); ind.data[s.key] = r[s.key]; if(!ind.hidden) ind.series[i].setData(r[s.key]) }) }catch(e){}
+  }
+  /* 바깥 데이터(미결제약정 등)의 시각을 차트 봉 시각에 맞춰요. 봉 사이에 시각이 끼면 차트에 빈 칸이 생겨 봉이 띄엄띄엄 그려져요 */
+  snapToBars(arr){
+    const c = this.candles; if(!c.length) return []; const out = new Map(); let j = 0;
+    [...arr].sort((a, b) => a.time - b.time).forEach(d => { if(d.time < c[0].time) return; while(j + 1 < c.length && c[j+1].time <= d.time) j++; out.set(c[j].time, {...d, time:c[j].time}) });
+    return [...out.values()];
+  }
+  /* 가격 소수점 자리를 본 차트와 위에 겹친 지표 모두에 맞춰요 (예전 종목 자리수가 남으면 눈금이 0으로만 보여요) */
+  applyPrec(){
+    const pf = { type:'price', precision:this.prec, minMove:1/10**this.prec };
+    try{ this.series.applyOptions({ priceFormat:pf }) }catch(e){}
+    this.inds.forEach(i => { if(i.def.overlay) i.def.series.forEach((s, k) => { if(s.type !== 'hist' && s.type !== 'area') try{ i.series[k].applyOptions({ priceFormat:pf }) }catch(e){} }) });
   }
   indPane(ind){ try{ return ind.series[0].getPane().paneIndex() }catch(e){ return ind.def.overlay ? 0 : 1 } }
   renderLegendInds(){
@@ -4768,7 +4783,7 @@ const app = LC.app = {
   setConn(v, ok, via){ if(v === this.active){ const bk = ok && via === 'bybit'; $('dot').classList.toggle('ok', ok && !bk); $('dot').classList.toggle('bk', bk); $('connTxt').textContent = bk ? '예비' : ok ? '' : '재연결'; $('connTxt').parentNode.title = bk ? '바이낸스 연결이 끊겨 바이비트 시세로 잠시 이어 그리는 중이에요 (값이 조금 다를 수 있어요)' : ok ? '실시간 연결됨' : '연결이 끊겨 다시 잇는 중이에요' } },
   hint(t){ const h = $('hint'); h.textContent = t; h.classList.toggle('show', !!t) },
 
-  applyInfo(m, map){ this.info[m] = map; this.views.forEach(v => { if(v.market === m){ const p = this.precOf(v.sym, m); if(p != null && p !== v.prec){ v.prec = p; v.series.applyOptions({priceFormat:{type:'price', precision:p, minMove:1/10**p}}) } } }); if(LC.bus) LC.bus.emit('info', m) },
+  applyInfo(m, map){ this.info[m] = map; this.views.forEach(v => { if(v.market === m){ const p = this.precOf(v.sym, m); if(p != null && p !== v.prec){ v.prec = p; v.applyPrec() } } }); if(LC.bus) LC.bus.emit('info', m) },
   /* 거래소 종목 정보 (가격 소수점) */
   async loadInfo(m){
     /* 하루 안에 받아 둔 게 있으면 그걸 써요 (현물 원본은 17MB가 넘어서 필요한 것만 받아요) */
